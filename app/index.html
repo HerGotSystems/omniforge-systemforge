@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Omniforge — System Forge™</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+/* ═══ TOKENS ═══════════════════════════════════════════════ */
+:root{
+  --bg:#0c0b09;--bg2:#111009;--surface:#161410;--surface2:#1c1a14;--surface3:#222017;
+  --border:#2e2b22;--border2:#3d3928;--border3:#524e3e;
+  --fire:#f97316;--fire-dim:#c2540a;--fire-faint:rgba(249,115,22,.12);--fire-glow:rgba(249,115,22,.2);
+  --gold:#fbbf24;--amber:#d97706;
+  --text:#f2ede6;--text2:#c8c0b4;--muted:#7a7060;--faint:#3d3928;
+  --green:#4ade80;--green-bg:rgba(74,222,128,.07);--green-border:rgba(74,222,128,.2);
+  --red:#f87171;--red-bg:rgba(248,113,113,.07);--red-border:rgba(248,113,113,.25);
+  --r:10px;--r-lg:16px;--r-xl:22px;
+  --shadow:0 20px 60px rgba(0,0,0,.55);--shadow-sm:0 4px 20px rgba(0,0,0,.35);
+  --sidebar:260px;--topbar:56px;
+}
+ 
+/* ═══ RESET ═══════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Barlow Condensed',sans-serif;
+  font-size:16px;min-height:100vh;overflow-x:hidden;line-height:1.5}
+button,input,select,textarea{font-family:inherit;font-size:inherit}
+button{cursor:pointer}
+a{color:var(--fire);text-decoration:none}
+a:hover{text-decoration:underline}
+ 
+/* ═══ BACKGROUND ══════════════════════════════════════════ */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 40% at 50% -5%,rgba(249,115,22,.06) 0%,transparent 60%),
+             radial-gradient(ellipse 30% 20% at 95% 85%,rgba(251,191,36,.03) 0%,transparent 50%)}
+ 
+/* ═══ VIEWS ═══════════════════════════════════════════════ */
+.view{display:none;position:relative;z-index:1;animation:fadeIn .25s ease both}
+.view.active{display:flex;flex-direction:column;min-height:100vh}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+ 
+/* ═══ TOPBAR ══════════════════════════════════════════════ */
+.topbar{height:var(--topbar);display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);
+  position:sticky;top:0;z-index:100;flex-shrink:0}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(249,115,22,.25),transparent)}
+ 
+.logo{font-family:'Oxanium',sans-serif;font-weight:800;font-size:1.4rem;
+  letter-spacing:-.02em;line-height:1;white-space:nowrap}
+.logo em{color:var(--fire);font-style:normal;
+  text-shadow:0 0 30px var(--fire-glow),0 0 60px rgba(249,115,22,.08)}
+.logo-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+ 
+.topbar-nav{display:flex;align-items:center;gap:4px}
+.nav-btn{padding:7px 14px;border:1px solid transparent;border-radius:var(--r);
+  background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;
+  font-size:14px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;
+  transition:all .15s;white-space:nowrap}
+.nav-btn:hover{color:var(--text);border-color:var(--border)}
+.nav-btn.active{color:var(--fire);border-color:rgba(249,115,22,.3);background:var(--fire-faint)}
+.nav-btn svg{width:14px;height:14px;vertical-align:middle;margin-right:5px;margin-top:-2px}
+ 
+.topbar-right{display:flex;align-items:center;gap:10px}
+.key-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;
+  border:1px solid var(--border);border-radius:999px;background:var(--surface);
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.key-badge:hover{border-color:var(--border2);color:var(--text2)}
+.key-dot{width:6px;height:6px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green);animation:pulse 2.5s ease infinite}
+.key-dot.off{background:var(--red);box-shadow:0 0 8px var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+ 
+/* ═══ SETUP VIEW ══════════════════════════════════════════ */
+#view-setup{align-items:center;justify-content:center;padding:40px 20px}
+.setup-card{width:100%;max-width:520px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-xl);box-shadow:var(--shadow);overflow:hidden;position:relative}
+.setup-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(249,115,22,.4),transparent)}
+ 
+.setup-hero{padding:36px 36px 28px;text-align:center;border-bottom:1px solid var(--border)}
+.setup-icon{font-size:52px;line-height:1;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(249,115,22,.3))}
+.setup-title{font-family:'Oxanium',sans-serif;font-size:2rem;font-weight:800;
+  letter-spacing:-.03em;line-height:.95;margin-bottom:10px}
+.setup-title em{color:var(--fire);font-style:normal}
+.setup-sub{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+  letter-spacing:.08em;line-height:1.7;text-transform:uppercase}
+ 
+.setup-body{padding:28px 36px 32px}
+ 
+.setup-steps{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.setup-step{display:flex;gap:14px;align-items:flex-start}
+.step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;
+  border:1px solid var(--fire-dim);background:var(--fire-faint);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Oxanium',sans-serif;font-size:11px;font-weight:700;color:var(--fire)}
+.step-text{font-size:14px;color:var(--text2);line-height:1.5;padding-top:2px}
+.step-text strong{color:var(--text);font-weight:600}
+.step-text a{color:var(--fire)}
+ 
+.setup-field{margin-bottom:14px}
+.setup-field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+.setup-field input{width:100%;padding:13px 16px;background:var(--bg2);
+  border:1px solid var(--border);border-radius:var(--r);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:all .2s}
+.setup-field input:focus{border-color:var(--fire-dim);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+.setup-field input::placeholder{color:var(--muted);opacity:.5}
+ 
+.setup-hint{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+  letter-spacing:.05em;line-height:1.6;margin-bottom:20px}
+.setup-hint a{color:var(--fire-dim)}
+ 
+.setup-error{padding:10px 14px;border:1px solid var(--red-border);border-radius:var(--r);
+  background:var(--red-bg);font-family:'JetBrains Mono',monospace;font-size:11px;
+  color:var(--red);margin-bottom:14px;display:none;line-height:1.5}
+ 
+/* ═══ APP LAYOUT ══════════════════════════════════════════ */
+#view-app{flex-direction:column}
+.app-body{flex:1;display:grid;grid-template-columns:var(--sidebar) 1fr;min-height:calc(100vh - var(--topbar))}
+ 
+/* ═══ SIDEBAR ═════════════════════════════════════════════ */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden}
+.sidebar-head{padding:16px 16px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sidebar-title{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px}
+.new-forge-btn{width:100%;padding:10px;border:1px solid rgba(249,115,22,.3);border-radius:var(--r);
+  background:var(--fire-faint);color:var(--fire);font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.new-forge-btn:hover{background:rgba(249,115,22,.18);border-color:var(--fire-dim)}
+.new-forge-btn svg{width:14px;height:14px;flex-shrink:0}
+ 
+.history-list{flex:1;overflow-y:auto;padding:8px;scrollbar-width:thin;
+  scrollbar-color:var(--border) transparent}
+.history-list::-webkit-scrollbar{width:4px}
+.history-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+ 
+.history-empty{padding:24px 12px;text-align:center;display:flex;flex-direction:column;
+  align-items:center;gap:8px}
+.history-empty-icon{font-size:28px;opacity:.25}
+.history-empty-text{font-family:'JetBrains Mono',monospace;font-size:9px;
+  color:var(--faint);letter-spacing:.1em;text-transform:uppercase;line-height:1.7}
+ 
+.history-item{padding:11px 12px;border-radius:var(--r);cursor:pointer;
+  border:1px solid transparent;transition:all .15s;margin-bottom:3px}
+.history-item:hover{background:var(--surface2);border-color:var(--border)}
+.history-item.active{background:var(--fire-faint);border-color:rgba(249,115,22,.25)}
+.hi-name{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;
+  color:var(--text);letter-spacing:.02em;line-height:1.3;margin-bottom:4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-item.active .hi-name{color:var(--fire)}
+.hi-meta{display:flex;align-items:center;gap:6px}
+.hi-domain{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase}
+.hi-depth{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);
+  letter-spacing:.05em;padding:1px 5px;border:1px solid var(--faint);border-radius:3px}
+.hi-date{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);
+  margin-left:auto}
+ 
+/* ═══ MAIN AREA ═══════════════════════════════════════════ */
+.main-area{display:flex;flex-direction:column;overflow-y:auto;height:calc(100vh - var(--topbar))}
+ 
+/* ═══ FORGE PANE ══════════════════════════════════════════ */
+.forge-pane{padding:28px;max-width:760px;width:100%;margin:0 auto;flex-shrink:0}
+ 
+.pane-title{font-family:'Oxanium',sans-serif;font-size:1.6rem;font-weight:800;
+  letter-spacing:-.02em;margin-bottom:4px}
+.pane-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px}
+ 
+/* form */
+.field{margin-bottom:18px}
+.field label{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;
+  color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+.field-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);
+  letter-spacing:.06em;margin-top:6px;line-height:1.5}
+textarea,select,input[type=text]{width:100%;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);padding:13px 16px;outline:none;
+  transition:border-color .2s,box-shadow .2s;font-size:15px}
+textarea:focus,select:focus,input[type=text]:focus{border-color:var(--fire-dim);
+  box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+::placeholder{color:var(--muted);opacity:.5}
+textarea{min-height:120px;resize:vertical;line-height:1.65}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.select-wrap{position:relative}
+.select-wrap::after{content:'▾';position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  color:var(--muted);pointer-events:none;font-size:11px}
+select{cursor:pointer;padding-right:32px;appearance:none}
+ 
+/* depth */
+.depth-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.depth-opt{border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);
+  color:var(--muted);padding:11px 8px;cursor:pointer;text-align:center;
+  transition:all .15s;user-select:none;display:flex;flex-direction:column;gap:3px;align-items:center}
+.depth-opt:hover{border-color:var(--border2);color:var(--text2)}
+.depth-opt.sel{border-color:var(--fire-dim);background:var(--fire-faint);color:var(--fire)}
+.depth-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;
+  letter-spacing:.04em;text-transform:uppercase}
+.depth-desc{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.04em;opacity:.7}
+ 
+/* forge button */
+.forge-btn{width:100%;margin-top:22px;padding:18px;border:none;border-radius:var(--r);
+  background:linear-gradient(135deg,#c2540a,#f97316,#fb923c);color:#180900;
+  font-family:'Oxanium',sans-serif;font-size:19px;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;transition:transform .15s,box-shadow .2s;position:relative;overflow:hidden;
+  box-shadow:0 8px 32px rgba(249,115,22,.28),0 0 0 1px rgba(249,115,22,.15)}
+.forge-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(249,115,22,.38)}
+.forge-btn:active{transform:translateY(0)}
+.forge-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.forge-btn::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);opacity:0;transition:opacity .2s}
+.forge-btn:not(:disabled):hover::after{opacity:1}
+.forge-hint{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);
+  letter-spacing:.08em;text-align:center;margin-top:10px}
+ 
+/* ═══ OUTPUT PANE ═════════════════════════════════════════ */
+.output-pane{border-top:1px solid var(--border);flex:1}
+ 
+/* loading */
+.output-loading{padding:48px 28px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.pipeline-track{display:flex;align-items:center;gap:0;flex-wrap:wrap;justify-content:center;gap:4px}
+.pipe-node{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint);padding:4px 8px;
+  border:1px solid var(--faint);border-radius:4px;transition:all .35s}
+.pipe-node.active{color:var(--fire);border-color:var(--fire);box-shadow:0 0 10px var(--fire-glow);
+  animation:node-pulse .8s ease infinite}
+.pipe-node.done{color:var(--green);border-color:rgba(74,222,128,.4)}
+@keyframes node-pulse{0%,100%{box-shadow:0 0 10px var(--fire-glow)}50%{box-shadow:0 0 20px rgba(249,115,22,.35)}}
+.pipe-arrow{color:var(--faint);font-size:10px;padding:0 3px}
+ 
+.forge-bars{display:flex;align-items:center;gap:5px;height:44px}
+.forge-bar{width:4px;background:var(--fire);border-radius:2px;box-shadow:0 0 8px var(--fire);
+  animation:bar-wave 1s ease-in-out infinite}
+.forge-bar:nth-child(1){height:16px;animation-delay:.0s}
+.forge-bar:nth-child(2){height:30px;animation-delay:.12s}
+.forge-bar:nth-child(3){height:22px;animation-delay:.24s}
+.forge-bar:nth-child(4){height:38px;animation-delay:.36s}
+.forge-bar:nth-child(5){height:20px;animation-delay:.48s}
+.forge-bar:nth-child(6){height:32px;animation-delay:.6s}
+.forge-bar:nth-child(7){height:18px;animation-delay:.72s}
+@keyframes bar-wave{0%,100%{transform:scaleY(.5);opacity:.5}50%{transform:scaleY(1);opacity:1}}
+ 
+.loading-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+  letter-spacing:.15em;text-transform:uppercase}
+.loading-step{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--fire);
+  letter-spacing:.12em;text-transform:uppercase;min-height:16px;text-align:center;transition:opacity .3s}
+.loading-step.hide{opacity:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.cursor{animation:blink .8s steps(1) infinite;color:var(--fire)}
+ 
+/* output result */
+.result-header{padding:20px 28px 0;display:flex;align-items:flex-start;
+  justify-content:space-between;gap:16px;flex-wrap:wrap}
+.result-name{font-family:'Oxanium',sans-serif;font-size:1.7rem;font-weight:800;
+  letter-spacing:-.02em;line-height:1;margin-bottom:6px}
+.result-summary{font-size:15px;color:var(--text2);line-height:1.5;max-width:600px}
+.result-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
+  font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase}
+.chip-green{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.chip-fire{background:var(--fire-faint);border:1px solid rgba(249,115,22,.25);color:var(--fire)}
+.chip-muted{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+ 
+.result-toolbar{display:flex;gap:8px;padding:16px 28px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.tool-btn{padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;
+  color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;transition:all .15s;white-space:nowrap}
+.tool-btn:hover{border-color:var(--fire-dim);color:var(--fire)}
+.tool-btn.active{border-color:var(--green-border);color:var(--green)}
+ 
+/* sections */
+.sections{padding:0}
+.section{border-bottom:1px solid var(--border);overflow:hidden}
+.section:last-child{border-bottom:none}
+.section-head{display:flex;align-items:center;justify-content:space-between;
+  padding:16px 28px;cursor:pointer;transition:background .15s;user-select:none}
+.section-head:hover{background:rgba(255,255,255,.018)}
+.section-meta{display:flex;align-items:center;gap:12px}
+.section-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;
+  justify-content:center;font-size:14px;background:rgba(249,115,22,.08);
+  border:1px solid rgba(249,115,22,.18);flex-shrink:0}
+.section-name{font-family:'Oxanium',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--text)}
+.section-toggle{color:var(--muted);font-size:11px;transition:transform .2s}
+.section.collapsed .section-toggle{transform:rotate(-90deg)}
+.section-body{padding:0 28px 22px;font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  line-height:1.85;color:var(--text2);white-space:pre-wrap;overflow:hidden;
+  max-height:3000px;transition:max-height .35s ease,padding .3s}
+.section.collapsed .section-body{max-height:0;padding-bottom:0}
+ 
+.section-anim{animation:sec-in .3s ease both}
+.section-anim:nth-child(2){animation-delay:.05s}
+.section-anim:nth-child(3){animation-delay:.1s}
+.section-anim:nth-child(4){animation-delay:.15s}
+.section-anim:nth-child(5){animation-delay:.2s}
+.section-anim:nth-child(6){animation-delay:.25s}
+@keyframes sec-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+ 
+/* error */
+.output-error{margin:24px 28px;padding:16px;border:1px solid var(--red-border);
+  border-radius:var(--r);background:var(--red-bg);font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:var(--red);line-height:1.7}
+.output-error strong{display:block;margin-bottom:6px;font-size:12px}
+ 
+/* empty output */
+.output-empty{padding:48px 28px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.output-empty-glyph{font-size:56px;opacity:.12;line-height:1}
+.output-empty-title{font-family:'Oxanium',sans-serif;font-size:1.2rem;font-weight:700;
+  color:var(--muted);letter-spacing:.05em}
+.output-empty-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);
+  letter-spacing:.1em;line-height:1.7;text-align:center;text-transform:uppercase}
+ 
+/* ═══ SETTINGS VIEW ═══════════════════════════════════════ */
+#view-settings .app-body{display:block;padding:40px 20px;max-width:600px;margin:0 auto}
+.settings-section{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
+.settings-section::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(249,115,22,.2),transparent)}
+.settings-title{font-family:'Oxanium',sans-serif;font-size:14px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;color:var(--text)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 0;border-bottom:1px solid var(--border);gap:16px}
+.settings-row:last-child{border-bottom:none;padding-bottom:0}
+.settings-row-info .settings-label{font-size:15px;color:var(--text);font-weight:500;margin-bottom:2px}
+.settings-row-info .settings-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.05em}
+.settings-action{padding:8px 16px;border:1px solid var(--border);border-radius:var(--r);
+  background:transparent;color:var(--muted);font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.08em;text-transform:uppercase;transition:all .15s;white-space:nowrap}
+.settings-action:hover{border-color:var(--border2);color:var(--text)}
+.settings-action.danger:hover{border-color:var(--red-border);color:var(--red)}
+.key-display{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+  padding:8px 12px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);flex:1;letter-spacing:.05em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}
+.stat-box{text-align:center;padding:12px;background:var(--surface2);border-radius:var(--r);
+  border:1px solid var(--border)}
+.stat-val{font-family:'Oxanium',sans-serif;font-size:1.6rem;font-weight:700;color:var(--fire);display:block}
+.stat-key{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase}
+ 
+/* ═══ BUTTONS ═════════════════════════════════════════════ */
+.btn-primary{padding:13px 24px;border:none;border-radius:var(--r);
+  background:linear-gradient(135deg,#c2540a,#f97316);color:#180900;
+  font-family:'Oxanium',sans-serif;font-size:15px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;transition:all .15s;box-shadow:0 6px 24px rgba(249,115,22,.25)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(249,115,22,.35)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-secondary{padding:13px 24px;border:1px solid var(--border2);border-radius:var(--r);
+  background:var(--surface2);color:var(--text2);font-family:'Barlow Condensed',sans-serif;
+  font-size:15px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;transition:all .15s}
+.btn-secondary:hover{border-color:var(--border3);color:var(--text)}
+ 
+/* ═══ RESPONSIVE ══════════════════════════════════════════ */
+@media(max-width:800px){
+  :root{--sidebar:0px}
+  .sidebar{display:none}
+  .app-body{grid-template-columns:1fr}
+  .grid-2{grid-template-columns:1fr}
+  .depth-row{grid-template-columns:1fr}
+  .topbar-nav{gap:2px}
+  .nav-btn{padding:6px 10px;font-size:13px}
+}
+@media(max-width:480px){
+  .forge-pane{padding:18px}
+  .output-loading,.output-empty{padding:32px 18px}
+  .result-header{padding:16px 18px 0}
+  .section-head{padding:14px 18px}
+  .section-body{padding:0 18px 18px}
+  .result-toolbar{padding:12px 18px}
+}
+</style>
+</head>
+<body>
+ 
+<!-- ═══════════════════════════════════════════════════════
+     SETUP VIEW
+═══════════════════════════════════════════════════════ -->
+<div class="view" id="view-setup">
+  <div class="setup-card">
+    <div class="setup-hero">
+      <div class="setup-icon">⚒</div>
+      <div class="setup-title">OMNI<em>FORGE</em></div>
+      <div class="setup-sub">Turn any idea into a complete system<br/>You need your own Anthropic API key to use this tool</div>
+    </div>
+    <div class="setup-body">
+      <div class="setup-steps">
+        <div class="setup-step">
+          <div class="step-num">1</div>
+          <div class="step-text">Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> and create a free account</div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">2</div>
+          <div class="step-text">Click <strong>API Keys</strong> → <strong>Create Key</strong> → copy it</div>
+        </div>
+        <div class="setup-step">
+          <div class="step-num">3</div>
+          <div class="step-text">Paste it below. Your key stays on <strong>your device only</strong> — never sent anywhere except Anthropic directly</div>
+        </div>
+      </div>
+ 
+      <div class="setup-field">
+        <label>Your Anthropic API Key</label>
+        <input type="password" id="setup-key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+      </div>
+      <div class="setup-hint">
+        A new account comes with free credits — enough for dozens of forges.<br/>
+        One forge uses approximately $0.02–0.06 of API credit depending on depth.
+      </div>
+      <div class="setup-error" id="setup-error"></div>
+      <button class="btn-primary" id="setup-save-btn" style="width:100%">Save Key &amp; Start Forging</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ═══════════════════════════════════════════════════════
+     APP VIEW
+═══════════════════════════════════════════════════════ -->
+<div class="view" id="view-app">
+  <div class="topbar">
+    <div>
+      <div class="logo">OMNI<em>FORGE</em></div>
+      <div class="logo-sub">System Forge™</div>
+    </div>
+    <div class="topbar-nav">
+      <button class="nav-btn active" data-view="app" id="nav-forge">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L14 8L8 14"/><path d="M2 8h12"/></svg>
+        Forge
+      </button>
+      <button class="nav-btn" data-view="settings" id="nav-settings">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+        Settings
+      </button>
+    </div>
+    <div class="topbar-right">
+      <div class="key-badge" id="key-badge" onclick="switchView('settings')">
+        <div class="key-dot" id="key-dot"></div>
+        <span id="key-label">API KEY</span>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="app-body">
+    <!-- sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-head">
+        <div class="sidebar-title">Forge History</div>
+        <button class="new-forge-btn" id="new-forge-sidebar">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+          New Forge
+        </button>
+      </div>
+      <div class="history-list" id="history-list">
+        <div class="history-empty">
+          <div class="history-empty-icon">⚒</div>
+          <div class="history-empty-text">No forges yet.<br/>Your systems will<br/>appear here.</div>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- main -->
+    <div class="main-area" id="main-area">
+ 
+      <!-- forge input pane -->
+      <div class="forge-pane" id="forge-pane">
+        <div class="pane-title">What do you want to build?</div>
+        <div class="pane-sub">Idea in → Complete system out</div>
+ 
+        <div class="field">
+          <label>Your Idea or Intention</label>
+          <textarea id="idea" rows="5" placeholder="Write it raw. Messy is fine. The forge handles the chaos.&#10;&#10;Example: An app that helps freelancers track which clients are worth keeping based on real data, not gut feel…"></textarea>
+          <div class="field-hint">Be specific about the problem. Include context. The more real, the better the output.</div>
+        </div>
+ 
+        <div class="grid-2">
+          <div class="field">
+            <label>Domain</label>
+            <div class="select-wrap">
+              <select id="domain">
+                <option value="Startup">Startup</option>
+                <option value="Product / Tool">Product / Tool</option>
+                <option value="Service">Service</option>
+                <option value="Education">Education System</option>
+                <option value="Community Platform">Community Platform</option>
+                <option value="Movement / Initiative">Movement / Initiative</option>
+                <option value="Creative Project">Creative Project</option>
+                <option value="Automation System">Automation System</option>
+                <option value="Health / Wellness">Health / Wellness</option>
+                <option value="Local Business">Local Business</option>
+                <option value="Non-Profit">Non-Profit</option>
+                <option value="Side Project">Side Project</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Who is this for?</label>
+            <input type="text" id="audience" placeholder="e.g. freelancers, parents, local shops…"/>
+          </div>
+        </div>
+ 
+        <div class="field">
+          <label>Biggest Unknown or Risk</label>
+          <input type="text" id="risk" placeholder="What are you most unsure about? What keeps you up at night?"/>
+          <div class="field-hint">This directly shapes your experiments and pilot plan.</div>
+        </div>
+ 
+        <div class="field">
+          <label>Forge Depth</label>
+          <div class="depth-row">
+            <div class="depth-opt" data-d="Quick">
+              <span class="depth-label">⚡ Quick</span>
+              <span class="depth-desc">Core system · 3 assets</span>
+            </div>
+            <div class="depth-opt sel" data-d="Standard">
+              <span class="depth-label">🔥 Standard</span>
+              <span class="depth-desc">Full forge · 5 assets</span>
+            </div>
+            <div class="depth-opt" data-d="Deep">
+              <span class="depth-label">⚙️ Deep</span>
+              <span class="depth-desc">+Deployment layer</span>
+            </div>
+          </div>
+        </div>
+ 
+        <button class="forge-btn" id="forge-btn">⚡ FORGE</button>
+        <div class="forge-hint">Ctrl+Enter / ⌘+Enter to forge</div>
+      </div>
+ 
+      <!-- output pane -->
+      <div class="output-pane" id="output-pane">
+        <div class="output-empty" id="out-empty">
+          <div class="output-empty-glyph">⚒</div>
+          <div class="output-empty-title">FORGE IDLE</div>
+          <div class="output-empty-sub">Fill in your idea<br/>and hit FORGE</div>
+        </div>
+ 
+        <div id="out-loading" style="display:none">
+          <div class="output-loading">
+            <div class="pipeline-track" id="pipeline-track">
+              <span class="pipe-node" id="pn0">Intent</span><span class="pipe-arrow">→</span>
+              <span class="pipe-node" id="pn1">Framework</span><span class="pipe-arrow">→</span>
+              <span class="pipe-node" id="pn2">Assets</span><span class="pipe-arrow">→</span>
+              <span class="pipe-node" id="pn3">Scenarios</span><span class="pipe-arrow">→</span>
+              <span class="pipe-node" id="pn4">Synthesis</span><span class="pipe-arrow">→</span>
+              <span class="pipe-node" id="pn5">System</span>
+            </div>
+            <div class="forge-bars">
+              <div class="forge-bar"></div><div class="forge-bar"></div><div class="forge-bar"></div>
+              <div class="forge-bar"></div><div class="forge-bar"></div><div class="forge-bar"></div>
+              <div class="forge-bar"></div>
+            </div>
+            <div class="loading-label">FORGING<span class="cursor">_</span></div>
+            <div class="loading-step" id="loading-step">EXTRACTING INTENTION</div>
+          </div>
+        </div>
+ 
+        <div id="out-result" style="display:none">
+          <div class="result-header">
+            <div>
+              <div class="result-name" id="out-name">System Name</div>
+              <div class="result-summary" id="out-summary"></div>
+              <div class="result-chips" id="out-chips"></div>
+            </div>
+          </div>
+          <div class="result-toolbar">
+            <button class="tool-btn" id="btn-copy">⎘ Copy</button>
+            <button class="tool-btn" id="btn-download-txt">↓ .txt</button>
+            <button class="tool-btn" id="btn-download-md">↓ .md</button>
+            <button class="tool-btn" id="btn-expand">↕ Expand All</button>
+            <button class="tool-btn" id="btn-collapse">↕ Collapse All</button>
+            <button class="tool-btn" id="btn-new-forge" style="margin-left:auto">+ New Forge</button>
+          </div>
+          <div class="sections" id="sections"></div>
+        </div>
+ 
+        <div id="out-error" style="display:none">
+          <div class="output-error">
+            <strong>⚠ FORGE ERROR</strong>
+            <span id="error-msg"></span>
+          </div>
+        </div>
+      </div>
+ 
+    </div><!-- /main-area -->
+  </div><!-- /app-body -->
+</div><!-- /view-app -->
+ 
+<!-- ═══════════════════════════════════════════════════════
+     SETTINGS VIEW
+═══════════════════════════════════════════════════════ -->
+<div class="view" id="view-settings">
+  <div class="topbar">
+    <div>
+      <div class="logo">OMNI<em>FORGE</em></div>
+      <div class="logo-sub">System Forge™</div>
+    </div>
+    <div class="topbar-nav">
+      <button class="nav-btn" data-view="app" id="nav-forge-s">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L14 8L8 14"/><path d="M2 8h12"/></svg>
+        Forge
+      </button>
+      <button class="nav-btn active" data-view="settings">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
+        Settings
+      </button>
+    </div>
+    <div class="topbar-right">
+      <div class="key-badge" id="key-badge-s">
+        <div class="key-dot" id="key-dot-s"></div>
+        <span id="key-label-s">API KEY</span>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="app-body">
+    <div>
+      <div style="padding:28px 20px 0"><span style="font-family:'Oxanium',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.02em">Settings</span></div>
+ 
+      <div style="padding:20px">
+ 
+        <div class="settings-section">
+          <div class="settings-title">API Key</div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-label">Anthropic API Key</div>
+              <div class="settings-meta">Stored locally on your device only</div>
+            </div>
+            <div class="key-display" id="key-display">—</div>
+            <button class="settings-action" id="change-key-btn">Change</button>
+          </div>
+          <div id="change-key-form" style="display:none;margin-top:14px">
+            <div class="setup-field">
+              <label>New API Key</label>
+              <input type="password" id="new-key-input" placeholder="sk-ant-api03-…"/>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button class="btn-primary" id="save-new-key" style="flex:1">Save</button>
+              <button class="btn-secondary" id="cancel-key-change" style="flex:1">Cancel</button>
+            </div>
+          </div>
+        </div>
+ 
+        <div class="settings-section">
+          <div class="settings-title">Your Forge Stats</div>
+          <div class="stat-grid">
+            <div class="stat-box"><span class="stat-val" id="stat-total">0</span><span class="stat-key">Total Forges</span></div>
+            <div class="stat-box"><span class="stat-val" id="stat-deep">0</span><span class="stat-key">Deep Forges</span></div>
+            <div class="stat-box"><span class="stat-val" id="stat-domains">0</span><span class="stat-key">Domains</span></div>
+          </div>
+        </div>
+ 
+        <div class="settings-section">
+          <div class="settings-title">Data</div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-label">Export All Forges</div>
+              <div class="settings-meta">Download your full forge history as JSON</div>
+            </div>
+            <button class="settings-action" id="export-all-btn">Export</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-label">Clear History</div>
+              <div class="settings-meta">Delete all saved forges (key is kept)</div>
+            </div>
+            <button class="settings-action danger" id="clear-history-btn">Clear</button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-label">Reset Everything</div>
+              <div class="settings-meta">Delete key and all data — return to setup</div>
+            </div>
+            <button class="settings-action danger" id="reset-all-btn">Reset</button>
+          </div>
+        </div>
+ 
+        <div class="settings-section">
+          <div class="settings-title">About</div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-label">Omniforge Console</div>
+              <div class="settings-meta">System Forge™ v2.0 · EMVY CHECK Ecosystem</div>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">v2.0</span>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-label">AI Model</div>
+              <div class="settings-meta">Claude Sonnet 4 via Anthropic API</div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <div class="settings-label">Cost per forge</div>
+              <div class="settings-meta">Approx. $0.02–0.06 from your API credits</div>
+            </div>
+          </div>
+        </div>
+ 
+      </div>
+    </div>
+  </div>
+</div>
+ 
+<script>
+/* ═══════════════════════════════════════════════════════════
+   STORAGE
+═══════════════════════════════════════════════════════════ */
+const DB = {
+  getKey:()=>localStorage.getItem('omniforge_key')||'',
+  setKey:(k)=>localStorage.setItem('omniforge_key',k),
+  getHistory:()=>JSON.parse(localStorage.getItem('omniforge_history')||'[]'),
+  saveForge:(f)=>{
+    const h=DB.getHistory();h.unshift(f);
+    if(h.length>100)h.pop();
+    localStorage.setItem('omniforge_history',JSON.stringify(h));
+  },
+  clearHistory:()=>localStorage.removeItem('omniforge_history'),
+  clearAll:()=>{localStorage.removeItem('omniforge_key');localStorage.removeItem('omniforge_history');}
+};
+ 
+/* ═══════════════════════════════════════════════════════════
+   ROUTING
+═══════════════════════════════════════════════════════════ */
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name)?.classList.add('active');
+  if(name==='settings')refreshSettings();
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════ */
+let depth='Standard';
+let currentData=null;
+let rawOutput='';
+let activeHistoryId=null;
+let pipeInterval=null;
+ 
+/* ═══════════════════════════════════════════════════════════
+   SETUP
+═══════════════════════════════════════════════════════════ */
+function initSetup(){
+  const key=DB.getKey();
+  if(key){switchView('app');initApp();return;}
+  switchView('setup');
+  document.getElementById('setup-save-btn').addEventListener('click',saveSetupKey);
+  document.getElementById('setup-key-input').addEventListener('keydown',e=>{
+    if(e.key==='Enter')saveSetupKey();
+  });
+}
+ 
+async function saveSetupKey(){
+  const v=document.getElementById('setup-key-input').value.trim();
+  const err=document.getElementById('setup-error');
+  err.style.display='none';
+  if(!v||!v.startsWith('sk-ant')){
+    err.textContent='That doesn\'t look like an Anthropic key. It should start with sk-ant-';
+    err.style.display='block';return;
+  }
+  DB.setKey(v);
+  switchView('app');
+  initApp();
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   APP INIT
+═══════════════════════════════════════════════════════════ */
+function initApp(){
+  updateKeyBadge();
+  renderHistory();
+  bindForgeEvents();
+  bindOutputEvents();
+  bindNavEvents();
+  showOutputState('empty');
+}
+ 
+function updateKeyBadge(){
+  const k=DB.getKey();
+  const masked=k?'…'+k.slice(-6):'No key';
+  ['key-label','key-label-s'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=masked;});
+  ['key-dot','key-dot-s'].forEach(id=>{const el=document.getElementById(id);
+    if(el){el.classList.toggle('off',!k);}});
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════════════════════ */
+function renderHistory(){
+  const list=document.getElementById('history-list');
+  const h=DB.getHistory();
+  if(!h.length){
+    list.innerHTML=`<div class="history-empty"><div class="history-empty-icon">⚒</div><div class="history-empty-text">No forges yet.<br/>Your systems will<br/>appear here.</div></div>`;
+    return;
+  }
+  list.innerHTML=h.map(f=>`
+    <div class="history-item${f.id===activeHistoryId?' active':''}" data-id="${f.id}">
+      <div class="hi-name">${esc(f.systemName||f.idea.slice(0,40))}</div>
+      <div class="hi-meta">
+        <span class="hi-domain">${esc(f.domain)}</span>
+        <span class="hi-depth">${esc(f.depth)}</span>
+        <span class="hi-date">${relDate(f.date)}</span>
+      </div>
+    </div>
+  `).join('');
+  list.querySelectorAll('.history-item').forEach(el=>{
+    el.addEventListener('click',()=>loadForge(el.dataset.id));
+  });
+}
+ 
+function loadForge(id){
+  const h=DB.getHistory();
+  const f=h.find(x=>x.id===id);
+  if(!f)return;
+  activeHistoryId=id;
+  currentData=f.data;
+  depth=f.depth;
+  rawOutput=f.rawOutput||buildRawText(f.data,f.systemName);
+ 
+  // fill form
+  document.getElementById('idea').value=f.idea||'';
+  document.getElementById('domain').value=f.domain||'Startup';
+  document.getElementById('audience').value=f.audience||'';
+  document.getElementById('risk').value=f.risk||'';
+  document.querySelectorAll('.depth-opt').forEach(el=>{
+    el.classList.toggle('sel',el.dataset.d===f.depth);
+  });
+ 
+  showOutputState('result');
+  renderResult(f.data);
+  renderHistory();
+}
+ 
+function relDate(iso){
+  const d=new Date(iso),now=new Date();
+  const diff=Math.floor((now-d)/60000);
+  if(diff<2)return'just now';
+  if(diff<60)return diff+'m ago';
+  if(diff<1440)return Math.floor(diff/60)+'h ago';
+  return Math.floor(diff/1440)+'d ago';
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   DEPTH SELECTOR
+═══════════════════════════════════════════════════════════ */
+function bindForgeEvents(){
+  document.querySelectorAll('.depth-opt').forEach(el=>{
+    el.addEventListener('click',()=>{
+      document.querySelectorAll('.depth-opt').forEach(b=>b.classList.remove('sel'));
+      el.classList.add('sel');
+      depth=el.dataset.d;
+    });
+  });
+  document.getElementById('forge-btn').addEventListener('click',runForge);
+  document.getElementById('idea').addEventListener('keydown',e=>{
+    if(e.key==='Enter'&&(e.metaKey||e.ctrlKey))runForge();
+  });
+  document.getElementById('new-forge-sidebar').addEventListener('click',resetForge);
+}
+ 
+function bindOutputEvents(){
+  document.getElementById('btn-copy').addEventListener('click',copyOutput);
+  document.getElementById('btn-download-txt').addEventListener('click',()=>downloadOutput('txt'));
+  document.getElementById('btn-download-md').addEventListener('click',()=>downloadOutput('md'));
+  document.getElementById('btn-expand').addEventListener('click',()=>
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('collapsed')));
+  document.getElementById('btn-collapse').addEventListener('click',()=>
+    document.querySelectorAll('.section').forEach(s=>s.classList.add('collapsed')));
+  document.getElementById('btn-new-forge').addEventListener('click',resetForge);
+}
+ 
+function bindNavEvents(){
+  document.querySelectorAll('[data-view]').forEach(el=>{
+    el.addEventListener('click',()=>switchView(el.dataset.view));
+  });
+}
+ 
+function resetForge(){
+  activeHistoryId=null;
+  currentData=null;
+  rawOutput='';
+  showOutputState('empty');
+  document.getElementById('idea').value='';
+  document.getElementById('audience').value='';
+  document.getElementById('risk').value='';
+  document.getElementById('domain').selectedIndex=0;
+  document.querySelectorAll('.depth-opt').forEach(b=>b.classList.toggle('sel',b.dataset.d==='Standard'));
+  depth='Standard';
+  renderHistory();
+  document.getElementById('idea').focus();
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   OUTPUT STATE
+═══════════════════════════════════════════════════════════ */
+function showOutputState(state){
+  document.getElementById('out-empty').style.display=state==='empty'?'':'none';
+  document.getElementById('out-loading').style.display=state==='loading'?'':'none';
+  document.getElementById('out-result').style.display=state==='result'?'':'none';
+  document.getElementById('out-error').style.display=state==='error'?'':'none';
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   PIPELINE ANIMATION
+═══════════════════════════════════════════════════════════ */
+const PIPE_STEPS=['EXTRACTING INTENTION','SCULPTING FRAMEWORK','GENERATING ASSETS',
+                  'SIMULATING SCENARIOS','SYNTHESISING SYSTEM','PACKAGING OUTPUT'];
+function startPipeline(){
+  let i=0;
+  document.querySelectorAll('[id^="pn"]').forEach(p=>p.className='pipe-node');
+  const stepEl=document.getElementById('loading-step');
+  pipeInterval=setInterval(()=>{
+    if(i>=6){clearInterval(pipeInterval);return;}
+    const el=document.getElementById('pn'+i);
+    if(el)el.className='pipe-node active';
+    if(i>0){const p=document.getElementById('pn'+(i-1));if(p)p.className='pipe-node done';}
+    if(stepEl){
+      stepEl.classList.add('hide');
+      setTimeout(()=>{stepEl.textContent=PIPE_STEPS[i]||'';stepEl.classList.remove('hide');},220);
+    }
+    i++;
+  },1400);
+}
+function stopPipeline(){
+  clearInterval(pipeInterval);
+  document.querySelectorAll('[id^="pn"]').forEach(p=>p.className='pipe-node done');
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   SYSTEM PROMPT
+═══════════════════════════════════════════════════════════ */
+function buildSysPrompt(d){
+  const counts={Quick:{assets:3,exp:3,pilot:7},Standard:{assets:5,exp:4,pilot:14},Deep:{assets:6,exp:5,pilot:30}};
+  const c=counts[d]||counts.Standard;
+  const deployBlock=d==='Deep'?`
+ 
+"deployment": A string containing the full Deployment Layer with these sections:
+PRACTITIONER PIPELINE
+Who trains others, how, what certification levels exist (be specific — duration, format, cost)
+ 
+ECONOMICS MODELS
+Three distinct viable models: name each, describe revenue, costs, break-even point
+ 
+TECH STACK TIERS
+Tier 1 ($0-50/mo): specific free/cheap tools by name
+Tier 2 ($50-200/mo): specific tools + what they add
+Tier 3 ($200+/mo): full platform stack
+ 
+QUALITY FRAMEWORK  
+5 non-negotiable principles. One audit method. How to handle deviation.
+ 
+SCALING ROADMAP
+Phase 1 (1-3 pilot sites, 0-6mo): exact actions
+Phase 2 (10-25 sites, 6-18mo): what needs to exist
+Phase 3 (50-100 sites, 18-36mo): what changes
+Phase 4 (movement, 36mo+): what it looks like when it works`:'';
+  return `You are the Omniforge System Forge — an engine that transforms raw human intentions into complete, actionable systems.
+ 
+You think in systems, leverage points, and first principles. You are direct, specific, and honest. You never produce vague platitudes or consultant-speak.
+ 
+Your output is always: structured, modular, immediately actionable.
+ 
+FORGE DEPTH: ${d}
+Assets to generate: ${c.assets}
+Experiments to design: ${c.exp}
+Pilot duration: ${c.pilot} days
+ 
+CRITICAL RULES:
+1. Return ONLY a single valid JSON object. No markdown. No preamble. No trailing text.
+2. All values are strings. Use literal \\n for newlines within strings.
+3. Be SPECIFIC: real tool names, real numbers, concrete actions. No vague language.
+4. The "risk" field the user provides MUST directly inform your experiments and pilot design.
+5. Treat the user as intelligent. Don't over-explain obvious things.
+6. Every asset must be something someone can actually use tomorrow, not just a concept.
+ 
+RETURN THIS JSON SCHEMA:
+{
+  "systemName": "Evocative name, 2-4 words. Not generic.",
+  "coreSummary": "One sentence. What it is + why it matters + who it's for. Bold and specific.",
+  "framework": "FRAMEWORK\\n\\nProblem:\\n[Specific description of the pain this solves]\\n\\nCore Mechanism:\\n[The central idea that makes this work — the insight]\\n\\nComponents:\\n1. [Component]: [what it does]\\n2. ...\\n\\nLeverage Points:\\n- [where small effort creates large effect]\\n- ...\\n\\nOperating Rule:\\n[The one principle that must never be violated]",
+  "assets": "ASSETS\\n\\n[${c.assets} assets total. Each:]\\n\\n[N]. [ASSET NAME]\\nType: [tool / template / prompt / framework / calculator / script / playbook]\\nWhat it is: [2-3 sentences — specific, concrete]\\nFirst use: [The exact first action someone takes with this]\\n",
+  "experiments": "EXPERIMENTS\\n\\n[${c.exp} experiments. Each designed around the user's stated risk:]\\n\\n[N]. [EXPERIMENT NAME]\\nHypothesis: [If we do X, then Y will happen because Z]\\nMethod: [Exact steps to run this test]\\nTime required: [hours or days]\\nSuccess = [Measurable, specific outcome]\\nFail signal = [What tells you this direction is wrong]\\n",
+  "pilot": "PILOT PLAN\\n\\nDuration: ${c.pilot} days\\nGoal: [What you need to prove to justify continuing]\\n\\n[Week-by-week breakdown with specific actions per week]\\n\\nMinimum Viable Version:\\n[The simplest thing you can ship or test]\\n\\nFirst Revenue Path:\\n[Specific: how to make the first £/$100 from this]\\n\\nValidation Checkpoint:\\n[At day ${Math.floor(c.pilot/2)}, you should have: specific milestone]",
+  "sheet": "SYSTEM SHEET\\n\\nSystem: [name]\\nDomain: [domain]\\nAudience: [who]\\n\\nProblem in one line:\\n[...]\\n\\nSolution in one line:\\n[...]\\n\\nWhy this works:\\n[The core mechanism — why competitors haven't done it or why now]\\n\\nBiggest risk (honest):\\n[Don't sugarcoat]\\n\\nRisk mitigation:\\n[Practical, not aspirational]\\n\\nFirst 30-day milestone:\\n[Specific, measurable]\\n\\nSuccess in 12 months looks like:\\n[Vivid, specific — numbers if possible]\\n\\nDo NOT build this if:\\n[Honest red flags]"${d==='Deep'?`,
+  "deployment": "[Full deployment content]`:''}
+}
+${deployBlock}`;
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   FORGE EXECUTION
+═══════════════════════════════════════════════════════════ */
+async function runForge(){
+  const idea=document.getElementById('idea').value.trim();
+  const dom=document.getElementById('domain').value;
+  const aud=document.getElementById('audience').value.trim();
+  const risk=document.getElementById('risk').value.trim();
+  const key=DB.getKey();
+ 
+  if(!idea){document.getElementById('idea').focus();return;}
+  if(!key){switchView('settings');return;}
+ 
+  const btn=document.getElementById('forge-btn');
+  btn.disabled=true;
+  showOutputState('loading');
+  startPipeline();
+ 
+  const userMsg=`IDEA: ${idea}
+ 
+DOMAIN: ${dom}
+AUDIENCE: ${aud||'not specified'}
+BIGGEST RISK / UNKNOWN: ${risk||'not specified'}
+DEPTH: ${depth}
+ 
+Run the complete Omniforge System Forge pipeline. Return only the JSON.`;
+ 
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:depth==='Deep'?5000:3500,
+        system:buildSysPrompt(depth),
+        messages:[{role:'user',content:userMsg}]
+      })
+    });
+ 
+    if(!resp.ok){
+      const e=await resp.json().catch(()=>({}));
+      throw new Error(e.error?.message||`API error ${resp.status} — check your key in Settings`);
+    }
+ 
+    const apiData=await resp.json();
+    const raw=apiData.content?.find(b=>b.type==='text')?.text||'';
+    const clean=raw.replace(/^```(?:json)?\s*/,'').replace(/```\s*$/,'').trim();
+ 
+    let parsed;
+    try{parsed=JSON.parse(clean);}
+    catch(pe){throw new Error('Model returned malformed JSON. Try again — this is rare.');}
+ 
+    stopPipeline();
+    currentData=parsed;
+    const sName=parsed.systemName||idea.slice(0,40);
+    rawOutput=buildRawText(parsed,sName);
+ 
+    // save to history
+    const forgeRecord={
+      id:Date.now().toString(),
+      date:new Date().toISOString(),
+      idea,domain:dom,audience:aud,risk,depth,
+      systemName:sName,coreSummary:parsed.coreSummary||'',
+      data:parsed,rawOutput
+    };
+    DB.saveForge(forgeRecord);
+    activeHistoryId=forgeRecord.id;
+    renderHistory();
+ 
+    showOutputState('result');
+    renderResult(parsed);
+ 
+  }catch(err){
+    stopPipeline();
+    showOutputState('error');
+    document.getElementById('error-msg').textContent=err.message;
+  }
+ 
+  btn.disabled=false;
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   RENDER RESULT
+═══════════════════════════════════════════════════════════ */
+const SECTIONS_DEF=[
+  {key:'framework',icon:'🏗',name:'Framework'},
+  {key:'assets',icon:'📦',name:'Assets'},
+  {key:'experiments',icon:'🧪',name:'Experiments'},
+  {key:'pilot',icon:'🚀',name:'Pilot Plan'},
+  {key:'sheet',icon:'📋',name:'System Sheet'},
+  {key:'deployment',icon:'⚙️',name:'Deployment Layer'},
+];
+ 
+function renderResult(data){
+  document.getElementById('out-name').textContent=data.systemName||'Your System';
+  document.getElementById('out-summary').textContent=data.coreSummary||'';
+ 
+  const chips=document.getElementById('out-chips');
+  chips.innerHTML=`
+    <span class="chip chip-green">✓ Forged</span>
+    <span class="chip chip-fire">${esc(depth)} Depth</span>
+    <span class="chip chip-muted">${document.getElementById('domain').value||''}</span>
+  `;
+ 
+  const container=document.getElementById('sections');
+  container.innerHTML='';
+ 
+  SECTIONS_DEF.forEach((def,i)=>{
+    const text=data[def.key];
+    if(!text||text==='null'||text===null)return;
+    const sec=document.createElement('div');
+    sec.className='section section-anim';
+    sec.innerHTML=`
+      <div class="section-head">
+        <div class="section-meta">
+          <div class="section-icon">${def.icon}</div>
+          <div class="section-name">${def.name}</div>
+        </div>
+        <div class="section-toggle">▾</div>
+      </div>
+      <div class="section-body">${esc(text)}</div>
+    `;
+    sec.querySelector('.section-head').addEventListener('click',()=>sec.classList.toggle('collapsed'));
+    container.appendChild(sec);
+  });
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════════════════════════ */
+function buildRawText(data,name){
+  const line='═'.repeat(60);
+  let out=`OMNIFORGE SYSTEM FORGE\n${name||'System Sheet'}\nGenerated: ${new Date().toLocaleString()}\n\n`;
+  SECTIONS_DEF.forEach(def=>{
+    const t=data[def.key];
+    if(!t||t==='null')return;
+    out+=`${line}\n${def.name.toUpperCase()}\n${line}\n\n${t}\n\n`;
+  });
+  return out;
+}
+ 
+function buildMarkdown(data,name){
+  let out=`# ${name||'System Sheet'}\n*Generated with Omniforge System Forge™ — ${new Date().toLocaleString()}*\n\n`;
+  SECTIONS_DEF.forEach(def=>{
+    const t=data[def.key];
+    if(!t||t==='null')return;
+    out+=`## ${def.icon} ${def.name}\n\n${t}\n\n---\n\n`;
+  });
+  return out;
+}
+ 
+async function copyOutput(){
+  if(!rawOutput)return;
+  try{
+    await navigator.clipboard.writeText(rawOutput);
+    const btn=document.getElementById('btn-copy');
+    btn.textContent='✓ Copied';btn.classList.add('active');
+    setTimeout(()=>{btn.textContent='⎘ Copy';btn.classList.remove('active');},1800);
+  }catch{alert('Copy failed — select all text manually.');}
+}
+ 
+function downloadOutput(fmt){
+  if(!currentData)return;
+  const name=(currentData.systemName||'omniforge').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const content=fmt==='md'?buildMarkdown(currentData,currentData.systemName):rawOutput;
+  const blob=new Blob([content],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`${name}.${fmt}`;a.click();
+  URL.revokeObjectURL(url);
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════════════════ */
+function refreshSettings(){
+  updateKeyBadge();
+  const k=DB.getKey();
+  const kd=document.getElementById('key-display');
+  if(kd)kd.textContent=k?'sk-ant-…'+k.slice(-8):'Not set';
+ 
+  const h=DB.getHistory();
+  const stTotal=document.getElementById('stat-total');
+  const stDeep=document.getElementById('stat-deep');
+  const stDom=document.getElementById('stat-domains');
+  if(stTotal)stTotal.textContent=h.length;
+  if(stDeep)stDeep.textContent=h.filter(x=>x.depth==='Deep').length;
+  if(stDom)stDom.textContent=new Set(h.map(x=>x.domain)).size;
+}
+ 
+document.getElementById('change-key-btn').addEventListener('click',()=>{
+  document.getElementById('change-key-form').style.display='block';
+  document.getElementById('change-key-btn').style.display='none';
+  document.getElementById('new-key-input').focus();
+});
+document.getElementById('cancel-key-change').addEventListener('click',()=>{
+  document.getElementById('change-key-form').style.display='none';
+  document.getElementById('change-key-btn').style.display='';
+});
+document.getElementById('save-new-key').addEventListener('click',()=>{
+  const v=document.getElementById('new-key-input').value.trim();
+  if(!v||!v.startsWith('sk-ant')){alert('Invalid key — should start with sk-ant-');return;}
+  DB.setKey(v);
+  document.getElementById('change-key-form').style.display='none';
+  document.getElementById('change-key-btn').style.display='';
+  document.getElementById('new-key-input').value='';
+  refreshSettings();updateKeyBadge();
+});
+document.getElementById('clear-history-btn').addEventListener('click',()=>{
+  if(!confirm('Delete all forge history? This cannot be undone.'))return;
+  DB.clearHistory();renderHistory();refreshSettings();
+  showOutputState('empty');activeHistoryId=null;currentData=null;
+});
+document.getElementById('reset-all-btn').addEventListener('click',()=>{
+  if(!confirm('Delete everything including your API key? You\'ll need to set up again.'))return;
+  DB.clearAll();location.reload();
+});
+document.getElementById('export-all-btn').addEventListener('click',()=>{
+  const h=DB.getHistory();
+  if(!h.length){alert('No forges to export yet.');return;}
+  const blob=new Blob([JSON.stringify(h,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='omniforge-history.json';a.click();
+  URL.revokeObjectURL(url);
+});
+ 
+/* ═══════════════════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════════════════ */
+function esc(str){
+  return(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+ 
+/* ═══════════════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════════════ */
+initSetup();
+</script>
+</body>
+</html>
