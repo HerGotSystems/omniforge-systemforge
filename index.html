@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Omniforge — System Forge™ | Turn Ideas Into Deployable Systems</title>
+<meta name="description" content="Omniforge runs your raw idea through a multi-stage AI pipeline and outputs a complete, deployment-ready system. Framework. Assets. Experiments. Pilot plan. In minutes."/>
+<meta property="og:title" content="Omniforge — System Forge™"/>
+<meta property="og:description" content="Everyone else gives you a plan. Omniforge gives you a deployable system."/>
+<meta property="og:image" content="https://omniforge-systemforge.com/og.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0c0b09;--bg2:#111009;--surface:#161410;--surface2:#1c1a14;--surface3:#222017;
+  --border:#2e2b22;--border2:#3d3928;--border3:#524e3e;
+  --fire:#f97316;--fire-dim:#c2540a;--fire-faint:rgba(249,115,22,.10);--fire-glow:rgba(249,115,22,.22);
+  --gold:#fbbf24;--amber:#d97706;
+  --text:#f2ede6;--text2:#c8c0b4;--muted:#7a7060;--faint:#3d3928;
+  --green:#4ade80;--green-bg:rgba(74,222,128,.07);--green-border:rgba(74,222,128,.2);
+  --r:10px;--r-lg:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Barlow Condensed',sans-serif;font-size:16px;
+  min-height:100vh;overflow-x:hidden;line-height:1.5;
+}
+
+/* BACKGROUND */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%,rgba(249,115,22,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 30% at 90% 80%,rgba(251,191,36,.03) 0%,transparent 50%),
+    radial-gradient(ellipse 30% 20% at 10% 60%,rgba(249,115,22,.02) 0%,transparent 50%);
+}
+
+/* SCANLINE TEXTURE */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
+}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:100;
+  height:56px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;border-bottom:1px solid var(--border);
+  background:rgba(12,11,9,.92);backdrop-filter:blur(12px);
+}
+nav::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(249,115,22,.3),transparent);
+}
+.logo{font-family:'Oxanium',sans-serif;font-weight:800;font-size:1.35rem;letter-spacing:-.02em;line-height:1}
+.logo em{color:var(--fire);font-style:normal;text-shadow:0 0 30px var(--fire-glow)}
+.logo-sub{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-top:2px}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-link{padding:7px 14px;border:1px solid transparent;border-radius:var(--r);
+  color:var(--muted);font-size:13px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+  text-decoration:none;transition:all .15s}
+.nav-link:hover{color:var(--text);border-color:var(--border);text-decoration:none}
+.nav-cta{
+  padding:8px 18px;border-radius:var(--r);
+  background:var(--fire);color:#000;font-weight:700;font-size:13px;
+  letter-spacing:.05em;text-transform:uppercase;text-decoration:none;
+  transition:all .15s;border:1px solid var(--fire);
+}
+.nav-cta:hover{background:var(--gold);border-color:var(--gold);text-decoration:none}
+
+/* HERO */
+.hero{
+  position:relative;z-index:1;
+  padding:120px 32px 100px;
+  max-width:1100px;margin:0 auto;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 14px;border:1px solid var(--border2);border-radius:999px;
+  background:var(--surface);
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.15em;text-transform:uppercase;margin-bottom:36px;
+}
+.hero-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--fire);box-shadow:0 0 8px var(--fire);animation:pulse 2.5s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero h1{
+  font-family:'Oxanium',sans-serif;font-weight:800;
+  font-size:clamp(2.8rem,7vw,5.5rem);letter-spacing:-.03em;line-height:.95;
+  margin-bottom:28px;
+}
+.hero h1 em{color:var(--fire);font-style:normal;text-shadow:0 0 60px var(--fire-glow),0 0 120px rgba(249,115,22,.06)}
+.hero-sub{
+  font-size:clamp(1.1rem,2.5vw,1.35rem);color:var(--text2);
+  max-width:640px;line-height:1.6;margin-bottom:48px;font-weight:400;
+}
+.hero-sub strong{color:var(--text);font-weight:600}
+
+.hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:80px}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 28px;border-radius:var(--r);border:1px solid var(--fire);
+  background:var(--fire);color:#000;
+  font-family:'Oxanium',sans-serif;font-weight:700;font-size:1rem;letter-spacing:.04em;text-transform:uppercase;
+  text-decoration:none;transition:all .18s;
+}
+.btn-primary:hover{background:var(--gold);border-color:var(--gold);text-decoration:none;transform:translateY(-1px)}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 24px;border-radius:var(--r);border:1px solid var(--border2);
+  background:transparent;color:var(--text2);
+  font-size:.95rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;
+  text-decoration:none;transition:all .18s;
+}
+.btn-secondary:hover{border-color:var(--border3);color:var(--text);text-decoration:none}
+.btn-arrow{font-size:1.1em;transition:transform .15s}
+.btn-primary:hover .btn-arrow{transform:translateX(3px)}
+
+/* PIPELINE VISUAL */
+.pipeline-visual{
+  width:100%;max-width:780px;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;gap:0;
+  flex-wrap:nowrap;overflow-x:auto;padding:4px 0;
+}
+.pipe-stage{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  flex:1;min-width:80px;
+}
+.pipe-icon{
+  width:44px;height:44px;border-radius:50%;
+  border:1px solid var(--border2);background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;position:relative;transition:all .3s;
+}
+.pipe-icon.lit{border-color:rgba(249,115,22,.5);background:var(--fire-faint);box-shadow:0 0 20px var(--fire-glow)}
+.pipe-label{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;text-align:center;max-width:70px}
+.pipe-arrow{color:var(--border2);font-size:1rem;flex-shrink:0;padding:0 4px;margin-bottom:20px}
+
+/* CONTRAST BLOCK */
+.contrast{
+  position:relative;z-index:1;
+  padding:0 32px 100px;max-width:1100px;margin:0 auto;
+}
+.contrast-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:2px;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border);
+}
+.contrast-col{padding:40px 36px}
+.contrast-col.them{background:var(--surface)}
+.contrast-col.us{background:var(--surface2);border-left:1px solid var(--border)}
+.contrast-label{
+  font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;
+  margin-bottom:24px;
+}
+.contrast-label.dim{color:var(--muted)}
+.contrast-label.fire{color:var(--fire)}
+.contrast-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:10px 0;border-bottom:1px solid var(--faint);
+}
+.contrast-item:last-child{border-bottom:none}
+.contrast-x{color:var(--muted);font-size:1rem;flex-shrink:0;margin-top:1px}
+.contrast-check{color:var(--fire);font-size:1rem;flex-shrink:0;margin-top:1px}
+.contrast-text{font-size:.95rem;color:var(--text2);line-height:1.4}
+.contrast-text strong{color:var(--text);font-weight:600}
+
+/* SECTIONS */
+.section{
+  position:relative;z-index:1;
+  padding:80px 32px;max-width:1100px;margin:0 auto;
+}
+.section-label{
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--fire);
+  letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;
+}
+.section-title{
+  font-family:'Oxanium',sans-serif;font-weight:700;
+  font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.02em;margin-bottom:20px;
+}
+.section-body{font-size:1.05rem;color:var(--text2);max-width:600px;line-height:1.65}
+
+/* HOW IT WORKS */
+.steps{display:flex;flex-direction:column;gap:0;margin-top:48px}
+.step{
+  display:grid;grid-template-columns:64px 1fr;gap:24px;
+  padding:28px 0;border-bottom:1px solid var(--border);
+  align-items:start;
+}
+.step:last-child{border-bottom:none}
+.step-num{
+  font-family:'Oxanium',sans-serif;font-weight:800;font-size:2.2rem;
+  color:var(--faint);line-height:1;
+}
+.step-content h3{font-family:'Oxanium',sans-serif;font-weight:700;font-size:1.2rem;margin-bottom:6px;letter-spacing:-.01em}
+.step-content p{font-size:.95rem;color:var(--text2);line-height:1.55}
+.step-tag{
+  display:inline-block;margin-top:10px;
+  padding:3px 10px;border-radius:999px;border:1px solid var(--border2);
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;
+}
+
+/* OUTPUT PREVIEW */
+.output-preview{
+  margin-top:48px;border:1px solid var(--border);border-radius:var(--r-lg);
+  background:var(--surface);overflow:hidden;
+}
+.output-preview-header{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.preview-dot{width:10px;height:10px;border-radius:50%}
+.preview-dot.green{background:var(--green);box-shadow:0 0 8px rgba(74,222,128,.4)}
+.preview-chip{
+  padding:3px 10px;border-radius:999px;
+  background:var(--fire-faint);border:1px solid rgba(249,115,22,.25);
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--fire);letter-spacing:.1em;text-transform:uppercase;
+}
+.preview-name{font-family:'Oxanium',sans-serif;font-weight:700;font-size:1rem;color:var(--text);margin-left:4px}
+.preview-sections{padding:20px}
+.preview-sec{
+  padding:14px 16px;border:1px solid var(--border);border-radius:var(--r);
+  margin-bottom:8px;background:var(--surface2);
+}
+.preview-sec:last-child{margin-bottom:0}
+.preview-sec-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.preview-sec-icon{font-size:.9rem}
+.preview-sec-name{font-family:'Oxanium',sans-serif;font-weight:600;font-size:.9rem;color:var(--text2)}
+.preview-line{height:7px;border-radius:3px;background:var(--surface3);margin-bottom:6px}
+.preview-line:last-child{margin-bottom:0;width:70%}
+.preview-blurred{position:relative}
+.preview-blurred::after{
+  content:'🔒 UNLOCK FULL OUTPUT';
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--fire);
+  background:rgba(12,11,9,.7);backdrop-filter:blur(4px);border-radius:var(--r);
+  border:1px solid rgba(249,115,22,.2);
+}
+
+/* PRICING */
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;
+  margin-top:48px;
+}
+.price-card{
+  padding:28px 24px;border:1px solid var(--border);border-radius:var(--r-lg);
+  background:var(--surface);display:flex;flex-direction:column;gap:16px;
+  transition:border-color .2s;
+}
+.price-card:hover{border-color:var(--border2)}
+.price-card.featured{border-color:rgba(249,115,22,.4);background:var(--surface2)}
+.price-card-label{
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;
+}
+.price-card.featured .price-card-label{color:var(--fire)}
+.price-name{font-family:'Oxanium',sans-serif;font-weight:700;font-size:1.3rem}
+.price-amount{
+  font-family:'Oxanium',sans-serif;font-weight:800;font-size:2.2rem;color:var(--text);letter-spacing:-.02em;
+}
+.price-amount span{font-size:1rem;color:var(--muted);font-weight:400}
+.price-desc{font-size:.9rem;color:var(--text2);line-height:1.5}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:8px}
+.price-features li{font-size:.9rem;color:var(--text2);display:flex;gap:8px;align-items:flex-start}
+.price-features li::before{content:'→';color:var(--fire);flex-shrink:0}
+.price-btn{
+  display:block;text-align:center;padding:12px;border-radius:var(--r);border:1px solid var(--border2);
+  color:var(--text2);font-weight:600;font-size:.9rem;letter-spacing:.05em;text-transform:uppercase;
+  text-decoration:none;transition:all .15s;margin-top:auto;
+}
+.price-btn:hover{border-color:var(--fire);color:var(--fire);text-decoration:none}
+.price-card.featured .price-btn{
+  background:var(--fire);border-color:var(--fire);color:#000;
+}
+.price-card.featured .price-btn:hover{background:var(--gold);border-color:var(--gold)}
+
+/* FAQ */
+.faq{display:flex;flex-direction:column;gap:0;margin-top:48px;max-width:700px}
+.faq-item{border-bottom:1px solid var(--border);padding:20px 0}
+.faq-q{font-family:'Oxanium',sans-serif;font-weight:600;font-size:1.05rem;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:center;gap:16px}
+.faq-toggle{color:var(--muted);flex-shrink:0;font-size:1.2rem;transition:transform .2s}
+.faq-item.open .faq-toggle{transform:rotate(45deg)}
+.faq-a{font-size:.95rem;color:var(--text2);line-height:1.65;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.faq-item.open .faq-a{max-height:300px;padding-top:12px}
+
+/* FOOTER CTA */
+.footer-cta{
+  position:relative;z-index:1;
+  padding:100px 32px;text-align:center;
+  border-top:1px solid var(--border);
+  background:linear-gradient(180deg,transparent,rgba(249,115,22,.03));
+}
+.footer-cta h2{
+  font-family:'Oxanium',sans-serif;font-weight:800;
+  font-size:clamp(2rem,5vw,3.5rem);letter-spacing:-.03em;margin-bottom:20px;
+}
+.footer-cta h2 em{color:var(--fire);font-style:normal}
+.footer-cta p{color:var(--text2);font-size:1.1rem;margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  padding:28px 32px;border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.footer-logo{font-family:'Oxanium',sans-serif;font-weight:700;font-size:1rem}
+.footer-logo em{color:var(--fire);font-style:normal}
+.footer-copy{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:.85rem;color:var(--muted);text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:var(--text)}
+
+/* MOBILE */
+@media(max-width:700px){
+  nav{padding:0 16px}
+  .hero{padding:80px 16px 60px}
+  .contrast-grid{grid-template-columns:1fr}
+  .contrast-col.us{border-left:none;border-top:1px solid var(--border)}
+  .section{padding:60px 16px}
+  .contrast{padding:0 16px 60px}
+  .footer-cta{padding:60px 16px}
+  footer{padding:20px 16px;flex-direction:column;align-items:flex-start}
+  .pipeline-visual{justify-content:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div>
+    <div class="logo">OMNI<em>FORGE</em></div>
+    <div class="logo-sub">System Forge™</div>
+  </div>
+  <div class="nav-links">
+    <a href="#how" class="nav-link">How It Works</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="app/" class="nav-cta">Launch Forge →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    AI-powered system architecture
+  </div>
+
+  <h1>Turn your idea into a<br/><em>deployable system</em></h1>
+
+  <p class="hero-sub">
+    Everyone else gives you a plan.<br/>
+    <strong>Omniforge gives you a deployable system.</strong><br/>
+    Framework. Assets. Experiments. Pilot. In minutes.
+  </p>
+
+  <div class="hero-actions">
+    <a href="app/" class="btn-primary">
+      Start Forging <span class="btn-arrow">→</span>
+    </a>
+    <a href="#how" class="btn-secondary">See how it works</a>
+  </div>
+
+  <!-- Pipeline Visual -->
+  <div class="pipeline-visual">
+    <div class="pipe-stage">
+      <div class="pipe-icon lit">💡</div>
+      <div class="pipe-label">Your Idea</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-icon lit">🧠</div>
+      <div class="pipe-label">Orchestrator</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-icon lit">🏗</div>
+      <div class="pipe-label">Framework</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-icon lit">📦</div>
+      <div class="pipe-label">Assets</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-icon lit">🧪</div>
+      <div class="pipe-label">Experiments</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage">
+      <div class="pipe-icon lit">🚀</div>
+      <div class="pipe-label">Ready to Ship</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTRAST -->
+<div class="contrast">
+  <div class="contrast-grid">
+    <div class="contrast-col them">
+      <div class="contrast-label dim">// Every other tool</div>
+      <div class="contrast-item">
+        <span class="contrast-x">✕</span>
+        <span class="contrast-text">Generates <strong>ideas</strong> — no structure behind them</span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-x">✕</span>
+        <span class="contrast-text">Gives you a <strong>Gantt chart</strong>, not a system</span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-x">✕</span>
+        <span class="contrast-text">Produces <strong>consultant-speak</strong> you can't act on</span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-x">✕</span>
+        <span class="contrast-text">Misses the trust layer, the roles, the <strong>economics</strong></span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-x">✕</span>
+        <span class="contrast-text">You still have to figure out <strong>how to test it</strong></span>
+      </div>
+    </div>
+    <div class="contrast-col us">
+      <div class="contrast-label fire">// Omniforge</div>
+      <div class="contrast-item">
+        <span class="contrast-check">✓</span>
+        <span class="contrast-text">Complete <strong>framework</strong> with leverage points and operating rules</span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-check">✓</span>
+        <span class="contrast-text">Real <strong>assets</strong> — templates, prompts, tools you use tomorrow</span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-check">✓</span>
+        <span class="contrast-text">Designed <strong>experiments</strong> built around your actual risk</span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-check">✓</span>
+        <span class="contrast-text">Concrete <strong>pilot plan</strong> with a clear first revenue path</span>
+      </div>
+      <div class="contrast-item">
+        <span class="contrast-check">✓</span>
+        <span class="contrast-text">A <strong>System Sheet</strong> — the single doc you need to start</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label">// How It Works</div>
+  <h2 class="section-title">The System Forge Pipeline</h2>
+  <p class="section-body">Describe your idea. Omniforge runs it through six stages of structured analysis and outputs a complete system — not a summary, not a suggestion, a blueprint.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Describe Your Idea</h3>
+        <p>Give it a domain, your target audience, and the biggest risk you're worried about. No pitch deck needed — a sentence works.</p>
+        <span class="step-tag">60 seconds of input</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Choose Your Depth</h3>
+        <p>Quick (3 min), Standard (5 min), or Deep (8 min). Each level adds more assets, longer pilot window, and in Deep mode — a full Deployment Layer with tech stack tiers and economics models.</p>
+        <span class="step-tag">Quick / Standard / Deep</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>The Pipeline Runs</h3>
+        <p>Extraction → Framework sculpting → Asset generation → Scenario simulation → System synthesis → Packaging. Six stages, fully automated.</p>
+        <span class="step-tag">AI pipeline</span>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Your System Sheet Lands</h3>
+        <p>Framework, assets, experiments, pilot plan, system sheet. Export as text or markdown. Every forge is saved to your history.</p>
+        <span class="step-tag">Download + save</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real forge demo output -->
+  <div class="output-preview" style="margin-top:48px">
+    <div class="output-preview-header">
+      <div class="preview-dot green"></div>
+      <span class="preview-chip">✓ Forged</span>
+      <span class="preview-chip" style="background:rgba(251,191,36,.08);color:var(--gold);border-color:rgba(251,191,36,.2)">Deep Depth</span>
+      <span class="preview-name">Collective Housing Engine</span>
+      <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em">REAL OUTPUT — FORGED LIVE</span>
+    </div>
+    <div class="preview-sections">
+
+      <!-- FRAMEWORK - fully visible -->
+      <div class="preview-sec" id="demo-framework">
+        <div class="preview-sec-head" onclick="toggleDemo('demo-framework')" style="cursor:pointer">
+          <span class="preview-sec-icon">🏗</span>
+          <span class="preview-sec-name">Framework</span>
+          <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
+        </div>
+        <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">Problem:
+Renters pay landlord mortgages forever while being locked out of ownership due to deposit requirements, credit checks, and individual income limits — yet collectively they have massive buying power.
+
+Core Mechanism:
+Cooperative ownership where members contribute monthly payments toward building acquisition and expansion rather than landlord profit. Each property purchased reduces per-person costs and increases collective equity.
+
+Leverage Points:
+— Bulk purchasing drives down per-unit costs by 20–40%
+— Collective creditworthiness enables financing individuals can't access
+— Removing landlord profit margin reduces housing costs by 15–25%
+— Scale economies in maintenance, insurance, legal costs
+
+Operating Rule:
+No member extraction — all surplus goes toward housing more people or reducing member costs, never toward profit-taking by non-residents.</div>
+      </div>
+
+      <!-- ASSETS - visible -->
+      <div class="preview-sec" id="demo-assets">
+        <div class="preview-sec-head" onclick="toggleDemo('demo-assets')" style="cursor:pointer">
+          <span class="preview-sec-icon">📦</span>
+          <span class="preview-sec-name">Assets (6)</span>
+          <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
+        </div>
+        <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">1. COOPERATIVE FEASIBILITY CALCULATOR
+Type: calculator
+Models monthly contributions, acquisition timelines, member equity across scenarios.
+First use: Input local property prices → see exactly how many people need to pool £1,000/month to buy a building within 12 months.
+
+2. MEMBER VETTING FRAMEWORK
+Type: template
+Complete application and screening system: income verification, reference checks, commitment evaluation, exit procedures.
+First use: Create application form and run first 5 potential members through full screening.
+
+3. LEGAL STRUCTURE BLUEPRINT
+Type: framework
+Step-by-step guide to CIC + Housing Cooperative hybrid. Articles of Association template, member agreement, solicitor brief.
+First use: Book consultation with cooperative housing solicitor using the provided brief.
+
+4. PROPERTY PIPELINE SYSTEM
+Type: tool
+Rightmove API + scoring algorithm: identifies multi-unit properties under £300k, calculates renovation costs, flags legal issues.
+First use: Set up alerts for 3–6 unit properties and score your first 10 acquisitions.
+
+5. BANK PITCH DECK TEMPLATE
+Type: template
+Presentation designed for cooperative housing — risk mitigation, comparable models, member commitment evidence, financial projections.
+First use: Customise with local market data. Book 3 building society mortgage advisers.
+
+6. GOVERNANCE PLAYBOOK
+Type: playbook
+Meeting structures, decision protocols, conflict resolution, financial transparency templates.
+First use: Run your first formal member meeting using the agenda template.</div>
+      </div>
+
+      <!-- EXPERIMENTS - visible -->
+      <div class="preview-sec" id="demo-experiments">
+        <div class="preview-sec-head" onclick="toggleDemo('demo-experiments')" style="cursor:pointer">
+          <span class="preview-sec-icon">🧪</span>
+          <span class="preview-sec-name">Experiments (5)</span>
+          <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
+        </div>
+        <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">1. MICRO-POOL VALIDATION
+Hypothesis: If 10 people commit £1,000/month for 6 months, banks will engage — because they respond to demonstrated cash flow over promises.
+Method: Ring-fenced account → month 3, approach 3 building societies with £30,000 cash + 10 committed members.
+Time: 6 months
+Success = Mortgage pre-approval on actual property
+Fail signal = No bank will consider lending
+
+2. LEGAL STRUCTURE TEST
+Hypothesis: Correct cooperative legal entity → banks treat us as viable borrowers.
+Method: CIC + Housing Coop hybrid via solicitor. Get 3 banks to review and provide preliminary lending criteria.
+Time: 8 weeks
+Success = 1 bank confirms they will lend to this structure
+Fail signal = No banks will lend OR legal costs exceed £5,000
+
+3. MEMBER COMMITMENT VALIDATION
+Hypothesis: 12-month contracts + financial screening filters serious members.
+Method: Recruit 25 people, run full vetting with financial checks and contracts.
+Time: 3 months
+Success = 15+ pass screening + first payments collected
+Fail signal = Less than 60% pass or high drop-out after first payment</div>
+      </div>
+
+      <!-- PILOT PLAN - visible -->
+      <div class="preview-sec" id="demo-pilot">
+        <div class="preview-sec-head" onclick="toggleDemo('demo-pilot')" style="cursor:pointer">
+          <span class="preview-sec-icon">🚀</span>
+          <span class="preview-sec-name">Pilot Plan — 30 days</span>
+          <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
+        </div>
+        <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">Goal: Prove 15 people will commit £1,000/month and identify first target property.
+
+Week 1 — Legal foundation
+— Meet cooperative housing solicitor
+— Draft CIC articles
+— Open business banking account
+
+Week 2 — Member recruitment
+— Launch website with calculator + application
+— Host 2 info sessions (online + in-person)
+— Target: 25 applications
+
+Week 3 — Property pipeline
+— Set up Rightmove alerts
+— Contact 5 estate agents about multi-unit properties
+— Score 10 potential properties, shortlist 3
+
+Week 4 — Commitment validation
+— Complete member vetting
+— Hold member meeting to review shortlisted properties
+— Collect first payments, book bank meetings
+
+First Revenue Path:
+Month 6 → £60,000 pooled → purchase first property → members at £800/month → Month 7 revenue: £8,000 contributions + £800 net surplus.
+
+Day 15 checkpoint: 15 applications + 3 properties scored + legal 50% done + bank meeting booked.</div>
+      </div>
+
+      <!-- SYSTEM SHEET - visible -->
+      <div class="preview-sec" id="demo-sheet">
+        <div class="preview-sec-head" onclick="toggleDemo('demo-sheet')" style="cursor:pointer">
+          <span class="preview-sec-icon">📋</span>
+          <span class="preview-sec-name">System Sheet</span>
+          <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
+        </div>
+        <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">Problem in one line:
+Renters pay landlords forever while excluded from ownership due to individual financial limits.
+
+Solution in one line:
+Groups pool £1,000/month to buy buildings collectively, house members at cost, reinvest surplus to expand.
+
+Biggest risk (honest):
+Banks may refuse cooperative structures, or members leave after purchase, leaving others holding unsustainable debt.
+
+Success in 12 months:
+3 properties housing 45 members + £15,000/month collective revenue + 30+ person waiting list.
+
+Do NOT build this if:
+You can't get 10+ people to commit real money upfront, or local prices make the math impossible, or you're not ready for 2+ years of complex legal and financial work.</div>
+      </div>
+
+      <!-- DEPLOYMENT LAYER - blurred teaser -->
+      <div class="preview-sec preview-blurred" style="min-height:80px">
+        <div class="preview-sec-head">
+          <span class="preview-sec-icon">⚙️</span>
+          <span class="preview-sec-name">Deployment Layer — 3 Economics Models + Tech Stack + Scaling Roadmap</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em">THIS IS A REAL DEEP FORGE — RUN LIVE ON OMNIFORGE · APRIL 2026</span>
+      <a href="app/" class="btn-primary" style="padding:10px 20px;font-size:.85rem">Run Your Own Forge →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" style="padding-top:0">
+  <div class="section-label">// Pricing</div>
+  <h2 class="section-title">Simple. Transparent.</h2>
+  <p class="section-body">Bring your own Anthropic API key and forge for free — you only pay Anthropic's rates directly. No subscription, no hidden costs.</p>
+
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-card-label">Self-serve</div>
+      <div class="price-name">Bring Your Key</div>
+      <div class="price-amount">Free <span>forever</span></div>
+      <div class="price-desc">Connect your own Anthropic API key. You pay Anthropic directly — roughly £0.01–0.05 per forge depending on depth.</div>
+      <ul class="price-features">
+        <li>All three depth modes</li>
+        <li>Full output, no blur</li>
+        <li>Forge history saved locally</li>
+        <li>Export txt + markdown</li>
+        <li>Your key, your data</li>
+      </ul>
+      <a href="app/" class="price-btn">Get API Key →</a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="price-card-label">✦ Coming Soon</div>
+      <div class="price-name">Forge Credits</div>
+      <div class="price-amount">£5 <span>/ 10 forges</span></div>
+      <div class="price-desc">No API key needed. Buy credits, forge immediately. Perfect for testing the tool before committing to your own key.</div>
+      <ul class="price-features">
+        <li>No setup required</li>
+        <li>All depth modes</li>
+        <li>Credits never expire</li>
+        <li>Full output unlocked</li>
+        <li>Shareable forge links</li>
+      </ul>
+      <a href="#" class="price-btn">Join Waitlist</a>
+    </div>
+
+    <div class="price-card">
+      <div class="price-card-label">Enterprise</div>
+      <div class="price-name">Forge Unlimited</div>
+      <div class="price-amount">£29 <span>/ month</span></div>
+      <div class="price-desc">For teams and power builders. Unlimited forges, team history, custom system prompt extensions.</div>
+      <ul class="price-features">
+        <li>Unlimited forges</li>
+        <li>Team shared history</li>
+        <li>Custom depth config</li>
+        <li>Priority support</li>
+        <li>Coming Q3 2026</li>
+      </ul>
+      <a href="/cdn-cgi/l/email-protection#68000d04040728070506010e071a0f0d451b111b1c0d050e071a0f0d460b0705" class="price-btn">Contact Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="padding-top:0" id="faq">
+  <div class="section-label">// FAQ</div>
+  <h2 class="section-title">Common Questions</h2>
+
+  <div class="faq">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        What's an Anthropic API key and how do I get one?
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">Anthropic makes the Claude AI that powers Omniforge. To get a key, go to console.anthropic.com, sign up, and create an API key. Add a few pounds of credit — a Deep forge costs about £0.03–0.05. Your key is stored only in your browser, never on our servers.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        What's the difference between Quick, Standard, and Deep?
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">Quick gives you 3 assets, 3 experiments, 7-day pilot. Standard gives 5 assets, 4 experiments, 14-day pilot. Deep adds all of that plus a full Deployment Layer — practitioner pipeline, 3 economics models, tech stack tiers (£0/£50/£200+ per month), quality framework, and 36-month scaling roadmap.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Is my idea safe? Does Omniforge store my inputs?
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">Your forge history is stored in your browser's local storage only — it never hits our servers. Your API key is also local only. We have no database of your ideas. The only data that leaves your browser is what goes directly to Anthropic's API.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        What kind of ideas work best?
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">Anything with a clear problem it's trying to solve. Communities, products, services, platforms, internal tools, learning programs, local projects, creative businesses — the more specific your idea and risk, the better the output. Vague input produces vague output.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        Can I use this for existing projects, not just new ideas?
+        <span class="faq-toggle">+</span>
+      </div>
+      <div class="faq-a">Absolutely. Describe your existing project as the idea, tell it your domain and audience, and set the risk as "what's blocking us right now." The experiments and pilot sections are especially useful for projects that are stuck.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER CTA -->
+<div class="footer-cta">
+  <h2>Stop planning.<br/><em>Start forging.</em></h2>
+  <p>Your idea is one pipeline run away from a system you can actually deploy.</p>
+  <a href="app/" class="btn-primary" style="font-size:1.05rem;padding:16px 32px">
+    Open the Forge <span class="btn-arrow">→</span>
+  </a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">OMNI<em>FORGE</em> System Forge™</div>
+    <div class="footer-copy" style="margin-top:6px">© 2026 Omniforge. Built with EMVY CHECK spirit.</div>
+  </div>
+  <div class="footer-links">
+    <a href="app/">App</a>
+    <a href="#how">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/cdn-cgi/l/email-protection#7b131e1717143b141615121d14091c1e560802080f1e161d14091c1e55181416">Contact</a>
+  </div>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function toggleDemo(id){
+  const sec=document.getElementById(id);
+  const body=sec.querySelector('.demo-body');
+  const arrow=sec.querySelector('.preview-sec-head span:last-child');
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  if(arrow)arrow.textContent=open?'▾':'▴';
+}
+
+
+  const item=el.closest('.faq-item');
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}
+
+// Stagger pipeline icons on load
+document.querySelectorAll('.pipe-icon').forEach((el,i)=>{
+  el.style.
