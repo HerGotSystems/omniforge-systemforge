@@ -503,7 +503,7 @@ footer{
  
       <!-- FRAMEWORK - fully visible -->
       <div class="preview-sec" id="demo-framework">
-        <div class="preview-sec-head" onclick="toggleDemo('demo-framework')" style="cursor:pointer">
+        <div class="preview-sec-head" data-toggle="demo-framework" style="cursor:pointer">
           <span class="preview-sec-icon">🏗</span>
           <span class="preview-sec-name">Framework</span>
           <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
@@ -526,7 +526,7 @@ No member extraction — all surplus goes toward housing more people or reducing
  
       <!-- ASSETS - visible -->
       <div class="preview-sec" id="demo-assets">
-        <div class="preview-sec-head" onclick="toggleDemo('demo-assets')" style="cursor:pointer">
+        <div class="preview-sec-head" data-toggle="demo-assets" style="cursor:pointer">
           <span class="preview-sec-icon">📦</span>
           <span class="preview-sec-name">Assets (6)</span>
           <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
@@ -564,7 +564,7 @@ First use: Run your first formal member meeting using the agenda template.</div>
  
       <!-- EXPERIMENTS - visible -->
       <div class="preview-sec" id="demo-experiments">
-        <div class="preview-sec-head" onclick="toggleDemo('demo-experiments')" style="cursor:pointer">
+        <div class="preview-sec-head" data-toggle="demo-experiments" style="cursor:pointer">
           <span class="preview-sec-icon">🧪</span>
           <span class="preview-sec-name">Experiments (5)</span>
           <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
@@ -593,7 +593,7 @@ Fail signal = Less than 60% pass or high drop-out after first payment</div>
  
       <!-- PILOT PLAN - visible -->
       <div class="preview-sec" id="demo-pilot">
-        <div class="preview-sec-head" onclick="toggleDemo('demo-pilot')" style="cursor:pointer">
+        <div class="preview-sec-head" data-toggle="demo-pilot" style="cursor:pointer">
           <span class="preview-sec-icon">🚀</span>
           <span class="preview-sec-name">Pilot Plan — 30 days</span>
           <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
@@ -628,7 +628,7 @@ Day 15 checkpoint: 15 applications + 3 properties scored + legal 50% done + bank
  
       <!-- SYSTEM SHEET - visible -->
       <div class="preview-sec" id="demo-sheet">
-        <div class="preview-sec-head" onclick="toggleDemo('demo-sheet')" style="cursor:pointer">
+        <div class="preview-sec-head" data-toggle="demo-sheet" style="cursor:pointer">
           <span class="preview-sec-icon">📋</span>
           <span class="preview-sec-name">System Sheet</span>
           <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
@@ -700,7 +700,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
         <li>Full output unlocked</li>
         <li>Shareable forge links</li>
       </ul>
-      <a href="mailto:hello@omniforge-systemforge.com?subject=Forge Credits Waitlist&body=Add me to the waitlist for Forge Credits." class="price-btn">Join Waitlist</a>
+      <a href="mailto:hello@omniforge-systemforge.com?subject=Forge Credits Waitlist&body=Add me to the waitlist." class="price-btn">Join Waitlist</a>
     </div>
  
     <div class="price-card">
@@ -727,35 +727,35 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
  
   <div class="faq">
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
+      <div class="faq-q" data-faq style="cursor:pointer">
         What's an Anthropic API key and how do I get one?
         <span class="faq-toggle">+</span>
       </div>
       <div class="faq-a">Anthropic makes the Claude AI that powers Omniforge. To get a key, go to console.anthropic.com, sign up, and create an API key. Add a few pounds of credit — a Deep forge costs about £0.03–0.05. Your key is stored only in your browser, never on our servers.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
+      <div class="faq-q" data-faq style="cursor:pointer">
         What's the difference between Quick, Standard, and Deep?
         <span class="faq-toggle">+</span>
       </div>
       <div class="faq-a">Quick gives you 3 assets, 3 experiments, 7-day pilot. Standard gives 5 assets, 4 experiments, 14-day pilot. Deep adds all of that plus a full Deployment Layer — practitioner pipeline, 3 economics models, tech stack tiers (£0/£50/£200+ per month), quality framework, and 36-month scaling roadmap.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
+      <div class="faq-q" data-faq style="cursor:pointer">
         Is my idea safe? Does Omniforge store my inputs?
         <span class="faq-toggle">+</span>
       </div>
       <div class="faq-a">Your forge history is stored in your browser's local storage only — it never hits our servers. Your API key is also local only. We have no database of your ideas. The only data that leaves your browser is what goes directly to Anthropic's API.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
+      <div class="faq-q" data-faq style="cursor:pointer">
         What kind of ideas work best?
         <span class="faq-toggle">+</span>
       </div>
       <div class="faq-a">Anything with a clear problem it's trying to solve. Communities, products, services, platforms, internal tools, learning programs, local projects, creative businesses — the more specific your idea and risk, the better the output. Vague input produces vague output.</div>
     </div>
     <div class="faq-item">
-      <div class="faq-q" onclick="toggleFaq(this)">
+      <div class="faq-q" data-faq style="cursor:pointer">
         Can I use this for existing projects, not just new ideas?
         <span class="faq-toggle">+</span>
       </div>
@@ -788,16 +788,41 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
 </footer>
  
 <script>
-window.toggleDemo=function(id){
-  var sec=document.getElementById(id);
-  if(!sec)return;
-  var body=sec.querySelector('.demo-body');
-  var arrow=sec.querySelector('.preview-sec-head span:last-child');
-  var open=body.style.display==='block';
-  body.style.display=open?'none':'block';
-  if(arrow)arrow.textContent=open?'▾':'▴';
-};
-window.toggleFaq=function(el){
-  var item=el.closest('.faq-item');
-  var wasOpen=item.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(function(i){i.cl
+document.addEventListener('DOMContentLoaded', function() {
+ 
+  document.querySelectorAll('[data-toggle]').forEach(function(head) {
+    head.addEventListener('click', function() {
+      var id = this.getAttribute('data-toggle');
+      var sec = document.getElementById(id);
+      if (!sec) return;
+      var body = sec.querySelector('.demo-body');
+      var arrow = this.querySelector('span:last-child');
+      var open = body.style.display === 'block';
+      body.style.display = open ? 'none' : 'block';
+      if (arrow) arrow.textContent = open ? '\u25be' : '\u25b4';
+    });
+  });
+ 
+  document.querySelectorAll('[data-faq]').forEach(function(q) {
+    q.addEventListener('click', function() {
+      var item = this.closest('.faq-item');
+      var wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(i) { i.classList.remove('open'); });
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+ 
+  document.querySelectorAll('.pipe-icon').forEach(function(el, i) {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    setTimeout(function() {
+      el.style.transition = 'all .4s ease';
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }, 300 + i * 120);
+  });
+ 
+});
+</script>
+</body>
+</html>
