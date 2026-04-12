@@ -205,6 +205,26 @@ select{cursor:pointer;padding-right:32px;appearance:none}
   letter-spacing:.04em;text-transform:uppercase}
 .depth-desc{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.04em;opacity:.7}
  
+/* ═══ TOOL SELECTOR ══════════════════════════════════════ */
+.tool-selector{padding:0 28px 22px;flex-shrink:0}
+.tool-selector-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
+.tool-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.tool-card{border:1px solid var(--border);border-radius:var(--r);background:var(--surface);
+  padding:12px 8px;cursor:pointer;transition:all .15s;text-align:center;user-select:none}
+.tool-card:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-1px)}
+.tool-card.sel{border-color:rgba(249,115,22,.45);background:var(--fire-faint);
+  box-shadow:0 0 16px rgba(249,115,22,.1)}
+.tool-card-icon{font-size:1.4rem;line-height:1;margin-bottom:6px}
+.tool-card-name{font-family:'Oxanium',sans-serif;font-size:9.5px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--text2);line-height:1.3}
+.tool-card-desc{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);
+  letter-spacing:.03em;margin-top:3px;line-height:1.3}
+.tool-card.sel .tool-card-name{color:var(--fire)}
+.tool-card.sel .tool-card-desc{color:var(--muted)}
+@media(max-width:800px){.tool-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:480px){.tool-grid{grid-template-columns:repeat(2,1fr)}}
+ 
 /* forge button */
 .forge-btn{width:100%;margin-top:22px;padding:18px;border:none;border-radius:var(--r);
   background:linear-gradient(135deg,#c2540a,#f97316,#fb923c);color:#180900;
@@ -469,8 +489,13 @@ select{cursor:pointer;padding-right:32px;appearance:none}
  
       <!-- forge input pane -->
       <div class="forge-pane" id="forge-pane">
-        <div class="pane-title">What do you want to build?</div>
-        <div class="pane-sub">Idea in → Complete system out</div>
+        <div class="pane-title" id="pane-title">What do you want to build?</div>
+        <div class="pane-sub" id="pane-sub">Idea in → Complete system out</div>
+ 
+        <div class="tool-selector">
+          <div class="tool-selector-label">// Select Forge Type</div>
+          <div class="tool-grid" id="tool-grid"></div>
+        </div>
  
         <div class="field">
           <label>Your Idea or Intention</label>
@@ -711,6 +736,30 @@ select{cursor:pointer;padding-right:32px;appearance:none}
  
 <script>
 /* ═══════════════════════════════════════════════════════════
+   TOOL DEFINITIONS
+═══════════════════════════════════════════════════════════ */
+const TOOLS=[
+  {id:'system',icon:'🏗',name:'System Forge',desc:'Idea → full system',
+   title:'What do you want to build?',sub:'Idea in → Complete system out',
+   placeholder:'Write it raw. Messy is fine. The forge handles the chaos.\n\nExample: An app that helps freelancers track which clients are worth keeping based on real data, not gut feel…'},
+  {id:'landing',icon:'📄',name:'Landing Page',desc:'Idea → page copy',
+   title:'Build your landing page',sub:'Product in → Complete page copy out',
+   placeholder:'Describe your product or service. What does it do? Who is it for? What\'s the main hook?\n\nExample: A tool that helps independent music producers find sync licensing deals without needing a manager…'},
+  {id:'offer',icon:'💰',name:'Offer Builder',desc:'Product → pricing + pitch',
+   title:'Build your offer',sub:'Product in → Irresistible offer out',
+   placeholder:'Describe what you\'re selling. Include what it does, how it\'s delivered, and any pricing you already have in mind.\n\nExample: 1-hour consulting calls for early-stage founders who need help with their go-to-market strategy…'},
+  {id:'content',icon:'✍️',name:'Content Forge',desc:'Topic → content plan',
+   title:'Forge your content',sub:'Topic in → Full content strategy out',
+   placeholder:'What do you want to write about? Include your angle, what you know, and any strong opinions.\n\nExample: Why most productivity advice fails people with ADHD and what actually works instead…'},
+  {id:'music',icon:'🎵',name:'Music Forge',desc:'Mood → AI track prompts',
+   title:'Forge your track',sub:'Mood in → Production-ready prompts out',
+   placeholder:'Describe the track you want to make. Genre, mood, influences, tempo, instruments, lyrical themes, energy level.\n\nExample: Dark drum & bass with Czech folk violin, protest energy, industrial textures, 174bpm, haunted female vocal…'},
+  {id:'rebrand',icon:'🔄',name:'Rebrand Forge',desc:'Old brand → new identity',
+   title:'Forge your rebrand',sub:'Broken brand in → Sharp identity out',
+   placeholder:'Describe your current brand. Name, what you do, what\'s wrong with how it\'s perceived, and what feeling you want to create.\n\nExample: My consultancy is called "DataBridge Solutions" — sounds corporate, forgettable, nobody knows what we actually do…'}
+];
+ 
+/* ═══════════════════════════════════════════════════════════
    STORAGE
 ═══════════════════════════════════════════════════════════ */
 const DB = {
@@ -739,6 +788,7 @@ function switchView(name){
    STATE
 ═══════════════════════════════════════════════════════════ */
 let depth='Standard';
+let activeTool='system';
 let currentData=null;
 let rawOutput='';
 let activeHistoryId=null;
@@ -775,11 +825,13 @@ async function saveSetupKey(){
 ═══════════════════════════════════════════════════════════ */
 function initApp(){
   updateKeyBadge();
+  renderToolSelector();
   renderHistory();
   bindForgeEvents();
   bindOutputEvents();
   bindNavEvents();
   showOutputState('empty');
+  updateForgeUI();
 }
  
 function updateKeyBadge(){
@@ -788,6 +840,35 @@ function updateKeyBadge(){
   ['key-label','key-label-s'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=masked;});
   ['key-dot','key-dot-s'].forEach(id=>{const el=document.getElementById(id);
     if(el){el.classList.toggle('off',!k);}});
+}
+ 
+function renderToolSelector(){
+  const grid=document.getElementById('tool-grid');
+  if(!grid)return;
+  grid.innerHTML=TOOLS.map(t=>`
+    <div class="tool-card${t.id===activeTool?' sel':''}" data-tool="${t.id}">
+      <div class="tool-card-icon">${t.icon}</div>
+      <div class="tool-card-name">${t.name}</div>
+      <div class="tool-card-desc">${t.desc}</div>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.tool-card').forEach(el=>{
+    el.addEventListener('click',()=>{
+      activeTool=el.dataset.tool;
+      grid.querySelectorAll('.tool-card').forEach(c=>c.classList.toggle('sel',c.dataset.tool===activeTool));
+      updateForgeUI();
+    });
+  });
+}
+ 
+function updateForgeUI(){
+  const t=TOOLS.find(x=>x.id===activeTool)||TOOLS[0];
+  const title=document.getElementById('pane-title');
+  const sub=document.getElementById('pane-sub');
+  const idea=document.getElementById('idea');
+  if(title)title.textContent=t.title;
+  if(sub)sub.textContent=t.sub;
+  if(idea&&!idea.value)idea.placeholder=t.placeholder;
 }
  
 /* ═══════════════════════════════════════════════════════════
@@ -800,16 +881,18 @@ function renderHistory(){
     list.innerHTML=`<div class="history-empty"><div class="history-empty-icon">⚒</div><div class="history-empty-text">No forges yet.<br/>Your systems will<br/>appear here.</div></div>`;
     return;
   }
-  list.innerHTML=h.map(f=>`
+  list.innerHTML=h.map(f=>{
+    const toolDef=TOOLS.find(t=>t.id===(f.tool||'system'))||TOOLS[0];
+    return `
     <div class="history-item${f.id===activeHistoryId?' active':''}" data-id="${f.id}">
       <div class="hi-name">${esc(f.systemName||f.idea.slice(0,40))}</div>
       <div class="hi-meta">
-        <span class="hi-domain">${esc(f.domain)}</span>
+        <span class="hi-domain">${toolDef.icon} ${esc(f.domain)}</span>
         <span class="hi-depth">${esc(f.depth)}</span>
         <span class="hi-date">${relDate(f.date)}</span>
       </div>
     </div>
-  `).join('');
+  `}).join('');
   list.querySelectorAll('.history-item').forEach(el=>{
     el.addEventListener('click',()=>loadForge(el.dataset.id));
   });
@@ -822,6 +905,7 @@ function loadForge(id){
   activeHistoryId=id;
   currentData=f.data;
   depth=f.depth;
+  activeTool=f.tool||'system';
   rawOutput=f.rawOutput||buildRawText(f.data,f.systemName);
  
   // fill form
@@ -894,6 +978,8 @@ function resetForge(){
   document.querySelectorAll('.depth-opt').forEach(b=>b.classList.toggle('sel',b.dataset.d==='Standard'));
   depth='Standard';
   renderHistory();
+  renderToolSelector();
+  updateForgeUI();
   document.getElementById('idea').focus();
 }
  
@@ -934,69 +1020,120 @@ function stopPipeline(){
 }
  
 /* ═══════════════════════════════════════════════════════════
-   SYSTEM PROMPT
+   SYSTEM PROMPTS
 ═══════════════════════════════════════════════════════════ */
 function buildSysPrompt(d){
+  const tool=activeTool;
+  if(tool==='landing') return buildLandingPrompt();
+  if(tool==='offer') return buildOfferPrompt();
+  if(tool==='content') return buildContentPrompt();
+  if(tool==='music') return buildMusicPrompt();
+  if(tool==='rebrand') return buildRebrandPrompt();
+  return buildSystemForgePrompt(d);
+}
+ 
+function buildSystemForgePrompt(d){
   const counts={Quick:{assets:3,exp:3,pilot:7},Standard:{assets:5,exp:4,pilot:14},Deep:{assets:6,exp:5,pilot:30}};
   const c=counts[d]||counts.Standard;
-  const deployBlock=d==='Deep'?`
+  const mid=Math.floor(c.pilot/2);
+  const deployField=d==='Deep'?',\n  "deployment": "DEPLOYMENT LAYER\\n\\nPRACTITIONER PIPELINE\\nWho trains others, how, certification levels (duration, format, cost)\\n\\nECONOMICS MODELS\\nThree distinct viable models: name each, revenue, costs, break-even\\n\\nTECH STACK TIERS\\nTier 1 (£0-50/mo): specific free tools by name\\nTier 2 (£50-200/mo): specific tools + what they add\\nTier 3 (£200+/mo): full platform stack\\n\\nQUALITY FRAMEWORK\\n5 non-negotiable principles. One audit method. How to handle deviation.\\n\\nSCALING ROADMAP\\nPhase 1 (0-6mo): exact actions\\nPhase 2 (6-18mo): what needs to exist\\nPhase 3 (18-36mo): what changes\\nPhase 4 (36mo+): what it looks like when it works"':'';
+  return 'You are the Omniforge System Forge — an engine that transforms raw human intentions into complete, actionable systems.\n'
+    +'You think in systems, leverage points, and first principles. Direct, specific, honest. No platitudes.\n'
+    +'FORGE DEPTH: '+d+'\n'
+    +'CRITICAL RULES:\n'
+    +'1. Return ONLY a single valid JSON object. No markdown. No preamble. No trailing text.\n'
+    +'2. All values are strings. Use literal \\n for newlines within strings.\n'
+    +'3. Be SPECIFIC: real tool names, real numbers, concrete actions.\n'
+    +'4. Every asset must be usable tomorrow.\n\n'
+    +'RETURN THIS JSON:\n'
+    +'{\n'
+    +'  "systemName": "Evocative name, 2-4 words",\n'
+    +'  "coreSummary": "One sentence. What it is + why it matters + who it\'s for.",\n'
+    +'  "framework": "FRAMEWORK\\n\\nProblem:\\n[specific pain]\\n\\nCore Mechanism:\\n[the central insight]\\n\\nComponents:\\n1. [name]: [what it does]\\n\\nLeverage Points:\\n- [small effort = large effect]\\n\\nOperating Rule:\\n[one principle never to violate]",\n'
+    +'  "assets": "ASSETS\\n\\n['+c.assets+' assets. Each:]\\n\\n[N]. [NAME]\\nType: [tool/template/prompt/calculator/playbook]\\nWhat it is: [2-3 sentences]\\nFirst use: [exact first action]",\n'
+    +'  "experiments": "EXPERIMENTS\\n\\n['+c.exp+' experiments. Each:]\\n\\n[N]. [NAME]\\nHypothesis: [If X then Y because Z]\\nMethod: [exact steps]\\nTime: [hours or days]\\nSuccess = [measurable outcome]\\nFail signal = [what tells you it\'s wrong]",\n'
+    +'  "pilot": "PILOT PLAN\\n\\nDuration: '+c.pilot+' days\\nGoal: [what to prove]\\n\\n[week-by-week breakdown]\\n\\nMinimum Viable Version:\\n[simplest thing to ship]\\n\\nFirst Revenue Path:\\n[how to make first £100]\\n\\nDay '+mid+' checkpoint:\\n[specific milestone]",\n'
+    +'  "sheet": "SYSTEM SHEET\\n\\nSystem: [name]\\nDomain: [domain]\\nAudience: [who]\\n\\nProblem in one line:\\n[...]\\n\\nSolution in one line:\\n[...]\\n\\nWhy this works:\\n[core mechanism]\\n\\nBiggest risk (honest):\\n[don\'t sugarcoat]\\n\\nRisk mitigation:\\n[practical]\\n\\nSuccess in 12 months:\\n[vivid, specific, numbers]\\n\\nDo NOT build this if:\\n[honest red flags]"'
+    +deployField+'\n'
+    +'}';
+}
  
-"deployment": A string containing the full Deployment Layer with these sections:
-PRACTITIONER PIPELINE
-Who trains others, how, what certification levels exist (be specific — duration, format, cost)
- 
-ECONOMICS MODELS
-Three distinct viable models: name each, describe revenue, costs, break-even point
- 
-TECH STACK TIERS
-Tier 1 ($0-50/mo): specific free/cheap tools by name
-Tier 2 ($50-200/mo): specific tools + what they add
-Tier 3 ($200+/mo): full platform stack
- 
-QUALITY FRAMEWORK  
-5 non-negotiable principles. One audit method. How to handle deviation.
- 
-SCALING ROADMAP
-Phase 1 (1-3 pilot sites, 0-6mo): exact actions
-Phase 2 (10-25 sites, 6-18mo): what needs to exist
-Phase 3 (50-100 sites, 18-36mo): what changes
-Phase 4 (movement, 36mo+): what it looks like when it works`:'';
-  return `You are the Omniforge System Forge — an engine that transforms raw human intentions into complete, actionable systems.
- 
-You think in systems, leverage points, and first principles. You are direct, specific, and honest. You never produce vague platitudes or consultant-speak.
- 
-Your output is always: structured, modular, immediately actionable.
- 
-FORGE DEPTH: ${d}
-Assets to generate: ${c.assets}
-Experiments to design: ${c.exp}
-Pilot duration: ${c.pilot} days
- 
-CRITICAL RULES:
-1. Return ONLY a single valid JSON object. No markdown. No preamble. No trailing text.
-2. All values are strings. Use literal \\n for newlines within strings.
-3. Be SPECIFIC: real tool names, real numbers, concrete actions. No vague language.
-4. The "risk" field the user provides MUST directly inform your experiments and pilot design.
-5. Treat the user as intelligent. Don't over-explain obvious things.
-6. Every asset must be something someone can actually use tomorrow, not just a concept.
- 
-RETURN THIS JSON SCHEMA:
+function buildLandingPrompt(){
+  return `You are a world-class conversion copywriter and product strategist. You write landing pages that convert.
+Be specific, direct, and punchy. No filler. Every word earns its place.
+CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
 {
-  "systemName": "Evocative name, 2-4 words. Not generic.",
-  "coreSummary": "One sentence. What it is + why it matters + who it's for. Bold and specific.",
-  "framework": "FRAMEWORK\\n\\nProblem:\\n[Specific description of the pain this solves]\\n\\nCore Mechanism:\\n[The central idea that makes this work — the insight]\\n\\nComponents:\\n1. [Component]: [what it does]\\n2. ...\\n\\nLeverage Points:\\n- [where small effort creates large effect]\\n- ...\\n\\nOperating Rule:\\n[The one principle that must never be violated]",
-  "assets": "ASSETS\\n\\n[${c.assets} assets total. Each:]\\n\\n[N]. [ASSET NAME]\\nType: [tool / template / prompt / framework / calculator / script / playbook]\\nWhat it is: [2-3 sentences — specific, concrete]\\nFirst use: [The exact first action someone takes with this]\\n",
-  "experiments": "EXPERIMENTS\\n\\n[${c.exp} experiments. Each designed around the user's stated risk:]\\n\\n[N]. [EXPERIMENT NAME]\\nHypothesis: [If we do X, then Y will happen because Z]\\nMethod: [Exact steps to run this test]\\nTime required: [hours or days]\\nSuccess = [Measurable, specific outcome]\\nFail signal = [What tells you this direction is wrong]\\n",
-  "pilot": "PILOT PLAN\\n\\nDuration: ${c.pilot} days\\nGoal: [What you need to prove to justify continuing]\\n\\n[Week-by-week breakdown with specific actions per week]\\n\\nMinimum Viable Version:\\n[The simplest thing you can ship or test]\\n\\nFirst Revenue Path:\\n[Specific: how to make the first £/$100 from this]\\n\\nValidation Checkpoint:\\n[At day ${Math.floor(c.pilot/2)}, you should have: specific milestone]",
-  "sheet": "SYSTEM SHEET\\n\\nSystem: [name]\\nDomain: [domain]\\nAudience: [who]\\n\\nProblem in one line:\\n[...]\\n\\nSolution in one line:\\n[...]\\n\\nWhy this works:\\n[The core mechanism — why competitors haven't done it or why now]\\n\\nBiggest risk (honest):\\n[Don't sugarcoat]\\n\\nRisk mitigation:\\n[Practical, not aspirational]\\n\\nFirst 30-day milestone:\\n[Specific, measurable]\\n\\nSuccess in 12 months looks like:\\n[Vivid, specific — numbers if possible]\\n\\nDo NOT build this if:\\n[Honest red flags]"${d==='Deep'?`,
-  "deployment": "[Full deployment content]`:''}
-}
-${deployBlock}`;
+  "systemName": "Product name or page title",
+  "coreSummary": "One-sentence pitch. What it does + who it's for + main benefit.",
+  "hero": "HERO SECTION\\n\\nHeadline: [bold, specific, benefit-first — max 8 words]\\nSubheadline: [expands headline, 15-25 words, includes who it's for]\\nCTA Button: [action verb + outcome — e.g. 'Start forging free']\\nHero Visual Idea: [describe what image/visual reinforces the message]",
+  "problem": "PROBLEM SECTION\\n\\nSection Headline: [name the pain]\\nParagraph: [2-3 sentences describing exactly what's broken and why]\\nPain Points:\\n- [specific frustration 1]\\n- [specific frustration 2]\\n- [specific frustration 3]",
+  "solution": "SOLUTION SECTION\\n\\nSection Headline: [your product as the answer]\\nParagraph: [how it solves the problem, 2-3 sentences]\\nFeature → Benefit pairs:\\n1. [feature]: [what it means for the user]\\n2. [feature]: [what it means for the user]\\n3. [feature]: [what it means for the user]\\n4. [feature]: [what it means for the user]",
+  "proof": "SOCIAL PROOF SECTION\\n\\n3 example testimonials (write realistic ones):\\n\\n[Quote 1] — [Name, Role/Context]\\n[Quote 2] — [Name, Role/Context]\\n[Quote 3] — [Name, Role/Context]\\n\\nProof stat ideas: [2-3 specific metrics to aim for and display]",
+  "pricing": "PRICING SECTION\\n\\nStrategy: [recommended approach: free trial / freemium / one-time / subscription]\\nRationale: [why this model fits this product]\\n\\nTier 1 — [name]: [price] — [what's included]\\nTier 2 — [name]: [price] — [what's included]\\nTier 3 — [name]: [price] — [what's included]\\n\\nAnchoring note: [which tier to highlight and why]",
+  "cta": "FINAL CTA SECTION\\n\\nHeadline: [urgency or transformation statement]\\nSubtext: [1 line removing last objection]\\nButton: [action text]\\nBelow button: [trust signal — e.g. 'No credit card · Cancel anytime']",
+  "seo": "SEO & META\\n\\nPage title (60 chars): [...]\\nMeta description (155 chars): [...]\\nPrimary keyword: [...]\\nSecondary keywords: [3-5 terms]\\nURL slug suggestion: [...]"
+}`;
 }
  
-/* ═══════════════════════════════════════════════════════════
-   FORGE EXECUTION
-═══════════════════════════════════════════════════════════ */
+function buildOfferPrompt(){
+  return `You are a positioning strategist and offer architect. You turn vague products into razor-sharp, priced, sellable offers.
+Be specific about pricing psychology, objection handling, and what makes people say yes.
+CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
+{
+  "systemName": "Offer name — punchy, specific, benefit-led",
+  "coreSummary": "One sentence. What it is, who it's for, and the transformation it delivers.",
+  "positioning": "POSITIONING\\n\\nCategory: [what shelf does this sit on in the buyer's mind?]\\nUnique Mechanism: [the named process/method that makes yours different]\\nFor statement: [This is for X who Y and are tired of Z]\\nNot for statement: [This is NOT for people who...]\\nPrice anchor: [what do people currently spend on this problem?]",
+  "tiers": "OFFER TIERS\\n\\nTier 1 — [name] — [price]\\nWho it's for: [...]\\nIncludes: [specific deliverables]\\nTime to value: [when do they see results?]\\nPsychology: [why this price works]\\n\\nTier 2 — [name] — [price] ← RECOMMENDED\\nWho it's for: [...]\\nIncludes: [specific deliverables]\\nTime to value: [...]\\nPsychology: [...]\\n\\nTier 3 — [name] — [price]\\nWho it's for: [...]\\nIncludes: [specific deliverables]\\nTime to value: [...]\\nPsychology: [why someone pays premium]",
+  "objections": "KEY OBJECTIONS\\n\\n1. Objection: [most common reason not to buy]\\n   Answer: [specific, honest reframe — not platitudes]\\n\\n2. Objection: [price objection]\\n   Answer: [ROI framing or comparison]\\n\\n3. Objection: [trust/credibility objection]\\n   Answer: [how to prove it before they buy]\\n\\n4. Objection: [timing objection]\\n   Answer: [why now is the right time]",
+  "salesScript": "SALES SCRIPT\\n\\nOpener: [1-2 sentences to open a conversation]\\nProblem question: [question that surfaces the pain without being pushy]\\nBridge: [how you connect their problem to your offer]\\nPitch: [30-second verbal description of the offer]\\nClose: [specific ask — what to say to get a yes/next step]\\nFollow-up: [what to say if they say 'I need to think about it']",
+  "urgency": "URGENCY & SCARCITY\\n\\nHonest urgency mechanism: [what real reason creates time pressure?]\\nScarcity angle: [what genuinely limits supply?]\\nRisk reversal: [guarantee or trial structure]\\nLaunch sequence: [if new — how to build momentum and first 10 buyers]"
+}`;
+}
+ 
+function buildContentPrompt(){
+  return `You are a content strategist and editor who creates content that actually gets read, shared, and converts.
+You understand hooks, structure, distribution, and repurposing. Be specific and practical.
+CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
+{
+  "systemName": "Content piece title — specific, hooky",
+  "coreSummary": "One sentence. Topic + angle + who it's for + why it matters now.",
+  "hooks": "HOOK OPTIONS\\n\\n5 different opening hooks (pick the best one to use):\\n\\n1. [Contrarian hook — challenge a widely held belief]\\n2. [Story hook — open mid-scene]\\n3. [Data hook — surprising stat or fact]\\n4. [Question hook — create immediate curiosity]\\n5. [Bold claim hook — make a specific, defensible assertion]\\n\\nRecommended: Hook [number] because [reason]",
+  "structure": "ARTICLE STRUCTURE\\n\\nFormat: [longform / listicle / essay / how-to / opinion piece]\\nEstimated length: [word count]\\nReading time: [minutes]\\n\\nOutline:\\nIntro: [what it promises + why to keep reading]\\nSection 1 — [title]: [what it covers, 1 sentence]\\nSection 2 — [title]: [what it covers]\\nSection 3 — [title]: [what it covers]\\nSection 4 — [title]: [what it covers]\\nConclusion: [what the reader leaves with + CTA]\\n\\nKey examples to include: [3 specific, real examples to research]\\nStrongest argument: [the one point that makes this piece worth reading]",
+  "distribution": "DISTRIBUTION PLAN\\n\\nPrimary channel: [where to publish first and why]\\n\\nPlatform playbook:\\nLinkedIn: [specific angle for this platform — tone, length, visual]\\nTwitter/X: [thread angle — how to break it into 5-8 tweets]\\nNewsletter: [subject line + how to adapt for email]\\nReddit: [which subreddit + how to frame without being promotional]\\nYouTube/Video: [could this be a video? angle if yes]\\n\\nBest day/time to post: [specific recommendation]\\nOutreach targets: [3 types of people/accounts to share with]",
+  "repurpose": "REPURPOSING PLAN\\n\\nFrom this one piece, create:\\n1. [Short-form social post] — [platform + angle]\\n2. [Quote graphic] — [which line to pull + visual idea]\\n3. [Email sequence] — [how to break into 3-email drip]\\n4. [Podcast talking points] — [3 discussion angles]\\n5. [Slide deck outline] — [5 slides from this content]\\n\\nSEO keywords to target: [3-5 specific terms]\\nInternal links to create: [what other content should link to this?]",
+  "sheet": "CONTENT SYSTEM SHEET\\n\\nPiece title: [final recommended title]\\nAngle: [one-line description of the specific take]\\nTarget reader: [specific person — job, situation, problem]\\nDesired action after reading: [what should they do/feel/share?]\\nSuccess metric: [how will you know this performed well?]\\nBest month to publish: [seasonal/topical timing reason]"
+}`;
+}
+ 
+function buildMusicPrompt(){
+  return `You are a music producer, AI prompt engineer, and release strategist who specialises in generative AI music tools like Suno and Udio.
+You write prompts that produce distinctive, high-quality tracks. Be specific about sonic details — BPM, key, instruments, textures, vocal style.
+CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
+{
+  "systemName": "Track title — evocative, specific",
+  "coreSummary": "One sentence. Genre + mood + who would listen to this + what it feels like.",
+  "sunoPrompts": "SUNO AI PROMPTS\\n\\nVariant 1 — [mood label]:\\n[Full Suno prompt — 50-80 words. Include: genre tags, instruments, BPM, key/mode, vocal style, production references, energy descriptors. Use Suno-style comma-separated tags mixed with descriptive phrases.]\\n\\nVariant 2 — [mood label — darker/lighter/more aggressive/more melodic]:\\n[Full Suno prompt — different angle, same core idea]\\n\\nVariant 3 — [mood label — experimental/alternative take]:\\n[Full Suno prompt — push the genre fusion or texture further]\\n\\nSuno tips for this track:\\n- [specific Suno technique that helps this style]\\n- [what to avoid in Suno for this genre]",
+  "udioPrompts": "UDIO AI PROMPTS\\n\\nVariant 1 — [mood label]:\\n[Full Udio prompt — slightly different structure from Suno. Udio responds well to more descriptive language and fewer raw tags. 60-90 words.]\\n\\nVariant 2 — [alternative take]:\\n[Full Udio prompt]\\n\\nUdio tips for this track:\\n- [specific Udio technique]\\n- [how Udio handles this genre differently from Suno]",
+  "production": "PRODUCTION NOTES\\n\\nBPM range: [exact range — e.g. 172-176]\\nKey/Mode: [recommended — e.g. D minor / Dorian]\\nCore instruments: [specific list]\\nSignature texture: [the one sonic detail that makes this track recognisable]\\nDrop/climax structure: [where should energy peak?]\\nReference tracks: [3 specific real tracks — Artist — Song]\\nWhat to steal from each reference: [specific element to borrow]",
+  "release": "RELEASE STRATEGY\\n\\nPlatform priority: [where to drop first — SoundCloud/Bandcamp/streaming/social]\\nBest format to release: [single / EP / as part of album / instrumental only / with vocals]\\nCaption/description template: [exact text to use when posting]\\nHashtags: [10 specific relevant hashtags]\\nBest communities to share in: [subreddits, Discord servers, Facebook groups]\\nCollaboration angle: [who to reach out to — vocalists, visual artists, sync supervisors]",
+  "visual": "VISUAL DIRECTION\\n\\nCover art concept: [specific visual — colour palette, subject, mood, style reference]\\nAI image prompt for cover: [detailed Midjourney/DALL-E prompt for the artwork]\\nVideo/visualiser idea: [what moving image would accompany this track]\\nColour palette: [3-4 specific hex codes or colour descriptions]\\nFont/typography feeling: [what kind of type represents this track]"
+}`;
+}
+ 
+function buildRebrandPrompt(){
+  return `You are a brand strategist, naming expert, and identity architect. You diagnose broken brands and rebuild them into something sharp, memorable and true.
+Be honest about what's wrong. Be bold with new directions. No generic corporate advice.
+CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
+{
+  "systemName": "New brand name — the recommended choice",
+  "coreSummary": "One sentence. What the brand is, who it's for, and what feeling it creates.",
+  "diagnosis": "BRAND DIAGNOSIS\\n\\nCurrent brand problems:\\n1. [specific thing that's broken — name, positioning, perception]\\n2. [second problem]\\n3. [third problem]\\n\\nRoot cause: [the one underlying reason all these problems exist]\\nWhat the brand is accidentally communicating: [what people think you are vs what you actually are]\\nOpportunity: [the gap between current perception and what you could own]\\nCompetitors doing it better: [2 examples with specific reasons why]",
+  "names": "NAME OPTIONS\\n\\n1. [Name] — [type: coined/descriptive/metaphor/founder/abbreviation]\\n   Rationale: [why this works for this brand]\\n   Tagline that fits: [...]\\n   Risk: [what could go wrong with this name]\\n\\n2. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\n3. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\n4. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\n5. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\nRECOMMENDED: Name [number] because [specific strategic reason]",
+  "identity": "BRAND IDENTITY\\n\\nBrand in one word: [the single word that should define this brand]\\nBrand personality: [3 adjectives — specific, not generic]\\nTone of voice: [how it sounds — 3 characteristics with examples]\\nWhat it should NEVER sound like: [specific anti-examples]\\n\\nTagline options (top 3):\\n1. [tagline] — [rationale]\\n2. [tagline] — [rationale]\\n3. [tagline] — [rationale]\\n\\nColour direction: [recommended palette with psychology reasoning]\\nTypography feeling: [what kind of type fits — specific style, not specific font]",
+  "voice": "BRAND VOICE GUIDE\\n\\nWe always say: [3 specific phrases or approaches]\\nWe never say: [3 things to eliminate from comms]\\n\\nHow to introduce the brand:\\n[30-second verbal pitch in the new brand voice]\\n\\nSocial media voice example:\\n[Write one sample post in the new brand voice]\\n\\nEmail subject line style:\\n[3 example subject lines that feel right for this brand]",
+  "launch": "REBRAND LAUNCH PLAN\\n\\nPhase 1 — Internal (Week 1-2):\\n[what to update first, internally]\\n\\nPhase 2 — Soft launch (Week 3-4):\\n[how to introduce to existing audience]\\n\\nPhase 3 — Public launch (Month 2):\\n[announcement strategy]\\n\\nWhat to update immediately (Day 1): [specific list]\\nWhat can wait (Month 2+): [specific list]\\nHow to explain the change to existing customers: [exact messaging]\\nBiggest rebrand risk: [what could go wrong and how to mitigate it]"
+}`;
+}
 async function runForge(){
   const idea=document.getElementById('idea').value.trim();
   const dom=document.getElementById('domain').value;
@@ -1012,14 +1149,15 @@ async function runForge(){
   showOutputState('loading');
   startPipeline();
  
-  const userMsg=`IDEA: ${idea}
+  const userMsg=`IDEA / INPUT: ${idea}
  
 DOMAIN: ${dom}
 AUDIENCE: ${aud||'not specified'}
 BIGGEST RISK / UNKNOWN: ${risk||'not specified'}
+FORGE TYPE: ${activeTool}
 DEPTH: ${depth}
  
-Run the complete Omniforge System Forge pipeline. Return only the JSON.`;
+Run the complete forge pipeline. Return only the JSON.`;
  
   try{
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
@@ -1055,7 +1193,7 @@ Run the complete Omniforge System Forge pipeline. Return only the JSON.`;
     const forgeRecord={
       id:Date.now().toString(),
       date:new Date().toISOString(),
-      idea,domain:dom,audience:aud,risk,depth,
+      idea,domain:dom,audience:aud,risk,depth,tool:activeTool,
       systemName:sName,coreSummary:parsed.coreSummary||'',
       data:parsed,rawOutput
     };
@@ -1078,30 +1216,72 @@ Run the complete Omniforge System Forge pipeline. Return only the JSON.`;
 /* ═══════════════════════════════════════════════════════════
    RENDER RESULT
 ═══════════════════════════════════════════════════════════ */
-const SECTIONS_DEF=[
-  {key:'framework',icon:'🏗',name:'Framework'},
-  {key:'assets',icon:'📦',name:'Assets'},
-  {key:'experiments',icon:'🧪',name:'Experiments'},
-  {key:'pilot',icon:'🚀',name:'Pilot Plan'},
-  {key:'sheet',icon:'📋',name:'System Sheet'},
-  {key:'deployment',icon:'⚙️',name:'Deployment Layer'},
-];
+const SECTIONS_BY_TOOL={
+  system:[
+    {key:'framework',icon:'🏗',name:'Framework'},
+    {key:'assets',icon:'📦',name:'Assets'},
+    {key:'experiments',icon:'🧪',name:'Experiments'},
+    {key:'pilot',icon:'🚀',name:'Pilot Plan'},
+    {key:'sheet',icon:'📋',name:'System Sheet'},
+    {key:'deployment',icon:'⚙️',name:'Deployment Layer'},
+  ],
+  landing:[
+    {key:'hero',icon:'✦',name:'Hero Section'},
+    {key:'problem',icon:'⚡',name:'Problem Section'},
+    {key:'solution',icon:'🏗',name:'Solution Section'},
+    {key:'proof',icon:'💬',name:'Social Proof'},
+    {key:'pricing',icon:'💰',name:'Pricing Section'},
+    {key:'cta',icon:'🚀',name:'Final CTA'},
+    {key:'seo',icon:'🔍',name:'SEO & Meta'},
+  ],
+  offer:[
+    {key:'positioning',icon:'🎯',name:'Positioning'},
+    {key:'tiers',icon:'💰',name:'Offer Tiers'},
+    {key:'objections',icon:'🛡',name:'Key Objections'},
+    {key:'salesScript',icon:'💬',name:'Sales Script'},
+    {key:'urgency',icon:'⏱',name:'Urgency & Scarcity'},
+  ],
+  content:[
+    {key:'hooks',icon:'🎣',name:'Hook Options'},
+    {key:'structure',icon:'🏗',name:'Article Structure'},
+    {key:'distribution',icon:'📡',name:'Distribution Plan'},
+    {key:'repurpose',icon:'♻️',name:'Repurposing Plan'},
+    {key:'sheet',icon:'📋',name:'Content Sheet'},
+  ],
+  music:[
+    {key:'sunoPrompts',icon:'🎵',name:'Suno Prompts'},
+    {key:'udioPrompts',icon:'🎶',name:'Udio Prompts'},
+    {key:'production',icon:'🎛',name:'Production Notes'},
+    {key:'release',icon:'🚀',name:'Release Strategy'},
+    {key:'visual',icon:'🎨',name:'Visual Direction'},
+  ],
+  rebrand:[
+    {key:'diagnosis',icon:'🔍',name:'Brand Diagnosis'},
+    {key:'names',icon:'✦',name:'Name Options'},
+    {key:'identity',icon:'🎯',name:'Brand Identity'},
+    {key:'voice',icon:'💬',name:'Brand Voice'},
+    {key:'launch',icon:'🚀',name:'Rebrand Launch Plan'},
+  ],
+};
+function getSectionsDef(){return SECTIONS_BY_TOOL[activeTool]||SECTIONS_BY_TOOL.system;}
  
 function renderResult(data){
   document.getElementById('out-name').textContent=data.systemName||'Your System';
   document.getElementById('out-summary').textContent=data.coreSummary||'';
  
   const chips=document.getElementById('out-chips');
+  const toolDef=TOOLS.find(t=>t.id===activeTool)||TOOLS[0];
   chips.innerHTML=`
     <span class="chip chip-green">✓ Forged</span>
     <span class="chip chip-fire">${esc(depth)} Depth</span>
-    <span class="chip chip-muted">${document.getElementById('domain').value||''}</span>
+    <span class="chip chip-muted">${toolDef.icon} ${esc(toolDef.name)}</span>
+    <span class="chip chip-muted">${esc(document.getElementById('domain').value||'')}</span>
   `;
  
   const container=document.getElementById('sections');
   container.innerHTML='';
  
-  SECTIONS_DEF.forEach((def,i)=>{
+  getSectionsDef().forEach((def,i)=>{
     const text=data[def.key];
     if(!text||text==='null'||text===null)return;
     const sec=document.createElement('div');
@@ -1127,7 +1307,7 @@ function renderResult(data){
 function buildRawText(data,name){
   const line='═'.repeat(60);
   let out=`OMNIFORGE SYSTEM FORGE\n${name||'System Sheet'}\nGenerated: ${new Date().toLocaleString()}\n\n`;
-  SECTIONS_DEF.forEach(def=>{
+  getSectionsDef().forEach(def=>{
     const t=data[def.key];
     if(!t||t==='null')return;
     out+=`${line}\n${def.name.toUpperCase()}\n${line}\n\n${t}\n\n`;
@@ -1137,7 +1317,7 @@ function buildRawText(data,name){
  
 function buildMarkdown(data,name){
   let out=`# ${name||'System Sheet'}\n*Generated with Omniforge System Forge™ — ${new Date().toLocaleString()}*\n\n`;
-  SECTIONS_DEF.forEach(def=>{
+  getSectionsDef().forEach(def=>{
     const t=data[def.key];
     if(!t||t==='null')return;
     out+=`## ${def.icon} ${def.name}\n\n${t}\n\n---\n\n`;
