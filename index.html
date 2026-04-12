@@ -28,7 +28,7 @@ body{
   font-family:'Barlow Condensed',sans-serif;font-size:16px;
   min-height:100vh;overflow-x:hidden;line-height:1.5;
 }
-
+ 
 /* BACKGROUND */
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -37,13 +37,13 @@ body::before{
     radial-gradient(ellipse 40% 30% at 90% 80%,rgba(251,191,36,.03) 0%,transparent 50%),
     radial-gradient(ellipse 30% 20% at 10% 60%,rgba(249,115,22,.02) 0%,transparent 50%);
 }
-
+ 
 /* SCANLINE TEXTURE */
 body::after{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);
 }
-
+ 
 /* NAV */
 nav{
   position:sticky;top:0;z-index:100;
@@ -70,7 +70,7 @@ nav::after{
   transition:all .15s;border:1px solid var(--fire);
 }
 .nav-cta:hover{background:var(--gold);border-color:var(--gold);text-decoration:none}
-
+ 
 /* HERO */
 .hero{
   position:relative;z-index:1;
@@ -87,7 +87,7 @@ nav::after{
 }
 .hero-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--fire);box-shadow:0 0 8px var(--fire);animation:pulse 2.5s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
+ 
 .hero h1{
   font-family:'Oxanium',sans-serif;font-weight:800;
   font-size:clamp(2.8rem,7vw,5.5rem);letter-spacing:-.03em;line-height:.95;
@@ -99,7 +99,7 @@ nav::after{
   max-width:640px;line-height:1.6;margin-bottom:48px;font-weight:400;
 }
 .hero-sub strong{color:var(--text);font-weight:600}
-
+ 
 .hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:80px}
 .btn-primary{
   display:inline-flex;align-items:center;gap:8px;
@@ -119,7 +119,7 @@ nav::after{
 .btn-secondary:hover{border-color:var(--border3);color:var(--text);text-decoration:none}
 .btn-arrow{font-size:1.1em;transition:transform .15s}
 .btn-primary:hover .btn-arrow{transform:translateX(3px)}
-
+ 
 /* PIPELINE VISUAL */
 .pipeline-visual{
   width:100%;max-width:780px;margin:0 auto;
@@ -139,7 +139,7 @@ nav::after{
 .pipe-icon.lit{border-color:rgba(249,115,22,.5);background:var(--fire-faint);box-shadow:0 0 20px var(--fire-glow)}
 .pipe-label{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;text-align:center;max-width:70px}
 .pipe-arrow{color:var(--border2);font-size:1rem;flex-shrink:0;padding:0 4px;margin-bottom:20px}
-
+ 
 /* CONTRAST BLOCK */
 .contrast{
   position:relative;z-index:1;
@@ -166,7 +166,7 @@ nav::after{
 .contrast-check{color:var(--fire);font-size:1rem;flex-shrink:0;margin-top:1px}
 .contrast-text{font-size:.95rem;color:var(--text2);line-height:1.4}
 .contrast-text strong{color:var(--text);font-weight:600}
-
+ 
 /* SECTIONS */
 .section{
   position:relative;z-index:1;
@@ -181,7 +181,7 @@ nav::after{
   font-size:clamp(1.8rem,4vw,2.8rem);letter-spacing:-.02em;margin-bottom:20px;
 }
 .section-body{font-size:1.05rem;color:var(--text2);max-width:600px;line-height:1.65}
-
+ 
 /* HOW IT WORKS */
 .steps{display:flex;flex-direction:column;gap:0;margin-top:48px}
 .step{
@@ -201,7 +201,7 @@ nav::after{
   padding:3px 10px;border-radius:999px;border:1px solid var(--border2);
   font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;
 }
-
+ 
 /* OUTPUT PREVIEW */
 .output-preview{
   margin-top:48px;border:1px solid var(--border);border-radius:var(--r-lg);
@@ -238,7 +238,7 @@ nav::after{
   background:rgba(12,11,9,.7);backdrop-filter:blur(4px);border-radius:var(--r);
   border:1px solid rgba(249,115,22,.2);
 }
-
+ 
 /* PRICING */
 .pricing-grid{
   display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;
@@ -274,7 +274,7 @@ nav::after{
   background:var(--fire);border-color:var(--fire);color:#000;
 }
 .price-card.featured .price-btn:hover{background:var(--gold);border-color:var(--gold)}
-
+ 
 /* FAQ */
 .faq{display:flex;flex-direction:column;gap:0;margin-top:48px;max-width:700px}
 .faq-item{border-bottom:1px solid var(--border);padding:20px 0}
@@ -284,7 +284,7 @@ nav::after{
 .faq-item.open .faq-toggle{transform:rotate(45deg)}
 .faq-a{font-size:.95rem;color:var(--text2);line-height:1.65;max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
 .faq-item.open .faq-a{max-height:300px;padding-top:12px}
-
+ 
 /* FOOTER CTA */
 .footer-cta{
   position:relative;z-index:1;
@@ -298,7 +298,7 @@ nav::after{
 }
 .footer-cta h2 em{color:var(--fire);font-style:normal}
 .footer-cta p{color:var(--text2);font-size:1.1rem;margin-bottom:36px;max-width:500px;margin-left:auto;margin-right:auto}
-
+ 
 /* FOOTER */
 footer{
   position:relative;z-index:1;
@@ -311,7 +311,7 @@ footer{
 .footer-links{display:flex;gap:20px}
 .footer-links a{font-size:.85rem;color:var(--muted);text-decoration:none;transition:color .15s}
 .footer-links a:hover{color:var(--text)}
-
+ 
 /* MOBILE */
 @media(max-width:700px){
   nav{padding:0 16px}
@@ -327,7 +327,7 @@ footer{
 </style>
 </head>
 <body>
-
+ 
 <!-- NAV -->
 <nav>
   <div>
@@ -340,29 +340,29 @@ footer{
     <a href="app/" class="nav-cta">Launch Forge →</a>
   </div>
 </nav>
-
+ 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-badge">
     <span class="hero-badge-dot"></span>
     AI-powered system architecture
   </div>
-
+ 
   <h1>Turn your idea into a<br/><em>deployable system</em></h1>
-
+ 
   <p class="hero-sub">
     Everyone else gives you a plan.<br/>
     <strong>Omniforge gives you a deployable system.</strong><br/>
     Framework. Assets. Experiments. Pilot. In minutes.
   </p>
-
+ 
   <div class="hero-actions">
     <a href="app/" class="btn-primary">
       Start Forging <span class="btn-arrow">→</span>
     </a>
     <a href="#how" class="btn-secondary">See how it works</a>
   </div>
-
+ 
   <!-- Pipeline Visual -->
   <div class="pipeline-visual">
     <div class="pipe-stage">
@@ -396,7 +396,7 @@ footer{
     </div>
   </div>
 </section>
-
+ 
 <!-- CONTRAST -->
 <div class="contrast">
   <div class="contrast-grid">
@@ -448,13 +448,13 @@ footer{
     </div>
   </div>
 </div>
-
+ 
 <!-- HOW IT WORKS -->
 <section class="section" id="how">
   <div class="section-label">// How It Works</div>
   <h2 class="section-title">The System Forge Pipeline</h2>
   <p class="section-body">Describe your idea. Omniforge runs it through six stages of structured analysis and outputs a complete system — not a summary, not a suggestion, a blueprint.</p>
-
+ 
   <div class="steps">
     <div class="step">
       <div class="step-num">01</div>
@@ -489,7 +489,7 @@ footer{
       </div>
     </div>
   </div>
-
+ 
   <!-- Real forge demo output -->
   <div class="output-preview" style="margin-top:48px">
     <div class="output-preview-header">
@@ -500,7 +500,7 @@ footer{
       <span style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em">REAL OUTPUT — FORGED LIVE</span>
     </div>
     <div class="preview-sections">
-
+ 
       <!-- FRAMEWORK - fully visible -->
       <div class="preview-sec" id="demo-framework">
         <div class="preview-sec-head" onclick="toggleDemo('demo-framework')" style="cursor:pointer">
@@ -510,20 +510,20 @@ footer{
         </div>
         <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">Problem:
 Renters pay landlord mortgages forever while being locked out of ownership due to deposit requirements, credit checks, and individual income limits — yet collectively they have massive buying power.
-
+ 
 Core Mechanism:
 Cooperative ownership where members contribute monthly payments toward building acquisition and expansion rather than landlord profit. Each property purchased reduces per-person costs and increases collective equity.
-
+ 
 Leverage Points:
 — Bulk purchasing drives down per-unit costs by 20–40%
 — Collective creditworthiness enables financing individuals can't access
 — Removing landlord profit margin reduces housing costs by 15–25%
 — Scale economies in maintenance, insurance, legal costs
-
+ 
 Operating Rule:
 No member extraction — all surplus goes toward housing more people or reducing member costs, never toward profit-taking by non-residents.</div>
       </div>
-
+ 
       <!-- ASSETS - visible -->
       <div class="preview-sec" id="demo-assets">
         <div class="preview-sec-head" onclick="toggleDemo('demo-assets')" style="cursor:pointer">
@@ -535,33 +535,33 @@ No member extraction — all surplus goes toward housing more people or reducing
 Type: calculator
 Models monthly contributions, acquisition timelines, member equity across scenarios.
 First use: Input local property prices → see exactly how many people need to pool £1,000/month to buy a building within 12 months.
-
+ 
 2. MEMBER VETTING FRAMEWORK
 Type: template
 Complete application and screening system: income verification, reference checks, commitment evaluation, exit procedures.
 First use: Create application form and run first 5 potential members through full screening.
-
+ 
 3. LEGAL STRUCTURE BLUEPRINT
 Type: framework
 Step-by-step guide to CIC + Housing Cooperative hybrid. Articles of Association template, member agreement, solicitor brief.
 First use: Book consultation with cooperative housing solicitor using the provided brief.
-
+ 
 4. PROPERTY PIPELINE SYSTEM
 Type: tool
 Rightmove API + scoring algorithm: identifies multi-unit properties under £300k, calculates renovation costs, flags legal issues.
 First use: Set up alerts for 3–6 unit properties and score your first 10 acquisitions.
-
+ 
 5. BANK PITCH DECK TEMPLATE
 Type: template
 Presentation designed for cooperative housing — risk mitigation, comparable models, member commitment evidence, financial projections.
 First use: Customise with local market data. Book 3 building society mortgage advisers.
-
+ 
 6. GOVERNANCE PLAYBOOK
 Type: playbook
 Meeting structures, decision protocols, conflict resolution, financial transparency templates.
 First use: Run your first formal member meeting using the agenda template.</div>
       </div>
-
+ 
       <!-- EXPERIMENTS - visible -->
       <div class="preview-sec" id="demo-experiments">
         <div class="preview-sec-head" onclick="toggleDemo('demo-experiments')" style="cursor:pointer">
@@ -575,14 +575,14 @@ Method: Ring-fenced account → month 3, approach 3 building societies with £30
 Time: 6 months
 Success = Mortgage pre-approval on actual property
 Fail signal = No bank will consider lending
-
+ 
 2. LEGAL STRUCTURE TEST
 Hypothesis: Correct cooperative legal entity → banks treat us as viable borrowers.
 Method: CIC + Housing Coop hybrid via solicitor. Get 3 banks to review and provide preliminary lending criteria.
 Time: 8 weeks
 Success = 1 bank confirms they will lend to this structure
 Fail signal = No banks will lend OR legal costs exceed £5,000
-
+ 
 3. MEMBER COMMITMENT VALIDATION
 Hypothesis: 12-month contracts + financial screening filters serious members.
 Method: Recruit 25 people, run full vetting with financial checks and contracts.
@@ -590,7 +590,7 @@ Time: 3 months
 Success = 15+ pass screening + first payments collected
 Fail signal = Less than 60% pass or high drop-out after first payment</div>
       </div>
-
+ 
       <!-- PILOT PLAN - visible -->
       <div class="preview-sec" id="demo-pilot">
         <div class="preview-sec-head" onclick="toggleDemo('demo-pilot')" style="cursor:pointer">
@@ -599,33 +599,33 @@ Fail signal = Less than 60% pass or high drop-out after first payment</div>
           <span style="margin-left:auto;color:var(--muted);font-size:.8rem">▾</span>
         </div>
         <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">Goal: Prove 15 people will commit £1,000/month and identify first target property.
-
+ 
 Week 1 — Legal foundation
 — Meet cooperative housing solicitor
 — Draft CIC articles
 — Open business banking account
-
+ 
 Week 2 — Member recruitment
 — Launch website with calculator + application
 — Host 2 info sessions (online + in-person)
 — Target: 25 applications
-
+ 
 Week 3 — Property pipeline
 — Set up Rightmove alerts
 — Contact 5 estate agents about multi-unit properties
 — Score 10 potential properties, shortlist 3
-
+ 
 Week 4 — Commitment validation
 — Complete member vetting
 — Hold member meeting to review shortlisted properties
 — Collect first payments, book bank meetings
-
+ 
 First Revenue Path:
 Month 6 → £60,000 pooled → purchase first property → members at £800/month → Month 7 revenue: £8,000 contributions + £800 net surplus.
-
+ 
 Day 15 checkpoint: 15 applications + 3 properties scored + legal 50% done + bank meeting booked.</div>
       </div>
-
+ 
       <!-- SYSTEM SHEET - visible -->
       <div class="preview-sec" id="demo-sheet">
         <div class="preview-sec-head" onclick="toggleDemo('demo-sheet')" style="cursor:pointer">
@@ -635,20 +635,20 @@ Day 15 checkpoint: 15 applications + 3 properties scored + legal 50% done + bank
         </div>
         <div class="demo-body" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);line-height:1.7;white-space:pre-wrap;display:none">Problem in one line:
 Renters pay landlords forever while excluded from ownership due to individual financial limits.
-
+ 
 Solution in one line:
 Groups pool £1,000/month to buy buildings collectively, house members at cost, reinvest surplus to expand.
-
+ 
 Biggest risk (honest):
 Banks may refuse cooperative structures, or members leave after purchase, leaving others holding unsustainable debt.
-
+ 
 Success in 12 months:
 3 properties housing 45 members + £15,000/month collective revenue + 30+ person waiting list.
-
+ 
 Do NOT build this if:
 You can't get 10+ people to commit real money upfront, or local prices make the math impossible, or you're not ready for 2+ years of complex legal and financial work.</div>
       </div>
-
+ 
       <!-- DEPLOYMENT LAYER - blurred teaser -->
       <div class="preview-sec preview-blurred" style="min-height:80px">
         <div class="preview-sec-head">
@@ -656,22 +656,22 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
           <span class="preview-sec-name">Deployment Layer — 3 Economics Models + Tech Stack + Scaling Roadmap</span>
         </div>
       </div>
-
+ 
     </div>
-
+ 
     <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
       <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em">THIS IS A REAL DEEP FORGE — RUN LIVE ON OMNIFORGE · APRIL 2026</span>
       <a href="app/" class="btn-primary" style="padding:10px 20px;font-size:.85rem">Run Your Own Forge →</a>
     </div>
   </div>
 </section>
-
+ 
 <!-- PRICING -->
 <section class="section" id="pricing" style="padding-top:0">
   <div class="section-label">// Pricing</div>
   <h2 class="section-title">Simple. Transparent.</h2>
   <p class="section-body">Bring your own Anthropic API key and forge for free — you only pay Anthropic's rates directly. No subscription, no hidden costs.</p>
-
+ 
   <div class="pricing-grid">
     <div class="price-card">
       <div class="price-card-label">Self-serve</div>
@@ -687,7 +687,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
       </ul>
       <a href="app/" class="price-btn">Get API Key →</a>
     </div>
-
+ 
     <div class="price-card featured">
       <div class="price-card-label">✦ Coming Soon</div>
       <div class="price-name">Forge Credits</div>
@@ -702,7 +702,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
       </ul>
       <a href="#" class="price-btn">Join Waitlist</a>
     </div>
-
+ 
     <div class="price-card">
       <div class="price-card-label">Enterprise</div>
       <div class="price-name">Forge Unlimited</div>
@@ -719,12 +719,12 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
     </div>
   </div>
 </section>
-
+ 
 <!-- FAQ -->
 <section class="section" style="padding-top:0" id="faq">
   <div class="section-label">// FAQ</div>
   <h2 class="section-title">Common Questions</h2>
-
+ 
   <div class="faq">
     <div class="faq-item">
       <div class="faq-q" onclick="toggleFaq(this)">
@@ -763,7 +763,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
     </div>
   </div>
 </section>
-
+ 
 <!-- FOOTER CTA -->
 <div class="footer-cta">
   <h2>Stop planning.<br/><em>Start forging.</em></h2>
@@ -772,7 +772,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
     Open the Forge <span class="btn-arrow">→</span>
   </a>
 </div>
-
+ 
 <!-- FOOTER -->
 <footer>
   <div>
@@ -783,27 +783,34 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
     <a href="app/">App</a>
     <a href="#how">How It Works</a>
     <a href="#pricing">Pricing</a>
-    <a href="/cdn-cgi/l/email-protection#7b131e1717143b141615121d14091c1e560802080f1e161d14091c1e55181416">Contact</a>
+    <a href="mailto:hello@omniforge-systemforge.com">Contact</a>
   </div>
 </footer>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-function toggleDemo(id){
-  const sec=document.getElementById(id);
-  const body=sec.querySelector('.demo-body');
-  const arrow=sec.querySelector('.preview-sec-head span:last-child');
-  const open=body.style.display==='block';
+ 
+<script>
+window.toggleDemo=function(id){
+  var sec=document.getElementById(id);
+  if(!sec)return;
+  var body=sec.querySelector('.demo-body');
+  var arrow=sec.querySelector('.preview-sec-head span:last-child');
+  var open=body.style.display==='block';
   body.style.display=open?'none':'block';
   if(arrow)arrow.textContent=open?'▾':'▴';
-}
-
-
-  const item=el.closest('.faq-item');
-  const wasOpen=item.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+};
+window.toggleFaq=function(el){
+  var item=el.closest('.faq-item');
+  var wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(function(i){i.classList.remove('open');});
   if(!wasOpen)item.classList.add('open');
-}
-
+};
 // Stagger pipeline icons on load
-document.querySelectorAll('.pipe-icon').forEach((el,i)=>{
-  el.style.
+document.querySelectorAll('.pipe-icon').forEach(function(el,i){
+  el.style.opacity='0';el.style.transform='translateY(8px)';
+  setTimeout(function(){
+    el.style.transition='all .4s ease';
+    el.style.opacity='1';el.style.transform='translateY(0)';
+  },300+i*120);
+});
+</script>
+</body>
+</html>
