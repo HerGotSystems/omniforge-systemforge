@@ -1201,6 +1201,9 @@ Run the complete forge pipeline. Return only the JSON.`;
     activeHistoryId=forgeRecord.id;
     renderHistory();
  
+    // ping global forge counter (fire and forget)
+    fetch('https://api.countapi.xyz/hit/omniforge-systemforge.com/forges').catch(function(){});
+ 
     showOutputState('result');
     renderResult(parsed);
  
@@ -1415,3 +1418,4 @@ initSetup();
 </script>
 </body>
 </html>
+ 
