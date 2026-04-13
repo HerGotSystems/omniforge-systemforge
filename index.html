@@ -312,8 +312,87 @@ footer{
 .footer-links a{font-size:.85rem;color:var(--muted);text-decoration:none;transition:color .15s}
 .footer-links a:hover{color:var(--text)}
  
-/* MOBILE */
-@media(max-width:700px){
+/* ═══ CONTACT FORM ════════════════════════════════════════ */
+.contact-section{
+  position:relative;z-index:1;
+  padding:80px 32px;max-width:700px;margin:0 auto;
+}
+.contact-form{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:36px;position:relative;overflow:hidden;
+  margin-top:36px;
+}
+.contact-form::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(249,115,22,.35),transparent)}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.cf-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.cf-field label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.15em;text-transform:uppercase}
+.cf-field input,.cf-field textarea,.cf-field select{
+  width:100%;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);padding:12px 14px;outline:none;
+  font-family:'Barlow Condensed',sans-serif;font-size:15px;
+  transition:border-color .2s,box-shadow .2s}
+.cf-field input:focus,.cf-field textarea:focus,.cf-field select:focus{
+  border-color:var(--fire-dim);box-shadow:0 0 0 3px rgba(249,115,22,.1)}
+.cf-field input::placeholder,.cf-field textarea::placeholder{color:var(--muted);opacity:.5}
+.cf-field textarea{min-height:120px;resize:vertical;line-height:1.5}
+.cf-field select{cursor:pointer;appearance:none;padding-right:32px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7060' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center}
+.cf-submit{
+  width:100%;padding:15px;border:none;border-radius:var(--r);
+  background:linear-gradient(135deg,#c2540a,#f97316);color:#180900;
+  font-family:'Oxanium',sans-serif;font-size:16px;font-weight:800;
+  letter-spacing:.1em;text-transform:uppercase;cursor:pointer;
+  transition:transform .15s,box-shadow .2s;
+  box-shadow:0 6px 24px rgba(249,115,22,.25);margin-top:6px}
+.cf-submit:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(249,115,22,.35)}
+.cf-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.cf-success{
+  padding:20px;border:1px solid var(--green-border);border-radius:var(--r);
+  background:var(--green-bg);font-family:'JetBrains Mono',monospace;
+  font-size:12px;color:var(--green);letter-spacing:.08em;text-align:center;
+  display:none;margin-top:14px;line-height:1.7}
+.cf-error{
+  padding:12px 14px;border:1px solid rgba(248,113,113,.25);border-radius:var(--r);
+  background:rgba(248,113,113,.07);font-family:'JetBrains Mono',monospace;
+  font-size:11px;color:#f87171;letter-spacing:.05em;display:none;margin-top:10px}
+@media(max-width:600px){.cf-row{grid-template-columns:1fr}}
+ 
+/* STATS BAR */
+.stats-bar{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--surface);
+}
+.stats-inner{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px 32px;gap:0;flex-wrap:wrap;
+}
+.stat-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:0 40px;
+}
+.stat-num{
+  font-family:'Oxanium',sans-serif;font-weight:800;font-size:1.6rem;
+  color:var(--fire);letter-spacing:-.02em;line-height:1;
+  text-shadow:0 0 20px var(--fire-glow);
+}
+.stat-label{
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.15em;text-transform:uppercase;
+}
+.stat-divider{width:1px;height:32px;background:var(--border);flex-shrink:0}
+@media(max-width:600px){
+  .stats-inner{gap:16px;padding:16px}
+  .stat-item{padding:0 16px}
+  .stat-divider{display:none}
+}
+ 
+/* MOBILE contact */
+@media(max-width:700px){.contact-section{padding:60px 16px}}
   nav{padding:0 16px}
   .hero{padding:80px 16px 60px}
   .contrast-grid{grid-template-columns:1fr}
@@ -337,6 +416,7 @@ footer{
   <div class="nav-links">
     <a href="#how" class="nav-link">How It Works</a>
     <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="#contact" class="nav-link">Contact</a>
     <a href="app/" class="nav-cta">Launch Forge →</a>
   </div>
 </nav>
@@ -396,6 +476,31 @@ footer{
     </div>
   </div>
 </section>
+ 
+<!-- LIVE STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <span class="stat-num" id="stat-forges">—</span>
+      <span class="stat-label">systems forged</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num">6</span>
+      <span class="stat-label">forge types</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num">£0</span>
+      <span class="stat-label">to get started</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num">~6 min</span>
+      <span class="stat-label">idea to system</span>
+    </div>
+  </div>
+</div>
  
 <!-- CONTRAST -->
 <div class="contrast">
@@ -700,7 +805,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
         <li>Full output unlocked</li>
         <li>Shareable forge links</li>
       </ul>
-      <a href="mailto:hello@omniforge-systemforge.com?subject=Forge Credits Waitlist&body=Add me to the waitlist." class="price-btn">Join Waitlist</a>
+      <a href="#contact" class="price-btn">Join Waitlist</a>
     </div>
  
     <div class="price-card">
@@ -715,7 +820,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
         <li>Priority support</li>
         <li>Coming Q3 2026</li>
       </ul>
-      <a href="mailto:hello@omniforge-systemforge.com?subject=Omniforge Pro Enquiry" class="price-btn">Contact Us</a>
+      <a href="#contact" class="price-btn">Contact Us</a>
     </div>
   </div>
 </section>
@@ -764,6 +869,50 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
   </div>
 </section>
  
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="section-label">// Get In Touch</div>
+  <h2 class="section-title">Questions? Ideas? Want in?</h2>
+  <p class="section-body">Whether you want early access to Forge Credits, have a question about the tool, or just want to say something — we read everything.</p>
+ 
+  <div class="contact-form">
+    <form id="contact-form" action="https://formspree.io/f/xbdqrqvj" method="POST">
+      <div class="cf-row">
+        <div class="cf-field">
+          <label for="cf-name">Name</label>
+          <input type="text" id="cf-name" name="name" placeholder="Your name" required/>
+        </div>
+        <div class="cf-field">
+          <label for="cf-email">Email</label>
+          <input type="email" id="cf-email" name="email" placeholder="your@email.com" required/>
+        </div>
+      </div>
+      <div class="cf-field">
+        <label for="cf-reason">What's this about?</label>
+        <select id="cf-reason" name="reason">
+          <option value="general">General question</option>
+          <option value="waitlist">Forge Credits waitlist</option>
+          <option value="enterprise">Enterprise / team access</option>
+          <option value="feedback">Feedback on the tool</option>
+          <option value="collab">Collaboration idea</option>
+          <option value="other">Something else</option>
+        </select>
+      </div>
+      <div class="cf-field">
+        <label for="cf-message">Message</label>
+        <textarea id="cf-message" name="message" placeholder="Write it raw. We can handle it." required></textarea>
+      </div>
+      <button type="submit" class="cf-submit" id="cf-btn">Send Message →</button>
+      <div class="cf-error" id="cf-error">Something went wrong. Try again or email <a href="mailto:hello@omniforge-systemforge.com">hello@omniforge-systemforge.com</a> directly.</div>
+    </form>
+    <div class="cf-success" id="cf-success">
+      ✓ MESSAGE RECEIVED<br/><br/>
+      We'll get back to you at the email you provided.<br/>
+      Usually within 24–48 hours.
+    </div>
+  </div>
+</section>
+ 
 <!-- FOOTER CTA -->
 <div class="footer-cta">
   <h2>Stop planning.<br/><em>Start forging.</em></h2>
@@ -783,12 +932,59 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
     <a href="app/">App</a>
     <a href="#how">How It Works</a>
     <a href="#pricing">Pricing</a>
-    <a href="mailto:hello@omniforge-systemforge.com">Contact</a>
+    <a href="#contact">Contact</a>
   </div>
 </footer>
  
+<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+<script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+ 
+  // Live forge counter
+  var statEl = document.getElementById('stat-forges');
+  if (statEl) {
+    fetch('https://api.countapi.xyz/get/omniforge-systemforge.com/forges')
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if (d && d.value !== null) {
+          statEl.textContent = d.value.toLocaleString();
+        }
+      })
+      .catch(function(){ statEl.textContent = '—'; });
+  }
+ 
+  // Contact form
+  var form = document.getElementById('contact-form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('cf-btn');
+      var errEl = document.getElementById('cf-error');
+      var successEl = document.getElementById('cf-success');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      errEl.style.display = 'none';
+      fetch('https://formspree.io/f/xbdqrqvj', {
+        method: 'POST',
+        headers: {'Accept': 'application/json'},
+        body: new FormData(form)
+      }).then(function(r) {
+        if (r.ok) {
+          form.style.display = 'none';
+          successEl.style.display = 'block';
+        } else {
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Send Message →';
+        }
+      }).catch(function() {
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Send Message →';
+      });
+    });
+  }
  
   document.querySelectorAll('[data-toggle]').forEach(function(head) {
     head.addEventListener('click', function() {
@@ -805,24 +1001,4 @@ document.addEventListener('DOMContentLoaded', function() {
  
   document.querySelectorAll('[data-faq]').forEach(function(q) {
     q.addEventListener('click', function() {
-      var item = this.closest('.faq-item');
-      var wasOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item.open').forEach(function(i) { i.classList.remove('open'); });
-      if (!wasOpen) item.classList.add('open');
-    });
-  });
- 
-  document.querySelectorAll('.pipe-icon').forEach(function(el, i) {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(8px)';
-    setTimeout(function() {
-      el.style.transition = 'all .4s ease';
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    }, 300 + i * 120);
-  });
- 
-});
-</script>
-</body>
-</html>
+      va
