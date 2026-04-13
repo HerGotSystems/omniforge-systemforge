@@ -903,7 +903,7 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
         <textarea id="cf-message" name="message" placeholder="Write it raw. We can handle it." required></textarea>
       </div>
       <button type="submit" class="cf-submit" id="cf-btn">Send Message →</button>
-      <div class="cf-error" id="cf-error">Something went wrong. Try again or email <a href="mailto:hello@omniforge-systemforge.com">hello@omniforge-systemforge.com</a> directly.</div>
+      <div class="cf-error" id="cf-error">Something went wrong — please try again.</div>
     </form>
     <div class="cf-success" id="cf-success">
       ✓ MESSAGE RECEIVED<br/><br/>
@@ -938,67 +938,92 @@ You can't get 10+ people to commit real money upfront, or local prices make the 
  
 <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 <script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
+(function() {
+  function init() {
  
-  // Live forge counter
-  var statEl = document.getElementById('stat-forges');
-  if (statEl) {
-    fetch('https://api.countapi.xyz/get/omniforge-systemforge.com/forges')
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        if (d && d.value !== null) {
-          statEl.textContent = d.value.toLocaleString();
-        }
-      })
-      .catch(function(){ statEl.textContent = '—'; });
-  }
+    // Live forge counter
+    var statEl = document.getElementById('stat-forges');
+    if (statEl) {
+      fetch('https://api.countapi.xyz/get/omniforge-systemforge.com/forges')
+        .then(function(r){ return r.json(); })
+        .then(function(d){ if(d && d.value) statEl.textContent = d.value.toLocaleString(); })
+        .catch(function(){ });
+    }
  
-  // Contact form
-  var form = document.getElementById('contact-form');
-  if (form) {
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
-      var btn = document.getElementById('cf-btn');
-      var errEl = document.getElementById('cf-error');
-      var successEl = document.getElementById('cf-success');
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
-      errEl.style.display = 'none';
-      fetch('https://formspree.io/f/xbdqrqvj', {
-        method: 'POST',
-        headers: {'Accept': 'application/json'},
-        body: new FormData(form)
-      }).then(function(r) {
-        if (r.ok) {
-          form.style.display = 'none';
-          successEl.style.display = 'block';
-        } else {
+    // Contact form
+    var form = document.getElementById('contact-form');
+    if (form) {
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var btn = document.getElementById('cf-btn');
+        var errEl = document.getElementById('cf-error');
+        var successEl = document.getElementById('cf-success');
+        btn.disabled = true;
+        btn.textContent = 'Sending\u2026';
+        errEl.style.display = 'none';
+        fetch('https://formspree.io/f/xbdqrqvj', {
+          method: 'POST',
+          headers: {'Accept': 'application/json'},
+          body: new FormData(form)
+        }).then(function(r) {
+          if (r.ok) {
+            form.style.display = 'none';
+            successEl.style.display = 'block';
+          } else {
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Send Message \u2192';
+          }
+        }).catch(function() {
           errEl.style.display = 'block';
           btn.disabled = false;
-          btn.textContent = 'Send Message →';
-        }
-      }).catch(function() {
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        btn.textContent = 'Send Message →';
+          btn.textContent = 'Send Message \u2192';
+        });
       });
+    }
+ 
+    // Demo section toggles
+    document.querySelectorAll('[data-toggle]').forEach(function(head) {
+      head.addEventListener('click', function() {
+        var id = this.getAttribute('data-toggle');
+        var sec = document.getElementById(id);
+        if (!sec) return;
+        var body = sec.querySelector('.demo-body');
+        var arrow = this.querySelector('span:last-child');
+        var open = body.style.display === 'block';
+        body.style.display = open ? 'none' : 'block';
+        if (arrow) arrow.textContent = open ? '\u25be' : '\u25b4';
+      });
+    });
+ 
+    // FAQ toggles
+    document.querySelectorAll('[data-faq]').forEach(function(q) {
+      q.addEventListener('click', function() {
+        var item = this.closest('.faq-item');
+        var wasOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(function(i){ i.classList.remove('open'); });
+        if (!wasOpen) item.classList.add('open');
+      });
+    });
+ 
+    // Pipeline icon stagger
+    document.querySelectorAll('.pipe-icon').forEach(function(el, i) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(8px)';
+      setTimeout(function() {
+        el.style.transition = 'all .4s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 300 + i * 120);
     });
   }
  
-  document.querySelectorAll('[data-toggle]').forEach(function(head) {
-    head.addEventListener('click', function() {
-      var id = this.getAttribute('data-toggle');
-      var sec = document.getElementById(id);
-      if (!sec) return;
-      var body = sec.querySelector('.demo-body');
-      var arrow = this.querySelector('span:last-child');
-      var open = body.style.display === 'block';
-      body.style.display = open ? 'none' : 'block';
-      if (arrow) arrow.textContent = open ? '\u25be' : '\u25b4';
-    });
-  });
- 
-  document.querySelectorAll('[data-faq]').forEach(function(q) {
-    q.addEventListener('click', function() {
-      va
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
