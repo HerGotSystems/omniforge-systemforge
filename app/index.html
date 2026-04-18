@@ -16,8 +16,9 @@
   --text:#f2ede6;--text2:#c8c0b4;--muted:#7a7060;--faint:#3d3928;
   --green:#4ade80;--green-bg:rgba(74,222,128,.07);--green-border:rgba(74,222,128,.2);
   --red:#f87171;--red-bg:rgba(248,113,113,.07);--red-border:rgba(248,113,113,.25);
+  --cyan:#22d3ee;--cyan-faint:rgba(34,211,238,.07);--cyan-border:rgba(34,211,238,.2);
   --r:10px;--r-lg:16px;--r-xl:22px;
-  --shadow:0 20px 60px rgba(0,0,0,.55);--shadow-sm:0 4px 20px rgba(0,0,0,.35);
+  --shadow:0 20px 60px rgba(0,0,0,.55);
   --sidebar:260px;--topbar:56px;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -34,6 +35,8 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .view{display:none;position:relative;z-index:1;animation:fadeIn .25s ease both}
 .view.active{display:flex;flex-direction:column;min-height:100vh}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+ 
+/* ── TOPBAR ─────────────────────────────────────────── */
 .topbar{height:var(--topbar);display:flex;align-items:center;justify-content:space-between;
   padding:0 20px;border-bottom:1px solid var(--border);background:var(--bg);
   position:sticky;top:0;z-index:100;flex-shrink:0}
@@ -41,7 +44,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:linear-gradient(90deg,transparent,rgba(249,115,22,.25),transparent)}
 .logo{font-family:'Oxanium',sans-serif;font-weight:800;font-size:1.4rem;
   letter-spacing:-.02em;line-height:1;white-space:nowrap}
-.logo em{color:var(--fire);font-style:normal;text-shadow:0 0 30px var(--fire-glow),0 0 60px rgba(249,115,22,.08)}
+.logo em{color:var(--fire);font-style:normal;text-shadow:0 0 30px var(--fire-glow)}
 .logo-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
   letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
 .topbar-nav{display:flex;align-items:center;gap:4px}
@@ -123,7 +126,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .history-empty-icon{font-size:28px;opacity:.25}
 .history-empty-text{font-family:'JetBrains Mono',monospace;font-size:9px;
   color:var(--faint);letter-spacing:.1em;text-transform:uppercase;line-height:1.7}
-.history-item{padding:11px 12px;border-radius:var(--r);cursor:pointer;
+.history-item{padding:10px 12px;border-radius:var(--r);cursor:pointer;
   border:1px solid transparent;transition:all .15s;margin-bottom:3px}
 .history-item:hover{background:var(--surface2);border-color:var(--border)}
 .history-item.active{background:var(--fire-faint);border-color:rgba(249,115,22,.25)}
@@ -131,12 +134,24 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   color:var(--text);letter-spacing:.02em;line-height:1.3;margin-bottom:4px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .history-item.active .hi-name{color:var(--fire)}
-.hi-meta{display:flex;align-items:center;gap:6px}
-.hi-domain{font-family:'JetBrains Mono',monospace;font-size:8.5px;color:var(--muted);
-  letter-spacing:.08em;text-transform:uppercase}
-.hi-depth{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);
-  letter-spacing:.05em;padding:1px 5px;border:1px solid var(--faint);border-radius:3px}
-.hi-date{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);margin-left:auto}
+.hi-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.hi-domain{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);
+  letter-spacing:.06em;text-transform:uppercase}
+.hi-depth{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--faint);
+  padding:1px 4px;border:1px solid var(--faint);border-radius:3px}
+.hi-date{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--faint);margin-left:auto}
+/* Lifecycle state badge in history */
+.hi-state{font-family:'JetBrains Mono',monospace;font-size:7px;padding:1px 5px;
+  border-radius:3px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.hi-state-forged  {background:var(--fire-faint);border:1px solid rgba(249,115,22,.3);color:var(--fire)}
+.hi-state-stressed{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.hi-state-reforged{background:var(--amber-faint);border:1px solid var(--amber-border);color:var(--gold)}
+.hi-state-ready   {background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+/* Lineage indicator */
+.hi-lineage{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--faint);
+  letter-spacing:.06em;margin-top:4px;display:flex;align-items:center;gap:4px}
+.hi-lineage-dot{width:4px;height:4px;border-radius:50%;background:var(--faint);flex-shrink:0}
+ 
 .main-area{display:flex;flex-direction:column;overflow-y:auto;height:calc(100vh - var(--topbar))}
  
 /* ── FORGE FORM ─────────────────────────────────────── */
@@ -178,25 +193,22 @@ select{cursor:pointer;padding-right:32px;appearance:none}
 .tool-card{border:1px solid var(--border);border-radius:var(--r);background:var(--surface);
   padding:10px 6px;cursor:pointer;transition:all .15s;text-align:center;user-select:none}
 .tool-card:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-1px)}
-.tool-card.sel{border-color:rgba(249,115,22,.45);background:var(--fire-faint);
-  box-shadow:0 0 16px rgba(249,115,22,.1)}
+.tool-card.sel{border-color:rgba(249,115,22,.45);background:var(--fire-faint);box-shadow:0 0 16px rgba(249,115,22,.1)}
 .tool-card.stress-card{border-color:rgba(248,113,113,.2)}
 .tool-card.stress-card:hover{border-color:rgba(248,113,113,.4)}
-.tool-card.stress-card.sel{border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.07);
-  box-shadow:0 0 16px rgba(248,113,113,.1)}
-.tool-card-icon{font-size:1.25rem;line-height:1;margin-bottom:5px}
-.tool-card-name{font-family:'Oxanium',sans-serif;font-size:9px;font-weight:700;
+.tool-card.stress-card.sel{border-color:rgba(248,113,113,.5);background:rgba(248,113,113,.07)}
+.tool-card-icon{font-size:1.2rem;line-height:1;margin-bottom:5px}
+.tool-card-name{font-family:'Oxanium',sans-serif;font-size:8.5px;font-weight:700;
   letter-spacing:.04em;text-transform:uppercase;color:var(--text2);line-height:1.3}
-.tool-card-desc{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:var(--faint);
+.tool-card-desc{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--faint);
   letter-spacing:.03em;margin-top:3px;line-height:1.3}
 .tool-card.sel .tool-card-name{color:var(--fire)}
 .tool-card.stress-card.sel .tool-card-name{color:var(--red)}
-.tool-card.sel .tool-card-desc,.tool-card.stress-card.sel .tool-card-desc{color:var(--muted)}
 .forge-btn{width:100%;margin-top:22px;padding:18px;border:none;border-radius:var(--r);
   background:linear-gradient(135deg,#c2540a,#f97316,#fb923c);color:#180900;
   font-family:'Oxanium',sans-serif;font-size:19px;font-weight:800;letter-spacing:.14em;
   text-transform:uppercase;transition:transform .15s,box-shadow .2s;position:relative;overflow:hidden;
-  box-shadow:0 8px 32px rgba(249,115,22,.28),0 0 0 1px rgba(249,115,22,.15)}
+  box-shadow:0 8px 32px rgba(249,115,22,.28)}
 .forge-btn:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(249,115,22,.38)}
 .forge-btn:active{transform:translateY(0)}
 .forge-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
@@ -211,87 +223,116 @@ select{cursor:pointer;padding-right:32px;appearance:none}
 .output-loading{padding:48px 28px;display:flex;flex-direction:column;align-items:center;gap:20px}
 .pipeline-track{display:flex;align-items:center;flex-wrap:wrap;justify-content:center;gap:4px}
 .pipe-node{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--faint);padding:4px 8px;
-  border:1px solid var(--faint);border-radius:4px;transition:all .35s}
-.pipe-node.active{color:var(--fire);border-color:var(--fire);box-shadow:0 0 10px var(--fire-glow);
-  animation:node-pulse .8s ease infinite}
-.pipe-node.stress-active{color:var(--red)!important;border-color:var(--red)!important;
-  box-shadow:0 0 10px rgba(248,113,113,.3)!important}
+  text-transform:uppercase;color:var(--faint);padding:4px 8px;border:1px solid var(--faint);border-radius:4px;transition:all .35s}
+.pipe-node.active{color:var(--fire);border-color:var(--fire);box-shadow:0 0 10px rgba(249,115,22,.2);animation:node-pulse .8s ease infinite}
+.pipe-node.stress-active{color:var(--red)!important;border-color:var(--red)!important;box-shadow:0 0 10px rgba(248,113,113,.3)!important}
 .pipe-node.done{color:var(--green);border-color:rgba(74,222,128,.4)}
-@keyframes node-pulse{0%,100%{box-shadow:0 0 10px var(--fire-glow)}50%{box-shadow:0 0 20px rgba(249,115,22,.35)}}
+@keyframes node-pulse{0%,100%{box-shadow:0 0 10px rgba(249,115,22,.2)}50%{box-shadow:0 0 20px rgba(249,115,22,.35)}}
 .pipe-arrow{color:var(--faint);font-size:10px;padding:0 3px}
 .forge-bars{display:flex;align-items:center;gap:5px;height:44px}
-.forge-bar{width:4px;background:var(--fire);border-radius:2px;box-shadow:0 0 8px var(--fire);
-  animation:bar-wave 1s ease-in-out infinite}
+.forge-bar{width:4px;background:var(--fire);border-radius:2px;box-shadow:0 0 8px var(--fire);animation:bar-wave 1s ease-in-out infinite}
 .forge-bar:nth-child(1){height:16px;animation-delay:.0s}.forge-bar:nth-child(2){height:30px;animation-delay:.12s}
 .forge-bar:nth-child(3){height:22px;animation-delay:.24s}.forge-bar:nth-child(4){height:38px;animation-delay:.36s}
 .forge-bar:nth-child(5){height:20px;animation-delay:.48s}.forge-bar:nth-child(6){height:32px;animation-delay:.6s}
 .forge-bar:nth-child(7){height:18px;animation-delay:.72s}
 @keyframes bar-wave{0%,100%{transform:scaleY(.5);opacity:.5}50%{transform:scaleY(1);opacity:1}}
-.loading-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
-  letter-spacing:.15em;text-transform:uppercase}
-.loading-step{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--fire);
-  letter-spacing:.12em;text-transform:uppercase;min-height:16px;text-align:center;transition:opacity .3s}
+.loading-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase}
+.loading-step{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--fire);letter-spacing:.12em;text-transform:uppercase;min-height:16px;text-align:center;transition:opacity .3s}
 .loading-step.hide{opacity:0}
 .loading-step.stress-step{color:var(--red)!important}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 .cursor{animation:blink .8s steps(1) infinite;color:var(--fire)}
- 
-/* ── STREAMING ──────────────────────────────────────── */
 .output-streaming{padding:20px 28px;flex:1}
-.streaming-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;
-  padding-bottom:12px;border-bottom:1px solid var(--border)}
-.streaming-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--fire);
-  letter-spacing:.15em;text-transform:uppercase}
+.streaming-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.streaming-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--fire);letter-spacing:.15em;text-transform:uppercase}
 .streaming-bars{display:flex;align-items:center;gap:3px;height:18px}
-.streaming-bar{width:3px;background:var(--fire);border-radius:2px;
-  animation:bar-wave .8s ease-in-out infinite}
-.streaming-bar:nth-child(1){height:8px;animation-delay:0s}.streaming-bar:nth-child(2){height:14px;animation-delay:.1s}
+.streaming-bar{width:3px;background:var(--fire);border-radius:2px;animation:bar-wave .8s ease-in-out infinite}
+.streaming-bar:nth-child(1){height:8px}.streaming-bar:nth-child(2){height:14px;animation-delay:.1s}
 .streaming-bar:nth-child(3){height:10px;animation-delay:.2s}.streaming-bar:nth-child(4){height:16px;animation-delay:.3s}
 .streaming-bar:nth-child(5){height:9px;animation-delay:.4s}
-.streaming-token-count{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
-  letter-spacing:.1em;margin-left:auto}
+.streaming-token-count{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;margin-left:auto}
 #stream-output{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text2);
   line-height:1.8;white-space:pre-wrap;word-break:break-word;
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-  padding:16px 18px;min-height:200px;max-height:60vh;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+  padding:16px 18px;min-height:200px;max-height:60vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 #stream-output::-webkit-scrollbar{width:4px}
 #stream-output::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 .stream-section-peek{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
 .stream-peek-chip{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);
-  padding:2px 8px;border:1px solid var(--faint);border-radius:3px;
-  letter-spacing:.06em;text-transform:uppercase;transition:all .3s}
+  padding:2px 8px;border:1px solid var(--faint);border-radius:3px;letter-spacing:.06em;text-transform:uppercase;transition:all .3s}
 .stream-peek-chip.found{color:var(--green);border-color:rgba(74,222,128,.4)}
  
 /* ── RESULT ─────────────────────────────────────────── */
-.result-header{padding:20px 28px 0;display:flex;align-items:flex-start;
-  justify-content:space-between;gap:16px;flex-wrap:wrap}
-.result-name{font-family:'Oxanium',sans-serif;font-size:1.7rem;font-weight:800;
-  letter-spacing:-.02em;line-height:1;margin-bottom:6px}
+.result-header{padding:20px 28px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.result-name{font-family:'Oxanium',sans-serif;font-size:1.7rem;font-weight:800;letter-spacing:-.02em;line-height:1;margin-bottom:4px}
+.result-problem{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+  letter-spacing:.06em;line-height:1.5;margin-bottom:6px;max-width:600px}
 .result-summary{font-size:15px;color:var(--text2);line-height:1.5;max-width:600px}
-.result-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.result-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;
   font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase}
-.chip-green{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
-.chip-fire{background:var(--fire-faint);border:1px solid rgba(249,115,22,.25);color:var(--fire)}
-.chip-muted{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
-.chip-amber{background:var(--amber-faint);border:1px solid var(--amber-border);color:var(--gold)}
-.chip-red{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
-.result-toolbar{display:flex;gap:8px;padding:16px 28px;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.tool-btn{padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;
-  color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;
+.chip-green  {background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.chip-fire   {background:var(--fire-faint);border:1px solid rgba(249,115,22,.25);color:var(--fire)}
+.chip-muted  {background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.chip-amber  {background:var(--amber-faint);border:1px solid var(--amber-border);color:var(--gold)}
+.chip-red    {background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.chip-cyan   {background:var(--cyan-faint);border:1px solid var(--cyan-border);color:var(--cyan)}
+/* Lifecycle chips */
+.chip-state-forged  {background:var(--fire-faint);border:1px solid rgba(249,115,22,.25);color:var(--fire)}
+.chip-state-stressed{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.chip-state-reforged{background:var(--amber-faint);border:1px solid var(--amber-border);color:var(--gold)}
+.chip-state-ready   {background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.result-toolbar{display:flex;gap:6px;padding:14px 28px;border-bottom:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.tool-btn{padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:transparent;
+  color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.09em;
   text-transform:uppercase;transition:all .15s;white-space:nowrap}
 .tool-btn:hover{border-color:var(--fire-dim);color:var(--fire)}
 .tool-btn.active{border-color:var(--green-border);color:var(--green)}
-.tool-btn.stress-btn{color:var(--muted)}
 .tool-btn.stress-btn:hover{border-color:var(--red-border);color:var(--red)}
 .tool-btn.reforge-btn:hover{border-color:var(--amber-border);color:var(--gold)}
+.tool-btn.fork-btn:hover{border-color:var(--cyan-border);color:var(--cyan)}
+.tool-btn.packet-btn:hover{border-color:var(--border3);color:var(--text2)}
+.tool-btn.ready-btn{border-color:rgba(74,222,128,.2);color:var(--muted)}
+.tool-btn.ready-btn:hover{border-color:var(--green-border);color:var(--green)}
+.tool-btn.ready-btn.is-ready{border-color:var(--green-border);color:var(--green);background:var(--green-bg)}
+ 
+/* ── STRESS NUDGE BANNER ────────────────────────────── */
+.stress-nudge{
+  margin:10px 28px 0;padding:11px 16px;
+  background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);
+  border-radius:var(--r);display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.stress-nudge-text{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.07em;line-height:1.5;flex:1}
+.stress-nudge-text strong{color:var(--fire)}
+.stress-nudge-action{padding:5px 12px;border:1px solid rgba(248,113,113,.3);border-radius:6px;
+  background:rgba(248,113,113,.07);color:var(--red);font-family:'JetBrains Mono',monospace;
+  font-size:8px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
+.stress-nudge-action:hover{background:rgba(248,113,113,.14);border-color:var(--red)}
+.stress-nudge-dismiss{padding:4px 8px;border:none;background:transparent;color:var(--faint);
+  font-size:11px;cursor:pointer;margin-left:4px;transition:color .15s}
+.stress-nudge-dismiss:hover{color:var(--muted)}
+ 
+/* ── ASSUMPTION BANNER / REFORGED BANNER ───────────── */
+.assumption-banner{
+  margin:10px 28px 0;padding:10px 14px;
+  background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:var(--r);
+  display:flex;align-items:center;gap:10px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);letter-spacing:.08em;
+  line-height:1.5;cursor:pointer;transition:background .15s}
+.assumption-banner:hover{background:rgba(251,191,36,.1)}
+.reforged-banner{
+  margin:6px 28px 0;padding:8px 14px;
+  background:rgba(251,191,36,.04);border:1px solid rgba(251,191,36,.15);border-radius:var(--r);
+  display:flex;align-items:center;gap:8px;
+  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.07em}
+ 
+/* ── SECTIONS ────────────────────────────────────────── */
 .sections{padding:0}
 .section{border-bottom:1px solid var(--border);overflow:hidden}
 .section:last-child{border-bottom:none}
 .section-head{display:flex;align-items:center;justify-content:space-between;
-  padding:16px 28px;cursor:pointer;transition:background .15s;user-select:none}
+  padding:15px 28px;cursor:pointer;transition:background .15s;user-select:none}
 .section-head:hover{background:rgba(255,255,255,.018)}
 .section-meta{display:flex;align-items:center;gap:12px}
 .section-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;
@@ -311,90 +352,61 @@ select{cursor:pointer;padding-right:32px;appearance:none}
 .section-anim:nth-child(6){animation-delay:.25s}.section-anim:nth-child(7){animation-delay:.3s}
 @keyframes sec-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
  
-/* ── ASSUMPTION SECTION (amber) ─────────────────────── */
+/* Assumption — amber */
 .section.is-assumptions{background:linear-gradient(90deg,rgba(251,191,36,.03),transparent)}
 .section.is-assumptions .section-head{border-left:2px solid rgba(251,191,36,.4)}
 .section.is-assumptions .section-icon{background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3)}
 .section.is-assumptions .section-name{color:var(--gold)}
-.section.is-assumptions .section-body{border-left:2px solid rgba(251,191,36,.15);
-  margin-left:28px;padding-left:14px;color:var(--text2)}
+.section.is-assumptions .section-body{border-left:2px solid rgba(251,191,36,.15);margin-left:28px;padding-left:14px}
 .section.is-assumptions .section-toggle{color:var(--gold)}
-/* Assumption audit callout banner */
-.assumption-banner{
-  margin:12px 28px 0;padding:10px 14px;
-  background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);
-  border-radius:var(--r);display:flex;align-items:center;gap:10px;
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--gold);
-  letter-spacing:.08em;line-height:1.5;cursor:pointer;transition:background .15s;
-}
-.assumption-banner:hover{background:rgba(251,191,36,.1)}
-.assumption-banner-icon{font-size:1rem;flex-shrink:0}
  
-/* ── STRESS TEST SECTIONS (red) ─────────────────────── */
+/* Contradiction — cyan */
+.section.is-contradiction{background:linear-gradient(90deg,rgba(34,211,238,.025),transparent)}
+.section.is-contradiction .section-head{border-left:2px solid rgba(34,211,238,.35)}
+.section.is-contradiction .section-icon{background:rgba(34,211,238,.08);border-color:rgba(34,211,238,.22)}
+.section.is-contradiction .section-name{color:var(--cyan)}
+.section.is-contradiction .section-body{border-left:2px solid rgba(34,211,238,.12);margin-left:28px;padding-left:14px}
+.section.is-contradiction .section-toggle{color:var(--cyan)}
+ 
+/* Stress — red */
 .section.is-stress{background:linear-gradient(90deg,rgba(248,113,113,.025),transparent)}
 .section.is-stress .section-head{border-left:2px solid rgba(248,113,113,.35)}
 .section.is-stress .section-icon{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.2)}
 .section.is-stress .section-name{color:var(--red)}
-.section.is-stress .section-body{color:var(--text2)}
 .section.is-stress-verdict .section-head{border-left:2px solid rgba(248,113,113,.6)}
 .section.is-stress-verdict .section-icon{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.3)}
 .section.is-stress-verdict .section-name{color:var(--red)}
-/* Reforged indicator */
-.reforged-banner{
-  margin:0 28px 12px;padding:8px 14px;
-  background:rgba(251,191,36,.05);border:1px solid rgba(251,191,36,.15);
-  border-radius:var(--r);display:flex;align-items:center;gap:8px;
-  font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em;
-}
  
 /* ── ERROR / EMPTY ──────────────────────────────────── */
-.output-error{margin:24px 28px;padding:16px;border:1px solid var(--red-border);
-  border-radius:var(--r);background:var(--red-bg);font-family:'JetBrains Mono',monospace;
-  font-size:11px;color:var(--red);line-height:1.7}
+.output-error{margin:24px 28px;padding:16px;border:1px solid var(--red-border);border-radius:var(--r);background:var(--red-bg);font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--red);line-height:1.7}
 .output-error strong{display:block;margin-bottom:6px;font-size:12px}
 .output-empty{padding:48px 28px;display:flex;flex-direction:column;align-items:center;gap:14px}
 .output-empty-glyph{font-size:56px;opacity:.12;line-height:1}
-.output-empty-title{font-family:'Oxanium',sans-serif;font-size:1.2rem;font-weight:700;
-  color:var(--muted);letter-spacing:.05em}
-.output-empty-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);
-  letter-spacing:.1em;line-height:1.7;text-align:center;text-transform:uppercase}
+.output-empty-title{font-family:'Oxanium',sans-serif;font-size:1.2rem;font-weight:700;color:var(--muted);letter-spacing:.05em}
+.output-empty-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);letter-spacing:.1em;line-height:1.7;text-align:center;text-transform:uppercase}
  
 /* ── REFORGE DRAWER ─────────────────────────────────── */
 .reforge-drawer{
   position:fixed;bottom:0;left:0;right:0;z-index:500;
   background:var(--surface);border-top:1px solid var(--amber-border);
-  box-shadow:0 -20px 60px rgba(0,0,0,.7),0 -1px 0 rgba(251,191,36,.15);
+  box-shadow:0 -20px 60px rgba(0,0,0,.7);
   transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);
-  max-height:72vh;display:flex;flex-direction:column;
-}
+  max-height:72vh;display:flex;flex-direction:column}
 .reforge-drawer::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(251,191,36,.5),transparent)}
 .reforge-drawer.open{transform:translateY(0)}
-.reforge-drawer-header{
-  padding:14px 24px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
-  background:rgba(251,191,36,.04);
-}
-.reforge-drawer-title{font-family:'Oxanium',sans-serif;font-weight:800;font-size:1rem;
-  letter-spacing:.04em;color:var(--gold)}
-.reforge-drawer-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
-  letter-spacing:.1em;margin-top:3px}
-.reforge-close-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);
-  background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s}
+.reforge-drawer-header{padding:14px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:rgba(251,191,36,.04)}
+.reforge-drawer-title{font-family:'Oxanium',sans-serif;font-weight:800;font-size:1rem;letter-spacing:.04em;color:var(--gold)}
+.reforge-drawer-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;margin-top:3px}
+.reforge-close-btn{padding:6px 12px;border:1px solid var(--border);border-radius:var(--r);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;transition:all .15s}
 .reforge-close-btn:hover{border-color:var(--border2);color:var(--text)}
-.reforge-drawer-body{padding:20px 24px;overflow-y:auto;display:grid;
-  grid-template-columns:1fr 1fr;gap:24px;flex:1}
-.reforge-col-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
-  letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
-.reforge-context-area{width:100%;min-height:120px;resize:vertical;
-  background:var(--bg2);border:1px solid var(--amber-border);border-radius:var(--r);
-  color:var(--text);padding:12px 14px;outline:none;font-size:14px;line-height:1.65;
-  transition:border-color .2s,box-shadow .2s}
+.reforge-drawer-body{padding:20px 24px;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:24px;flex:1}
+.reforge-col-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
+.reforge-context-area{width:100%;min-height:120px;resize:vertical;background:var(--bg2);border:1px solid var(--amber-border);border-radius:var(--r);color:var(--text);padding:12px 14px;outline:none;font-size:14px;line-height:1.65;transition:border-color .2s,box-shadow .2s}
 .reforge-context-area:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(251,191,36,.1)}
-.reforge-section-checks{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-.reforge-check{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 10px;
-  border:1px solid var(--border);border-radius:var(--r);transition:all .15s;user-select:none}
+.reforge-section-checks{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.reforge-check{display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);transition:all .15s;user-select:none}
 .reforge-check:hover{border-color:var(--border2);background:var(--surface2)}
 .reforge-check input[type=checkbox]{accent-color:var(--gold);width:14px;height:14px;flex-shrink:0;cursor:pointer}
 .reforge-check-label{font-size:13px;color:var(--text2);cursor:pointer}
@@ -403,17 +415,51 @@ select{cursor:pointer;padding-right:32px;appearance:none}
 .reforge-footer{padding:0 24px 20px;flex-shrink:0}
 .reforge-run-btn{width:100%;padding:13px;border:none;border-radius:var(--r);
   background:linear-gradient(135deg,#92400e,#d97706,#fbbf24);color:#180900;
-  font-family:'Oxanium',sans-serif;font-size:16px;font-weight:800;
-  letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
-  transition:transform .15s,box-shadow .2s;
+  font-family:'Oxanium',sans-serif;font-size:16px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;transition:transform .15s,box-shadow .2s;
   box-shadow:0 6px 24px rgba(251,191,36,.2)}
 .reforge-run-btn:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(251,191,36,.3)}
 .reforge-run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
  
+/* ── AI PACKET MODAL ────────────────────────────────── */
+.packet-overlay{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.7);
+  display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.packet-overlay.open{display:flex}
+.packet-modal{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-xl);box-shadow:var(--shadow);overflow:hidden;position:relative;animation:fadeIn .2s ease}
+.packet-modal::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(34,211,238,.4),transparent)}
+.packet-modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between}
+.packet-modal-title{font-family:'Oxanium',sans-serif;font-weight:800;font-size:1.1rem;letter-spacing:.03em}
+.packet-modal-close{padding:5px 10px;border:1px solid var(--border);border-radius:var(--r);
+  background:transparent;color:var(--muted);font-size:12px;cursor:pointer;transition:all .15s}
+.packet-modal-close:hover{border-color:var(--border2);color:var(--text)}
+.packet-modal-body{padding:20px 24px}
+.packet-field-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+.packet-select{width:100%;padding:11px 14px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--text);outline:none;appearance:none;font-size:14px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237a7060' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+.packet-select:focus{border-color:var(--cyan-border);box-shadow:0 0 0 3px var(--cyan-faint);outline:none}
+.packet-desc-box{margin-top:14px;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+  line-height:1.7;letter-spacing:.04em;min-height:64px}
+.packet-copy-btn{width:100%;margin-top:16px;padding:13px;border:none;border-radius:var(--r);
+  background:linear-gradient(135deg,#164e63,#0891b2,#22d3ee);color:#0c1a1f;
+  font-family:'Oxanium',sans-serif;font-size:15px;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;cursor:pointer;transition:transform .15s,box-shadow .2s;
+  box-shadow:0 6px 24px rgba(34,211,238,.2)}
+.packet-copy-btn:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(34,211,238,.3)}
+.packet-copy-btn.copied{background:linear-gradient(135deg,#14532d,#16a34a,#4ade80);color:#0c1f10}
+.packet-note{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);
+  letter-spacing:.07em;text-align:center;margin-top:10px;line-height:1.5}
+ 
 /* ── SETTINGS ───────────────────────────────────────── */
 #view-settings .app-body{display:block;padding:40px 20px;max-width:600px;margin:0 auto}
-.settings-section{background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--r-lg);padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
+.settings-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
+  padding:24px;margin-bottom:16px;position:relative;overflow:hidden}
 .settings-section::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:linear-gradient(90deg,transparent,rgba(249,115,22,.2),transparent)}
 .settings-title{font-family:'Oxanium',sans-serif;font-size:14px;font-weight:700;
@@ -432,15 +478,11 @@ select{cursor:pointer;padding-right:32px;appearance:none}
   padding:8px 12px;background:var(--bg2);border:1px solid var(--border);
   border-radius:var(--r);flex:1;letter-spacing:.05em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}
-.stat-box{text-align:center;padding:12px;background:var(--surface2);border-radius:var(--r);
-  border:1px solid var(--border)}
+.stat-box{text-align:center;padding:12px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)}
 .stat-val{font-family:'Oxanium',sans-serif;font-size:1.6rem;font-weight:700;color:var(--fire);display:block}
-.stat-key{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
-  letter-spacing:.1em;text-transform:uppercase}
-.btn-primary{padding:13px 24px;border:none;border-radius:var(--r);
-  background:linear-gradient(135deg,#c2540a,#f97316);color:#180900;
-  font-family:'Oxanium',sans-serif;font-size:15px;font-weight:800;letter-spacing:.1em;
-  text-transform:uppercase;transition:all .15s;box-shadow:0 6px 24px rgba(249,115,22,.25)}
+.stat-key{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.btn-primary{padding:13px 24px;border:none;border-radius:var(--r);background:linear-gradient(135deg,#c2540a,#f97316);color:#180900;
+  font-family:'Oxanium',sans-serif;font-size:15px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;transition:all .15s;box-shadow:0 6px 24px rgba(249,115,22,.25)}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(249,115,22,.35)}
 .btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn-secondary{padding:13px 24px;border:1px solid var(--border2);border-radius:var(--r);
@@ -455,28 +497,23 @@ select{cursor:pointer;padding-right:32px;appearance:none}
   :root{--sidebar:0px}
   .sidebar{display:none}
   .app-body{grid-template-columns:1fr}
-  .grid-2{grid-template-columns:1fr}
-  .depth-row{grid-template-columns:1fr}
-  .topbar-nav{gap:2px}
-  .nav-btn{padding:6px 10px;font-size:13px}
+  .grid-2,.depth-row{grid-template-columns:1fr}
+  .topbar-nav{gap:2px}.nav-btn{padding:6px 10px;font-size:13px}
   .reforge-drawer-body{grid-template-columns:1fr}
 }
 @media(max-width:480px){
   .forge-pane{padding:18px}
   .output-loading,.output-empty,.output-streaming{padding:32px 18px}
-  .result-header{padding:16px 18px 0}
+  .result-header,.result-toolbar,.stress-nudge,.assumption-banner,.reforged-banner{padding-left:18px;padding-right:18px;margin-left:0;margin-right:0}
   .section-head{padding:14px 18px}
   .section-body{padding:0 18px 18px}
-  .result-toolbar{padding:12px 18px}
-  .section.is-assumptions .section-body{margin-left:18px}
+  .section.is-assumptions .section-body,.section.is-contradiction .section-body{margin-left:18px}
 }
 </style>
 </head>
 <body>
  
-<!-- ══════════════════════════════════════════════════════
-     SETUP VIEW
-══════════════════════════════════════════════════════ -->
+<!-- ══ SETUP ════════════════════════════════════════════ -->
 <div class="view" id="view-setup">
   <div class="setup-card">
     <div class="setup-hero">
@@ -486,50 +523,34 @@ select{cursor:pointer;padding-right:32px;appearance:none}
     </div>
     <div class="setup-body">
       <div class="setup-steps">
-        <div class="setup-step">
-          <div class="step-num">1</div>
-          <div class="step-text">Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> and create a free account</div>
-        </div>
-        <div class="setup-step">
-          <div class="step-num">2</div>
-          <div class="step-text">Click <strong>API Keys</strong> → <strong>Create Key</strong> → copy it</div>
-        </div>
-        <div class="setup-step">
-          <div class="step-num">3</div>
-          <div class="step-text">Paste it below. Your key stays on <strong>your device only</strong> — never sent anywhere except Anthropic directly</div>
-        </div>
+        <div class="setup-step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> and create a free account</div></div>
+        <div class="setup-step"><div class="step-num">2</div><div class="step-text">Click <strong>API Keys</strong> → <strong>Create Key</strong> → copy it</div></div>
+        <div class="setup-step"><div class="step-num">3</div><div class="step-text">Paste it below. Your key stays on <strong>your device only</strong> — never sent anywhere except Anthropic directly</div></div>
       </div>
       <div class="setup-field">
         <label>Your Anthropic API Key</label>
         <input type="password" id="setup-key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
       </div>
-      <div class="setup-hint">
-        A new account comes with free credits — enough for dozens of forges.<br/>
-        One forge uses approximately $0.02–0.08 of API credit depending on depth.
-      </div>
+      <div class="setup-hint">A new account comes with free credits — enough for dozens of forges.<br/>One forge costs approx. $0.02–0.08 depending on depth.</div>
       <div class="setup-error" id="setup-error"></div>
       <button class="btn-primary" id="setup-save-btn" style="width:100%">Save Key &amp; Start Forging</button>
     </div>
   </div>
 </div>
  
-<!-- ══════════════════════════════════════════════════════
-     APP VIEW
-══════════════════════════════════════════════════════ -->
+<!-- ══ APP ══════════════════════════════════════════════ -->
 <div class="view" id="view-app">
   <div class="topbar">
     <div>
       <div class="logo">OMNI<em>FORGE</em></div>
-      <div class="logo-sub">System Forge™ v3</div>
+      <div class="logo-sub">System Forge™ v4</div>
     </div>
     <div class="topbar-nav">
-      <button class="nav-btn active" data-view="app" id="nav-forge">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L14 8L8 14"/><path d="M2 8h12"/></svg>
-        Forge
+      <button class="nav-btn active" data-view="app">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L14 8L8 14"/><path d="M2 8h12"/></svg>Forge
       </button>
-      <button class="nav-btn" data-view="settings" id="nav-settings">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
-        Settings
+      <button class="nav-btn" data-view="settings">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>Settings
       </button>
     </div>
     <div class="topbar-right">
@@ -541,49 +562,36 @@ select{cursor:pointer;padding-right:32px;appearance:none}
   </div>
  
   <div class="app-body">
-    <!-- SIDEBAR -->
     <div class="sidebar">
       <div class="sidebar-head">
         <div class="sidebar-title">Forge History</div>
         <button class="new-forge-btn" id="new-forge-sidebar">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
-          New Forge
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>New Forge
         </button>
       </div>
-      <div class="history-list" id="history-list">
-        <div class="history-empty">
-          <div class="history-empty-icon">⚒</div>
-          <div class="history-empty-text">No forges yet.<br/>Your systems will<br/>appear here.</div>
-        </div>
-      </div>
+      <div class="history-list" id="history-list"></div>
     </div>
  
-    <!-- MAIN AREA -->
     <div class="main-area" id="main-area">
       <div class="forge-pane" id="forge-pane">
         <div class="pane-title" id="pane-title">What do you want to build?</div>
-        <div class="pane-sub" id="pane-sub">Idea in → Complete system + assumption audit out</div>
- 
+        <div class="pane-sub" id="pane-sub">Idea in → Complete system + contradiction audit out</div>
         <div class="tool-selector">
           <div class="tool-selector-label">// Select Forge Type</div>
           <div class="tool-grid" id="tool-grid"></div>
         </div>
- 
         <div class="field">
           <label>Your Idea or Intention</label>
-          <textarea id="idea" rows="5" placeholder="Write it raw. Messy is fine. The forge handles the chaos."></textarea>
-          <div class="field-hint">Be specific about the problem. Include context. The more real, the better the output.</div>
+          <textarea id="idea" rows="5"></textarea>
+          <div class="field-hint" id="idea-hint">Be specific about the problem. Include context. The more real, the better the output.</div>
         </div>
- 
         <div class="grid-2" id="domain-audience-row">
           <div class="field">
             <label>Domain</label>
             <div class="select-wrap">
               <select id="domain">
-                <option value="Startup">Startup</option>
-                <option value="Product / Tool">Product / Tool</option>
-                <option value="Service">Service</option>
-                <option value="Education">Education System</option>
+                <option value="Startup">Startup</option><option value="Product / Tool">Product / Tool</option>
+                <option value="Service">Service</option><option value="Education">Education System</option>
                 <option value="Community Platform">Community Platform</option>
                 <option value="Movement / Initiative">Movement / Initiative</option>
                 <option value="Creative Project">Creative Project</option>
@@ -591,8 +599,7 @@ select{cursor:pointer;padding-right:32px;appearance:none}
                 <option value="Health / Wellness">Health / Wellness</option>
                 <option value="Local Business">Local Business</option>
                 <option value="Non-Profit">Non-Profit</option>
-                <option value="Side Project">Side Project</option>
-                <option value="Other">Other</option>
+                <option value="Side Project">Side Project</option><option value="Other">Other</option>
               </select>
             </div>
           </div>
@@ -601,51 +608,39 @@ select{cursor:pointer;padding-right:32px;appearance:none}
             <input type="text" id="audience" placeholder="e.g. freelancers, parents, local shops…"/>
           </div>
         </div>
- 
         <div class="field" id="risk-row">
           <label>Biggest Unknown or Risk</label>
           <input type="text" id="risk" placeholder="What are you most unsure about? What keeps you up at night?"/>
-          <div class="field-hint">This directly shapes your experiments, pilot plan, and assumption audit.</div>
+          <div class="field-hint">This directly shapes your experiments, pilot plan, and contradiction audit.</div>
         </div>
- 
         <div class="field" id="depth-row-el">
           <label>Forge Depth</label>
           <div class="depth-row">
-            <div class="depth-opt" data-d="Quick">
-              <span class="depth-label">⚡ Quick</span>
-              <span class="depth-desc">Core system · 3 assets</span>
-            </div>
-            <div class="depth-opt sel" data-d="Standard">
-              <span class="depth-label">🔥 Standard</span>
-              <span class="depth-desc">Full forge · 5 assets</span>
-            </div>
-            <div class="depth-opt" data-d="Deep">
-              <span class="depth-label">⚙️ Deep</span>
-              <span class="depth-desc">+Deployment layer</span>
-            </div>
+            <div class="depth-opt" data-d="Quick"><span class="depth-label">⚡ Quick</span><span class="depth-desc">Core system · 3 assets</span></div>
+            <div class="depth-opt sel" data-d="Standard"><span class="depth-label">🔥 Standard</span><span class="depth-desc">Full forge · 5 assets</span></div>
+            <div class="depth-opt" data-d="Deep"><span class="depth-label">⚙️ Deep</span><span class="depth-desc">+Deployment layer</span></div>
           </div>
         </div>
- 
         <button class="forge-btn" id="forge-btn">⚡ FORGE</button>
-        <div class="forge-hint">Ctrl+Enter / ⌘+Enter to forge · Every forge includes an Assumption Audit</div>
+        <div class="forge-hint" id="forge-hint">Ctrl+Enter / ⌘+Enter · Every forge includes assumption + contradiction audit</div>
       </div>
  
-      <!-- OUTPUT PANE -->
       <div class="output-pane" id="output-pane">
+        <!-- EMPTY -->
         <div class="output-empty" id="out-empty">
           <div class="output-empty-glyph">⚒</div>
           <div class="output-empty-title">FORGE IDLE</div>
-          <div class="output-empty-sub">Fill in your idea and hit FORGE<br/>Every output includes an assumption audit</div>
+          <div class="output-empty-sub">Fill in your idea and hit FORGE<br/>Outputs include assumption + contradiction audits</div>
         </div>
- 
+        <!-- LOADING -->
         <div id="out-loading" style="display:none">
           <div class="output-loading">
-            <div class="pipeline-track" id="pipeline-track">
+            <div class="pipeline-track">
               <span class="pipe-node" id="pn0">Intent</span><span class="pipe-arrow">→</span>
               <span class="pipe-node" id="pn1">Framework</span><span class="pipe-arrow">→</span>
               <span class="pipe-node" id="pn2">Assets</span><span class="pipe-arrow">→</span>
-              <span class="pipe-node" id="pn3">Assumptions</span><span class="pipe-arrow">→</span>
-              <span class="pipe-node" id="pn4">Synthesis</span><span class="pipe-arrow">→</span>
+              <span class="pipe-node" id="pn3">Audit</span><span class="pipe-arrow">→</span>
+              <span class="pipe-node" id="pn4">Contradictions</span><span class="pipe-arrow">→</span>
               <span class="pipe-node" id="pn5">System</span>
             </div>
             <div class="forge-bars">
@@ -657,14 +652,13 @@ select{cursor:pointer;padding-right:32px;appearance:none}
             <div class="loading-step" id="loading-step">EXTRACTING INTENTION</div>
           </div>
         </div>
- 
+        <!-- STREAMING -->
         <div id="out-streaming" style="display:none">
           <div class="output-streaming">
             <div class="streaming-header">
               <div class="streaming-bars">
                 <div class="streaming-bar"></div><div class="streaming-bar"></div>
-                <div class="streaming-bar"></div><div class="streaming-bar"></div>
-                <div class="streaming-bar"></div>
+                <div class="streaming-bar"></div><div class="streaming-bar"></div><div class="streaming-bar"></div>
               </div>
               <span class="streaming-label" id="streaming-label">STREAMING OUTPUT</span>
               <span class="streaming-token-count" id="stream-token-count">0 chars</span>
@@ -673,37 +667,46 @@ select{cursor:pointer;padding-right:32px;appearance:none}
             <div class="stream-section-peek" id="stream-peek"></div>
           </div>
         </div>
- 
+        <!-- RESULT -->
         <div id="out-result" style="display:none">
           <div class="result-header">
-            <div>
+            <div style="flex:1">
               <div class="result-name" id="out-name">System Name</div>
+              <div class="result-problem" id="out-problem" style="display:none"></div>
               <div class="result-summary" id="out-summary"></div>
               <div class="result-chips" id="out-chips"></div>
             </div>
           </div>
-          <!-- Assumption audit callout (shown when forge has assumptions) -->
-          <div class="assumption-banner" id="assumption-banner" style="display:none" onclick="scrollToAssumptions()">
-            <span class="assumption-banner-icon">⚠️</span>
-            <span>This forge contains an <strong>Assumption Audit</strong> — read it before acting on the output. Click to jump there.</span>
+          <!-- Stress nudge (shown when forge_state === 'forged') -->
+          <div class="stress-nudge" id="stress-nudge" style="display:none">
+            <div class="stress-nudge-text"><strong>Not yet stress tested.</strong> Assumptions haven't been challenged — don't act on this output before running a stress test.</div>
+            <button class="stress-nudge-action" id="stress-nudge-btn">⚔ Stress Test Now</button>
+            <button class="stress-nudge-dismiss" id="stress-nudge-dismiss" title="Dismiss">✕</button>
           </div>
-          <!-- Reforged indicator -->
+          <!-- Assumption banner -->
+          <div class="assumption-banner" id="assumption-banner" style="display:none" onclick="scrollToSection('assumptions')">
+            ⚠️ <span>This forge includes an <strong>Assumption Audit</strong> — read before acting on the output.</span>
+          </div>
+          <!-- Reforged banner -->
           <div class="reforged-banner" id="reforged-banner" style="display:none">
             🔄 <span id="reforged-text"></span>
           </div>
+          <!-- Toolbar -->
           <div class="result-toolbar">
             <button class="tool-btn" id="btn-copy">⎘ Copy</button>
             <button class="tool-btn" id="btn-download-txt">↓ .txt</button>
             <button class="tool-btn" id="btn-download-md">↓ .md</button>
-            <button class="tool-btn" id="btn-expand">↕ Expand All</button>
-            <button class="tool-btn" id="btn-collapse">↕ Collapse All</button>
-            <button class="tool-btn stress-btn" id="btn-stress">⚔ Stress Test</button>
+            <button class="tool-btn" id="btn-expand">↕ All</button>
+            <button class="tool-btn stress-btn" id="btn-stress">⚔ Stress</button>
             <button class="tool-btn reforge-btn" id="btn-reforge">🔄 Reforge</button>
-            <button class="tool-btn" id="btn-new-forge" style="margin-left:auto">+ New Forge</button>
+            <button class="tool-btn fork-btn" id="btn-fork">⑂ Fork</button>
+            <button class="tool-btn packet-btn" id="btn-packet">📋 AI Packet</button>
+            <button class="tool-btn ready-btn" id="btn-ready">✓ Mark Ready</button>
+            <button class="tool-btn" id="btn-new-forge" style="margin-left:auto">+ New</button>
           </div>
           <div class="sections" id="sections"></div>
         </div>
- 
+        <!-- ERROR -->
         <div id="out-error" style="display:none">
           <div class="output-error">
             <strong>⚠ FORGE ERROR</strong>
@@ -726,51 +729,55 @@ select{cursor:pointer;padding-right:32px;appearance:none}
     <div class="reforge-drawer-body">
       <div>
         <div class="reforge-col-label">What changed? What did you learn? What failed?</div>
-        <textarea id="reforge-context" class="reforge-context-area"
-          placeholder="Example: Ran the micro-pool experiment. 8 of 10 people committed but only £500/month, not £1,000. Banks won't look at us until we have 6 months of statements. One potential member is a solicitor who can help with the CIC structure for free. Need to update the pilot plan and experiments accordingly…"></textarea>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em;margin-top:8px;line-height:1.6">
-          Be specific. Test results, pivots, new constraints, what worked, what didn't. The engine only updates sections where the new information actually changes something.
-        </div>
+        <textarea id="reforge-context" class="reforge-context-area" placeholder="Example: Ran the micro-pool experiment — 8 of 10 people committed but only £500/month, not £1,000. Banks need 6 months of statements before they'll look at us. Update the pilot plan and experiments accordingly…"></textarea>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.07em;margin-top:8px;line-height:1.6">Specific test results, pivots, constraints, what worked. The engine only updates sections where new info actually changes something.</div>
       </div>
       <div>
         <div class="reforge-col-label">Which sections to update</div>
         <div id="reforge-section-checks" class="reforge-section-checks"></div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);letter-spacing:.08em;margin-top:10px;line-height:1.6">
-          Unselected sections are kept exactly as-is. Reforging is merged into your saved forge history.
-        </div>
       </div>
     </div>
     <div class="reforge-footer">
       <button id="reforge-run-btn" class="reforge-run-btn">🔄 Run Reforge →</button>
     </div>
   </div>
-</div>
  
-<!-- ══════════════════════════════════════════════════════
-     SETTINGS VIEW
-══════════════════════════════════════════════════════ -->
-<div class="view" id="view-settings">
-  <div class="topbar">
-    <div>
-      <div class="logo">OMNI<em>FORGE</em></div>
-      <div class="logo-sub">System Forge™ v3</div>
-    </div>
-    <div class="topbar-nav">
-      <button class="nav-btn" data-view="app">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L14 8L8 14"/><path d="M2 8h12"/></svg>
-        Forge
-      </button>
-      <button class="nav-btn active" data-view="settings">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>
-        Settings
-      </button>
-    </div>
-    <div class="topbar-right">
-      <div class="key-badge" id="key-badge-s">
-        <div class="key-dot" id="key-dot-s"></div>
-        <span id="key-label-s">API KEY</span>
+  <!-- AI PACKET MODAL -->
+  <div id="packet-overlay" class="packet-overlay">
+    <div class="packet-modal">
+      <div class="packet-modal-header">
+        <div>
+          <div class="packet-modal-title">📋 AI PACKET</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.08em;margin-top:3px">COPY → PASTE INTO ANY AI MODEL</div>
+        </div>
+        <button class="packet-modal-close" id="packet-close">✕</button>
+      </div>
+      <div class="packet-modal-body">
+        <div class="packet-field-label">Task to run in your AI</div>
+        <select id="packet-task" class="packet-select">
+          <option value="stress">⚔ Stress Test — attack assumptions, find failure modes</option>
+          <option value="reforge">🔄 Reforge — update sections with new information</option>
+          <option value="extend">🔁 Extend — add a new section or dimension</option>
+          <option value="assumptions">🔍 Assumption Extraction — pull and validate all assumptions</option>
+          <option value="contradictions">⚡ Contradiction Check — find logical conflicts between sections</option>
+        </select>
+        <div class="packet-desc-box" id="packet-desc-box"></div>
+        <button class="packet-copy-btn" id="packet-copy-btn">Copy Packet →</button>
+        <div class="packet-note">Works with Claude, ChatGPT, Gemini, or any AI that accepts structured prompts.<br/>Paste the packet → add any context → run it → paste the result back here via Reforge.</div>
       </div>
     </div>
+  </div>
+</div>
+ 
+<!-- ══ SETTINGS ══════════════════════════════════════════ -->
+<div class="view" id="view-settings">
+  <div class="topbar">
+    <div><div class="logo">OMNI<em>FORGE</em></div><div class="logo-sub">System Forge™ v4</div></div>
+    <div class="topbar-nav">
+      <button class="nav-btn" data-view="app"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L14 8L8 14"/><path d="M2 8h12"/></svg>Forge</button>
+      <button class="nav-btn active" data-view="settings"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.2 3.2l1.4 1.4M11.4 11.4l1.4 1.4M3.2 12.8l1.4-1.4M11.4 4.6l1.4-1.4"/></svg>Settings</button>
+    </div>
+    <div class="topbar-right"><div class="key-badge" id="key-badge-s"><div class="key-dot" id="key-dot-s"></div><span id="key-label-s">API KEY</span></div></div>
   </div>
   <div class="app-body">
     <div>
@@ -779,18 +786,12 @@ select{cursor:pointer;padding-right:32px;appearance:none}
         <div class="settings-section">
           <div class="settings-title">API Key</div>
           <div class="settings-row">
-            <div class="settings-row-info">
-              <div class="settings-label">Anthropic API Key</div>
-              <div class="settings-meta">Stored locally on your device only</div>
-            </div>
+            <div class="settings-row-info"><div class="settings-label">Anthropic API Key</div><div class="settings-meta">Stored locally on your device only</div></div>
             <div class="key-display" id="key-display">—</div>
             <button class="settings-action" id="change-key-btn">Change</button>
           </div>
           <div id="change-key-form" style="display:none;margin-top:14px">
-            <div class="setup-field">
-              <label>New API Key</label>
-              <input type="password" id="new-key-input" placeholder="sk-ant-api03-…"/>
-            </div>
+            <div class="setup-field"><label>New API Key</label><input type="password" id="new-key-input" placeholder="sk-ant-api03-…"/></div>
             <div style="display:flex;gap:8px;margin-top:10px">
               <button class="btn-primary" id="save-new-key" style="flex:1">Save</button>
               <button class="btn-secondary" id="cancel-key-change" style="flex:1">Cancel</button>
@@ -801,55 +802,30 @@ select{cursor:pointer;padding-right:32px;appearance:none}
           <div class="settings-title">Your Forge Stats</div>
           <div class="stat-grid">
             <div class="stat-box"><span class="stat-val" id="stat-total">0</span><span class="stat-key">Total Forges</span></div>
-            <div class="stat-box"><span class="stat-val" id="stat-deep">0</span><span class="stat-key">Deep Forges</span></div>
-            <div class="stat-box"><span class="stat-val" id="stat-domains">0</span><span class="stat-key">Domains</span></div>
+            <div class="stat-box"><span class="stat-val" id="stat-stressed">0</span><span class="stat-key">Stress Tested</span></div>
+            <div class="stat-box"><span class="stat-val" id="stat-ready">0</span><span class="stat-key">Marked Ready</span></div>
           </div>
         </div>
         <div class="settings-section">
           <div class="settings-title">Data</div>
           <div class="settings-row">
-            <div class="settings-row-info">
-              <div class="settings-label">Export All Forges</div>
-              <div class="settings-meta">Download your full forge history as JSON</div>
-            </div>
+            <div class="settings-row-info"><div class="settings-label">Export All Forges</div><div class="settings-meta">Download full forge history as JSON</div></div>
             <button class="settings-action" id="export-all-btn">Export</button>
           </div>
           <div class="settings-row">
-            <div class="settings-row-info">
-              <div class="settings-label">Clear History</div>
-              <div class="settings-meta">Delete all saved forges (key is kept)</div>
-            </div>
+            <div class="settings-row-info"><div class="settings-label">Clear History</div><div class="settings-meta">Delete all saved forges (key is kept)</div></div>
             <button class="settings-action danger" id="clear-history-btn">Clear</button>
           </div>
           <div class="settings-row">
-            <div class="settings-row-info">
-              <div class="settings-label">Reset Everything</div>
-              <div class="settings-meta">Delete key and all data — return to setup</div>
-            </div>
+            <div class="settings-row-info"><div class="settings-label">Reset Everything</div><div class="settings-meta">Delete key and all data — return to setup</div></div>
             <button class="settings-action danger" id="reset-all-btn">Reset</button>
           </div>
         </div>
         <div class="settings-section">
           <div class="settings-title">About</div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <div class="settings-label">Omniforge System Forge™</div>
-              <div class="settings-meta">v3.0 · EMVY CHECK Ecosystem · Assumption Audit + Stress Test + Reforge</div>
-            </div>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">v3.0</span>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <div class="settings-label">AI Model</div>
-              <div class="settings-meta">Claude Sonnet 4 via Anthropic API · Streaming enabled</div>
-            </div>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <div class="settings-label">Cost per forge</div>
-              <div class="settings-meta">Approx. $0.02–0.08 from your API credits depending on depth</div>
-            </div>
-          </div>
+          <div class="settings-row"><div class="settings-row-info"><div class="settings-label">Omniforge System Forge™</div><div class="settings-meta">v4.0 · Universal Schema · Contradiction Audit · Lifecycle State · BYO-AI Packet · Lineage</div></div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">v4.0</span></div>
+          <div class="settings-row"><div class="settings-row-info"><div class="settings-label">AI Model</div><div class="settings-meta">Claude Sonnet 4 via Anthropic API · Streaming enabled</div></div></div>
+          <div class="settings-row"><div class="settings-row-info"><div class="settings-label">Cost per forge</div><div class="settings-meta">Approx. $0.02–0.08 from your API credits depending on depth</div></div></div>
         </div>
       </div>
     </div>
@@ -858,84 +834,101 @@ select{cursor:pointer;padding-right:32px;appearance:none}
  
 <script>
 /* ══════════════════════════════════════════════════════════
-   TOOL DEFINITIONS
-   "stress" is deliberately last so it sits at the end
-   of the tool grid, visually separated by convention.
+   TOOLS
 ══════════════════════════════════════════════════════════ */
 const TOOLS = [
-  {
-    id: 'system', icon: '🏗', name: 'System Forge', desc: 'Idea → full system',
-    title: 'What do you want to build?',
-    sub: 'Idea in → Complete system + assumption audit out',
-    placeholder: 'Write it raw. Messy is fine. The forge handles the chaos.\n\nExample: An app that helps freelancers track which clients are worth keeping based on real data, not gut feel…',
-    showDepth: true, showRisk: true, showDomainAudience: true
-  },
-  {
-    id: 'landing', icon: '📄', name: 'Landing Page', desc: 'Idea → page copy',
-    title: 'Build your landing page',
-    sub: 'Product in → Complete page copy out',
-    placeholder: 'Describe your product or service. What does it do? Who is it for? What\'s the main hook?\n\nExample: A tool that helps independent music producers find sync licensing deals without needing a manager…',
-    showDepth: false, showRisk: false, showDomainAudience: true
-  },
-  {
-    id: 'offer', icon: '💰', name: 'Offer Builder', desc: 'Product → pricing + pitch',
-    title: 'Build your offer',
-    sub: 'Product in → Irresistible offer out',
-    placeholder: 'Describe what you\'re selling. Include what it does, how it\'s delivered, and any pricing you already have in mind.\n\nExample: 1-hour consulting calls for early-stage founders who need help with their go-to-market strategy…',
-    showDepth: false, showRisk: false, showDomainAudience: true
-  },
-  {
-    id: 'content', icon: '✍️', name: 'Content Forge', desc: 'Topic → content plan',
-    title: 'Forge your content',
-    sub: 'Topic in → Full content strategy out',
-    placeholder: 'What do you want to write about? Include your angle, what you know, and any strong opinions.\n\nExample: Why most productivity advice fails people with ADHD and what actually works instead…',
-    showDepth: false, showRisk: false, showDomainAudience: true
-  },
-  {
-    id: 'music', icon: '🎵', name: 'Music Forge', desc: 'Mood → AI track prompts',
-    title: 'Forge your track',
-    sub: 'Mood in → Production-ready prompts out',
-    placeholder: 'Describe the track you want to make. Genre, mood, influences, tempo, instruments, lyrical themes, energy level.\n\nExample: Dark drum & bass with Czech folk violin, protest energy, industrial textures, 174bpm, haunted female vocal…',
-    showDepth: false, showRisk: false, showDomainAudience: false
-  },
-  {
-    id: 'rebrand', icon: '🔄', name: 'Rebrand Forge', desc: 'Old brand → new identity',
-    title: 'Forge your rebrand',
-    sub: 'Broken brand in → Sharp identity out',
-    placeholder: 'Describe your current brand. Name, what you do, what\'s wrong with how it\'s perceived, and what feeling you want to create.\n\nExample: My consultancy is called "DataBridge Solutions" — sounds corporate, forgettable, nobody knows what we actually do…',
-    showDepth: false, showRisk: false, showDomainAudience: true
-  },
-  {
-    id: 'stress', icon: '⚔️', name: 'Stress Test', desc: 'Attack the system',
-    title: 'What system do you want to stress test?',
-    sub: 'System in → Adversarial analysis out',
-    placeholder: 'Describe or paste the system, plan, or idea you want torn apart.\n\nPaste your existing forge output, describe your business model, or summarise the plan you need stress-tested.\n\nThe more specific you are, the more useful the attack. Vague input → vague critique.',
-    showDepth: false, showRisk: false, showDomainAudience: false,
-    isStressTool: true
-  }
+  { id:'system',  icon:'🏗', name:'System Forge', desc:'Idea → full system',
+    title:'What do you want to build?', sub:'Idea in → System + contradiction + assumption audit out',
+    placeholder:'Write it raw. Messy is fine.\n\nExample: An app that helps freelancers track which clients are worth keeping based on real data, not gut feel…',
+    showDepth:true, showRisk:true, showDomainAudience:true },
+  { id:'landing', icon:'📄', name:'Landing Page', desc:'Idea → page copy',
+    title:'Build your landing page', sub:'Product in → Complete page copy out',
+    placeholder:'Describe your product or service. What does it do? Who is it for? What\'s the main hook?',
+    showDepth:false, showRisk:false, showDomainAudience:true },
+  { id:'offer',   icon:'💰', name:'Offer Builder', desc:'Product → pricing + pitch',
+    title:'Build your offer', sub:'Product in → Irresistible offer out',
+    placeholder:'Describe what you\'re selling. Include what it does, how it\'s delivered, and any pricing you already have in mind.',
+    showDepth:false, showRisk:false, showDomainAudience:true },
+  { id:'content', icon:'✍️', name:'Content Forge', desc:'Topic → content plan',
+    title:'Forge your content', sub:'Topic in → Full content strategy out',
+    placeholder:'What do you want to write about? Include your angle, what you know, and any strong opinions.',
+    showDepth:false, showRisk:false, showDomainAudience:true },
+  { id:'music',   icon:'🎵', name:'Music Forge', desc:'Mood → AI track prompts',
+    title:'Forge your track', sub:'Mood in → Production-ready prompts out',
+    placeholder:'Describe the track you want to make. Genre, mood, influences, tempo, instruments, lyrical themes, energy level.',
+    showDepth:false, showRisk:false, showDomainAudience:false },
+  { id:'rebrand', icon:'🔄', name:'Rebrand', desc:'Old brand → new identity',
+    title:'Forge your rebrand', sub:'Broken brand in → Sharp identity out',
+    placeholder:'Describe your current brand. Name, what you do, what\'s wrong with how it\'s perceived, and what feeling you want to create.',
+    showDepth:false, showRisk:false, showDomainAudience:true },
+  { id:'stress',  icon:'⚔️', name:'Stress Test', desc:'Attack the system',
+    title:'What system do you want to stress test?', sub:'System in → Adversarial analysis out',
+    placeholder:'Describe or paste the system, plan, or idea you want torn apart.\n\nPaste your existing forge output or describe your plan. The more specific you are, the more useful the attack.',
+    showDepth:false, showRisk:false, showDomainAudience:false, isStressTool:true }
 ];
+ 
+/* ══════════════════════════════════════════════════════════
+   LIFECYCLE STATES
+══════════════════════════════════════════════════════════ */
+const FORGE_STATES = {
+  forged:   { label:'Forged',   chipClass:'chip-state-forged',   badge:'hi-state-forged',   next:'Stress test before acting on this output' },
+  stressed: { label:'Stressed', chipClass:'chip-state-stressed', badge:'hi-state-stressed',  next:'Reforge around the critical findings' },
+  reforged: { label:'Reforged', chipClass:'chip-state-reforged', badge:'hi-state-reforged',  next:'Check for remaining contradictions' },
+  ready:    { label:'Ready',    chipClass:'chip-state-ready',    badge:'hi-state-ready',     next:null }
+};
+ 
+const PACKET_DESCS = {
+  stress:         'Pastes a full adversarial stress test prompt with your system. The AI will attack your assumptions, find failure modes, and ask the questions you\'re avoiding.',
+  reforge:        'Pastes a reforge prompt with your system. After pasting, add "WHAT CHANGED:" and describe your new information. The AI will return updated sections you can paste back.',
+  extend:         'Pastes your current system with an instruction to add a new dimension (economics model, rollout plan, etc.). Tell the AI what you want to add after pasting.',
+  assumptions:    'Pastes a structured assumption extraction prompt. The AI will pull every assumption from your system, categorise it, and suggest validation methods.',
+  contradictions: 'Pastes a contradiction audit prompt. The AI will scan every section for logical conflicts and return a structured list with resolution suggestions.'
+};
  
 /* ══════════════════════════════════════════════════════════
    STORAGE
 ══════════════════════════════════════════════════════════ */
 const DB = {
-  getKey: () => localStorage.getItem('omniforge_key') || '',
-  setKey: (k) => localStorage.setItem('omniforge_key', k),
+  getKey:     () => localStorage.getItem('omniforge_key') || '',
+  setKey:     (k) => localStorage.setItem('omniforge_key', k),
   getHistory: () => JSON.parse(localStorage.getItem('omniforge_history') || '[]'),
-  saveForge: (f) => {
-    const h = DB.getHistory();
-    h.unshift(f);
+  saveForge:  (f) => {
+    const h = DB.getHistory(); h.unshift(f);
     if (h.length > 100) h.pop();
     localStorage.setItem('omniforge_history', JSON.stringify(h));
   },
-  updateForge: (id, data) => {
+  updateForge: (id, patch) => {
     const h = DB.getHistory();
     const idx = h.findIndex(x => x.id === id);
-    if (idx >= 0) { h[idx] = { ...h[idx], ...data }; localStorage.setItem('omniforge_history', JSON.stringify(h)); }
+    if (idx >= 0) { h[idx] = { ...h[idx], ...patch }; localStorage.setItem('omniforge_history', JSON.stringify(h)); }
+  },
+  forkForge: (id, reason) => {
+    const h = DB.getHistory();
+    const original = h.find(x => x.id === id);
+    if (!original) return null;
+    const fork = JSON.parse(JSON.stringify(original));
+    fork.id = buildForgeId();
+    fork.date = new Date().toISOString();
+    fork.derivedFrom = id;
+    fork.forkReason = reason || 'Forked';
+    fork.forge_state = 'forged';
+    fork._reforged = 0;
+    fork._lastReforge = null;
+    fork.children = [];
+    // Update parent's children list
+    const origIdx = h.findIndex(x => x.id === id);
+    if (origIdx >= 0) h[origIdx].children = [...(h[origIdx].children || []), fork.id];
+    h.unshift(fork);
+    localStorage.setItem('omniforge_history', JSON.stringify(h));
+    return fork;
   },
   clearHistory: () => localStorage.removeItem('omniforge_history'),
-  clearAll: () => { localStorage.removeItem('omniforge_key'); localStorage.removeItem('omniforge_history'); }
+  clearAll:     () => { localStorage.removeItem('omniforge_key'); localStorage.removeItem('omniforge_history'); }
 };
+ 
+function buildForgeId() {
+  return 'fg_' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase();
+}
  
 /* ══════════════════════════════════════════════════════════
    ROUTING
@@ -952,57 +945,39 @@ function switchView(name) {
 let depth = 'Standard';
 let activeTool = 'system';
 let currentData = null;
-let currentToolAtForge = 'system'; // tool type used when current result was generated
+let currentToolAtForge = 'system';
 let rawOutput = '';
 let activeHistoryId = null;
 let pipeInterval = null;
+let stressTargetId = null; // id of forge being stress-tested (for lineage)
  
 /* ══════════════════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════════════════ */
 function initSetup() {
-  const key = DB.getKey();
-  if (key) { switchView('app'); initApp(); return; }
+  if (DB.getKey()) { switchView('app'); initApp(); return; }
   switchView('setup');
   document.getElementById('setup-save-btn').addEventListener('click', saveSetupKey);
-  document.getElementById('setup-key-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') saveSetupKey();
-  });
+  document.getElementById('setup-key-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveSetupKey(); });
 }
- 
 async function saveSetupKey() {
   const v = document.getElementById('setup-key-input').value.trim();
   const err = document.getElementById('setup-error');
   err.style.display = 'none';
-  if (!v || !v.startsWith('sk-ant')) {
-    err.textContent = 'That doesn\'t look like an Anthropic key. It should start with sk-ant-';
-    err.style.display = 'block'; return;
-  }
-  DB.setKey(v);
-  switchView('app');
-  initApp();
+  if (!v || !v.startsWith('sk-ant')) { err.textContent = 'Doesn\'t look like an Anthropic key — should start with sk-ant-'; err.style.display = 'block'; return; }
+  DB.setKey(v); switchView('app'); initApp();
 }
  
-/* ══════════════════════════════════════════════════════════
-   APP INIT
-══════════════════════════════════════════════════════════ */
 function initApp() {
-  updateKeyBadge();
-  renderToolSelector();
-  renderHistory();
-  bindForgeEvents();
-  bindOutputEvents();
-  bindNavEvents();
-  bindReforgeEvents();
-  showOutputState('empty');
-  updateForgeUI();
+  updateKeyBadge(); renderToolSelector(); renderHistory();
+  bindForgeEvents(); bindOutputEvents(); bindNavEvents(); bindReforgeEvents(); bindPacketEvents();
+  showOutputState('empty'); updateForgeUI();
 }
  
 function updateKeyBadge() {
-  const k = DB.getKey();
-  const masked = k ? '…' + k.slice(-6) : 'No key';
-  ['key-label', 'key-label-s'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = masked; });
-  ['key-dot', 'key-dot-s'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.toggle('off', !k); });
+  const k = DB.getKey(), masked = k ? '…' + k.slice(-6) : 'No key';
+  ['key-label','key-label-s'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = masked; });
+  ['key-dot','key-dot-s'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.toggle('off', !k); });
 }
  
 /* ══════════════════════════════════════════════════════════
@@ -1016,8 +991,7 @@ function renderToolSelector() {
       <div class="tool-card-icon">${t.icon}</div>
       <div class="tool-card-name">${t.name}</div>
       <div class="tool-card-desc">${t.desc}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
   grid.querySelectorAll('.tool-card').forEach(el => {
     el.addEventListener('click', () => {
       activeTool = el.dataset.tool;
@@ -1029,29 +1003,16 @@ function renderToolSelector() {
  
 function updateForgeUI() {
   const t = TOOLS.find(x => x.id === activeTool) || TOOLS[0];
-  const title = document.getElementById('pane-title');
-  const sub = document.getElementById('pane-sub');
-  const idea = document.getElementById('idea');
-  const depthRow = document.getElementById('depth-row-el');
-  const riskRow = document.getElementById('risk-row');
-  const daRow = document.getElementById('domain-audience-row');
-  const forgeBtn = document.getElementById('forge-btn');
- 
-  if (title) title.textContent = t.title;
-  if (sub) sub.textContent = t.sub;
-  if (idea && !idea.value) idea.placeholder = t.placeholder;
-  if (depthRow) depthRow.style.display = t.showDepth ? '' : 'none';
-  if (riskRow) riskRow.style.display = t.showRisk ? '' : 'none';
-  if (daRow) daRow.style.display = t.showDomainAudience ? '' : 'none';
-  if (forgeBtn) {
-    if (t.isStressTool) {
-      forgeBtn.textContent = '⚔ STRESS TEST';
-      forgeBtn.classList.add('stress-mode');
-    } else {
-      forgeBtn.textContent = '⚡ FORGE';
-      forgeBtn.classList.remove('stress-mode');
-    }
-  }
+  const el = (id) => document.getElementById(id);
+  if (el('pane-title'))  el('pane-title').textContent  = t.title;
+  if (el('pane-sub'))    el('pane-sub').textContent    = t.sub;
+  const ideaEl = el('idea');
+  if (ideaEl && !ideaEl.value) ideaEl.placeholder = t.placeholder;
+  if (el('depth-row-el'))        el('depth-row-el').style.display        = t.showDepth ? '' : 'none';
+  if (el('risk-row'))            el('risk-row').style.display            = t.showRisk  ? '' : 'none';
+  if (el('domain-audience-row')) el('domain-audience-row').style.display = t.showDomainAudience ? '' : 'none';
+  const btn = el('forge-btn');
+  if (btn) { btn.textContent = t.isStressTool ? '⚔ STRESS TEST' : '⚡ FORGE'; btn.classList.toggle('stress-mode', !!t.isStressTool); }
 }
  
 /* ══════════════════════════════════════════════════════════
@@ -1066,88 +1027,79 @@ function renderHistory() {
   }
   list.innerHTML = h.map(f => {
     const toolDef = TOOLS.find(t => t.id === (f.tool || 'system')) || TOOLS[0];
-    const reforgeIndicator = f._reforged ? ` 🔄${f._reforged}` : '';
+    const state = f.forge_state || 'forged';
+    const stateInfo = FORGE_STATES[state] || FORGE_STATES.forged;
+    const reforged = f._reforged ? ` 🔄${f._reforged}` : '';
+    const lineage = f.derivedFrom ? `<div class="hi-lineage"><span class="hi-lineage-dot"></span>fork of earlier forge</div>` : '';
+    const children = (f.children || []).length > 0 ? `<div class="hi-lineage"><span class="hi-lineage-dot"></span>${f.children.length} child${f.children.length > 1 ? 'ren' : ''}</div>` : '';
     return `
     <div class="history-item${f.id === activeHistoryId ? ' active' : ''}" data-id="${f.id}">
-      <div class="hi-name">${esc(f.systemName || f.idea.slice(0, 40))}${reforgeIndicator}</div>
+      <div class="hi-name">${esc(f.systemName || f.idea?.slice(0,40) || 'Forge')}${reforged}</div>
       <div class="hi-meta">
         <span class="hi-domain">${toolDef.icon} ${esc(f.domain || toolDef.name)}</span>
         ${f.depth ? `<span class="hi-depth">${esc(f.depth)}</span>` : ''}
+        <span class="hi-state ${stateInfo.badge}">${stateInfo.label}</span>
         <span class="hi-date">${relDate(f.date)}</span>
       </div>
+      ${lineage}${children}
     </div>`;
   }).join('');
-  list.querySelectorAll('.history-item').forEach(el => {
-    el.addEventListener('click', () => loadForge(el.dataset.id));
-  });
+  list.querySelectorAll('.history-item').forEach(el => el.addEventListener('click', () => loadForge(el.dataset.id)));
 }
  
 function loadForge(id) {
-  const h = DB.getHistory();
-  const f = h.find(x => x.id === id);
+  const f = DB.getHistory().find(x => x.id === id);
   if (!f) return;
-  activeHistoryId = id;
-  currentData = f.data;
-  currentToolAtForge = f.tool || 'system';
-  depth = f.depth || 'Standard';
-  activeTool = f.tool || 'system';
-  rawOutput = f.rawOutput || buildRawText(f.data, f.systemName);
-  document.getElementById('idea').value = f.idea || '';
-  document.getElementById('domain').value = f.domain || 'Startup';
-  document.getElementById('audience').value = f.audience || '';
-  document.getElementById('risk').value = f.risk || '';
+  activeHistoryId = id; currentData = f.data; currentToolAtForge = f.tool || 'system';
+  depth = f.depth || 'Standard'; activeTool = f.tool || 'system';
+  rawOutput = f.rawOutput || buildRawText(f.data, f.systemName, f.tool);
+  document.getElementById('idea').value       = f.idea      || '';
+  document.getElementById('domain').value     = f.domain    || 'Startup';
+  document.getElementById('audience').value   = f.audience  || '';
+  document.getElementById('risk').value       = f.risk      || '';
   document.querySelectorAll('.depth-opt').forEach(el => el.classList.toggle('sel', el.dataset.d === f.depth));
   showOutputState('result');
-  renderResult(f.data, f.tool || 'system', f._reforged, f._lastReforge);
-  renderHistory();
-  renderToolSelector();
-  updateForgeUI();
+  renderResult(f.data, f.tool || 'system', f._reforged || 0, f._lastReforge, f.forge_state || 'forged', f.core_problem || '');
+  renderHistory(); renderToolSelector(); updateForgeUI();
 }
  
 function relDate(iso) {
-  const d = new Date(iso), now = new Date();
-  const diff = Math.floor((now - d) / 60000);
-  if (diff < 2) return 'just now';
-  if (diff < 60) return diff + 'm ago';
-  if (diff < 1440) return Math.floor(diff / 60) + 'h ago';
-  return Math.floor(diff / 1440) + 'd ago';
+  const d = new Date(iso), diff = Math.floor((Date.now() - d) / 60000);
+  if (diff < 2) return 'just now'; if (diff < 60) return diff + 'm ago';
+  if (diff < 1440) return Math.floor(diff/60) + 'h ago'; return Math.floor(diff/1440) + 'd ago';
 }
  
 /* ══════════════════════════════════════════════════════════
    BIND EVENTS
 ══════════════════════════════════════════════════════════ */
 function bindForgeEvents() {
-  document.querySelectorAll('.depth-opt').forEach(el => {
-    el.addEventListener('click', () => {
-      document.querySelectorAll('.depth-opt').forEach(b => b.classList.remove('sel'));
-      el.classList.add('sel');
-      depth = el.dataset.d;
-    });
-  });
+  document.querySelectorAll('.depth-opt').forEach(el => el.addEventListener('click', () => {
+    document.querySelectorAll('.depth-opt').forEach(b => b.classList.remove('sel'));
+    el.classList.add('sel'); depth = el.dataset.d;
+  }));
   document.getElementById('forge-btn').addEventListener('click', runForge);
-  document.getElementById('idea').addEventListener('keydown', e => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) runForge();
-  });
+  document.getElementById('idea').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) runForge(); });
   document.getElementById('new-forge-sidebar').addEventListener('click', resetForge);
 }
  
 function bindOutputEvents() {
-  document.getElementById('btn-copy').addEventListener('click', copyOutput);
-  document.getElementById('btn-download-txt').addEventListener('click', () => downloadOutput('txt'));
-  document.getElementById('btn-download-md').addEventListener('click', () => downloadOutput('md'));
-  document.getElementById('btn-expand').addEventListener('click', () =>
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('collapsed')));
-  document.getElementById('btn-collapse').addEventListener('click', () =>
-    document.querySelectorAll('.section').forEach(s => s.classList.add('collapsed')));
-  document.getElementById('btn-new-forge').addEventListener('click', resetForge);
-  document.getElementById('btn-stress').addEventListener('click', launchStressTest);
-  document.getElementById('btn-reforge').addEventListener('click', openReforgeDrawer);
+  const on = (id, fn) => document.getElementById(id)?.addEventListener('click', fn);
+  on('btn-copy', copyOutput);
+  on('btn-download-txt', () => downloadOutput('txt'));
+  on('btn-download-md',  () => downloadOutput('md'));
+  on('btn-expand',       () => document.querySelectorAll('.section').forEach(s => s.classList.remove('collapsed')));
+  on('btn-new-forge',    resetForge);
+  on('btn-stress',       launchStressTest);
+  on('btn-reforge',      openReforgeDrawer);
+  on('btn-fork',         doFork);
+  on('btn-packet',       openPacketModal);
+  on('btn-ready',        toggleReady);
+  on('stress-nudge-btn', launchStressTest);
+  on('stress-nudge-dismiss', () => { document.getElementById('stress-nudge').style.display = 'none'; });
 }
  
 function bindNavEvents() {
-  document.querySelectorAll('[data-view]').forEach(el => {
-    el.addEventListener('click', () => switchView(el.dataset.view));
-  });
+  document.querySelectorAll('[data-view]').forEach(el => el.addEventListener('click', () => switchView(el.dataset.view)));
 }
  
 function bindReforgeEvents() {
@@ -1155,16 +1107,20 @@ function bindReforgeEvents() {
   document.getElementById('reforge-run-btn').addEventListener('click', runReforge);
 }
  
+function bindPacketEvents() {
+  document.getElementById('packet-close').addEventListener('click', closePacketModal);
+  document.getElementById('packet-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closePacketModal(); });
+  document.getElementById('packet-task').addEventListener('change', updatePacketDesc);
+  document.getElementById('packet-copy-btn').addEventListener('click', copyPacket);
+}
+ 
 function resetForge() {
-  activeHistoryId = null; currentData = null; rawOutput = '';
+  activeHistoryId = null; currentData = null; rawOutput = ''; stressTargetId = null;
   showOutputState('empty');
-  document.getElementById('idea').value = '';
-  document.getElementById('audience').value = '';
-  document.getElementById('risk').value = '';
+  ['idea','audience','risk'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('domain').selectedIndex = 0;
   document.querySelectorAll('.depth-opt').forEach(b => b.classList.toggle('sel', b.dataset.d === 'Standard'));
-  depth = 'Standard';
-  activeTool = 'system';
+  depth = 'Standard'; activeTool = 'system';
   renderHistory(); renderToolSelector(); updateForgeUI();
   document.getElementById('idea').focus();
 }
@@ -1173,42 +1129,33 @@ function resetForge() {
    OUTPUT STATE
 ══════════════════════════════════════════════════════════ */
 function showOutputState(state) {
-  document.getElementById('out-empty').style.display     = state === 'empty'     ? '' : 'none';
-  document.getElementById('out-loading').style.display   = state === 'loading'   ? '' : 'none';
-  document.getElementById('out-streaming').style.display = state === 'streaming' ? '' : 'none';
-  document.getElementById('out-result').style.display    = state === 'result'    ? '' : 'none';
-  document.getElementById('out-error').style.display     = state === 'error'     ? '' : 'none';
+  ['empty','loading','streaming','result','error'].forEach(s => {
+    document.getElementById('out-' + s).style.display = state === s ? '' : 'none';
+  });
 }
  
 /* ══════════════════════════════════════════════════════════
    PIPELINE ANIMATION
 ══════════════════════════════════════════════════════════ */
-const PIPE_STEPS = [
-  'EXTRACTING INTENTION', 'SCULPTING FRAMEWORK', 'GENERATING ASSETS',
-  'AUDITING ASSUMPTIONS', 'SYNTHESISING SYSTEM', 'PACKAGING OUTPUT'
-];
-const STRESS_STEPS = [
-  'READING THE SYSTEM', 'FINDING WEAK POINTS', 'BUILDING ATTACK SURFACE',
-  'STRESS TESTING ECONOMICS', 'IDENTIFYING KILL CONDITIONS', 'PACKAGING VERDICT'
-];
+const PIPE_STEPS_FORGE  = ['EXTRACTING INTENTION','SCULPTING FRAMEWORK','GENERATING ASSETS','AUDITING ASSUMPTIONS','DETECTING CONTRADICTIONS','PACKAGING SYSTEM'];
+const PIPE_STEPS_STRESS = ['READING THE SYSTEM','FINDING WEAK POINTS','BUILDING ATTACK SURFACE','STRESS TESTING ECONOMICS','IDENTIFYING KILL CONDITIONS','PACKAGING VERDICT'];
+const PIPE_STEPS_REFORGE= ['READING ORIGINAL','PROCESSING NEW DATA','UPDATING FRAMEWORK','REBUILDING SECTIONS','CHECKING CONTRADICTIONS','MERGING OUTPUT'];
  
-function startPipeline(isStress) {
+function startPipeline(mode) {
   let i = 0;
-  const steps = isStress ? STRESS_STEPS : PIPE_STEPS;
+  const steps = mode === 'stress' ? PIPE_STEPS_STRESS : mode === 'reforge' ? PIPE_STEPS_REFORGE : PIPE_STEPS_FORGE;
   document.querySelectorAll('[id^="pn"]').forEach(p => p.className = 'pipe-node');
-  const stepEl = document.getElementById('loading-step');
-  const labelEl = document.getElementById('loading-label');
-  if (labelEl) labelEl.innerHTML = isStress ? 'STRESS TESTING<span class="cursor">_</span>' : 'FORGING<span class="cursor">_</span>';
-  if (stepEl) stepEl.classList.toggle('stress-step', !!isStress);
+  const stepEl   = document.getElementById('loading-step');
+  const labelEl  = document.getElementById('loading-label');
+  const isStress = mode === 'stress';
+  if (labelEl) labelEl.innerHTML = isStress ? 'STRESS TESTING<span class="cursor">_</span>' : mode === 'reforge' ? 'REFORGING<span class="cursor">_</span>' : 'FORGING<span class="cursor">_</span>';
+  if (stepEl)  stepEl.classList.toggle('stress-step', isStress);
   pipeInterval = setInterval(() => {
     if (i >= 6) { clearInterval(pipeInterval); return; }
-    const el = document.getElementById('pn' + i);
-    if (el) el.className = 'pipe-node ' + (isStress ? 'stress-active' : 'active');
-    if (i > 0) { const p = document.getElementById('pn' + (i - 1)); if (p) p.className = 'pipe-node done'; }
-    if (stepEl) {
-      stepEl.classList.add('hide');
-      setTimeout(() => { stepEl.textContent = steps[i] || ''; stepEl.classList.remove('hide'); }, 220);
-    }
+    const node = document.getElementById('pn' + i);
+    if (node) node.className = 'pipe-node ' + (isStress ? 'stress-active' : 'active');
+    if (i > 0) { const prev = document.getElementById('pn' + (i-1)); if (prev) prev.className = 'pipe-node done'; }
+    if (stepEl) { stepEl.classList.add('hide'); setTimeout(() => { stepEl.textContent = steps[i] || ''; stepEl.classList.remove('hide'); }, 220); }
     i++;
   }, 1400);
 }
@@ -1219,184 +1166,177 @@ function stopPipeline() {
 }
  
 /* ══════════════════════════════════════════════════════════
-   SYSTEM PROMPTS
+   PROMPT BUILDING BLOCKS
 ══════════════════════════════════════════════════════════ */
  
-/* ── ASSUMPTION BLOCK (injected into every forge prompt) ── */
-const ASSUMPTION_BLOCK = `
-  "assumptions": "ASSUMPTION AUDIT\\n\\nWhat this forge is assuming — and how cheap to validate each one.\\n\\nMarket assumptions:\\n[MA1] [state the assumption] → Validate: [specific cheap test, under 1 week]\\n[MA2] [assumption] → Validate: [test]\\n\\nBehavioural assumptions:\\n[BA1] [assumption about how people will actually behave] → Validate: [test]\\n[BA2] [assumption] → Validate: [test]\\n\\nTechnical / operational assumptions:\\n[TA1] [assumption] → Validate: [test]\\n\\nFinancial assumptions:\\n[FA1] [assumption about revenue, cost, or economics] → Validate: [test]\\n\\nThis forge is WRONG if:\\n1. [specific condition that would invalidate the whole framework]\\n2. [second condition]\\n3. [third condition]\\n\\nConfidence: [Low / Medium / High]\\n[One honest sentence explaining the rating — what makes this uncertain?]",`;
+// Injected into every forge prompt — assumption audit
+const ASSUMPTION_BLOCK = `  "assumptions": "ASSUMPTION AUDIT\\n\\nWhat this forge is assuming — and how cheap to validate each one.\\n\\nMarket assumptions:\\n[MA1] [assumption] → Validate: [specific cheap test, under 1 week]\\n[MA2] [assumption] → Validate: [test]\\n\\nBehavioural assumptions:\\n[BA1] [assumption about how people will actually behave] → Validate: [test]\\n\\nTechnical / operational assumptions:\\n[TA1] [assumption] → Validate: [test]\\n\\nFinancial assumptions:\\n[FA1] [assumption about revenue, cost, or economics] → Validate: [test]\\n\\nThis forge is WRONG if:\\n1. [specific condition that invalidates the whole framework]\\n2. [second condition]\\n3. [third condition]\\n\\nConfidence: [Low / Medium / High]\\n[One honest sentence explaining the rating]",`;
  
+// Injected last in every forge prompt — contradictions (generated after all other sections)
+const CONTRADICTION_BLOCK = `  "contradictions": "CONTRADICTION AUDIT\\n\\nScan every section above for logical conflicts, impossible combinations, or hidden tensions.\\n\\n[If none found write: NO SIGNIFICANT CONTRADICTIONS DETECTED]\\n\\n[For each contradiction found:]\\n1. [SECTION A] ↔ [SECTION B]: [the specific conflict in one sentence]\\n   Why it breaks: [what fails if this tension is unresolved]\\n   Resolution: [the simplest fix — be specific]\\n\\n2. [next contradiction if any]"`;
+ 
+/* ══════════════════════════════════════════════════════════
+   SYSTEM PROMPTS
+══════════════════════════════════════════════════════════ */
 function buildSysPrompt(d) {
-  const tool = activeTool;
-  if (tool === 'stress')   return buildStressPrompt();
-  if (tool === 'landing')  return buildLandingPrompt();
-  if (tool === 'offer')    return buildOfferPrompt();
-  if (tool === 'content')  return buildContentPrompt();
-  if (tool === 'music')    return buildMusicPrompt();
-  if (tool === 'rebrand')  return buildRebrandPrompt();
+  if (activeTool === 'stress')   return buildStressPrompt();
+  if (activeTool === 'landing')  return buildLandingPrompt();
+  if (activeTool === 'offer')    return buildOfferPrompt();
+  if (activeTool === 'content')  return buildContentPrompt();
+  if (activeTool === 'music')    return buildMusicPrompt();
+  if (activeTool === 'rebrand')  return buildRebrandPrompt();
   return buildSystemForgePrompt(d);
 }
  
-/* ── SYSTEM FORGE ──────────────────────────────────────── */
 function buildSystemForgePrompt(d) {
-  const counts = { Quick: { assets: 3, exp: 3, pilot: 7 }, Standard: { assets: 5, exp: 4, pilot: 14 }, Deep: { assets: 6, exp: 5, pilot: 30 } };
+  const counts = { Quick:{assets:3,exp:3,pilot:7}, Standard:{assets:5,exp:4,pilot:14}, Deep:{assets:6,exp:5,pilot:30} };
   const c = counts[d] || counts.Standard;
   const mid = Math.floor(c.pilot / 2);
-  const deployField = d === 'Deep' ? `,
-  "deployment": "DEPLOYMENT LAYER\\n\\nPRACTITIONER PIPELINE\\nWho trains others, how, certification levels (duration, format, cost)\\n\\nECONOMICS MODELS\\nThree distinct viable models: name each, revenue, costs, break-even\\n\\nTECH STACK TIERS\\nTier 1 (£0-50/mo): specific free tools by name\\nTier 2 (£50-200/mo): specific tools + what they add\\nTier 3 (£200+/mo): full platform stack\\n\\nQUALITY FRAMEWORK\\n5 non-negotiable principles. One audit method. How to handle deviation.\\n\\nSCALING ROADMAP\\nPhase 1 (0-6mo): exact actions\\nPhase 2 (6-18mo): what needs to exist\\nPhase 3 (18-36mo): what changes\\nPhase 4 (36mo+): what it looks like when it works"` : '';
- 
-  return `You are the Omniforge System Forge — an engine that transforms raw human intentions into complete, actionable systems.
-You think in systems, leverage points, and first principles. Direct, specific, honest. No platitudes.
+  const deployField = d === 'Deep' ? `,\n  "deployment": "DEPLOYMENT LAYER\\n\\nPRACTITIONER PIPELINE\\nWho trains others, how, certification levels\\n\\nECONOMICS MODELS\\nThree distinct viable models: name each, revenue, costs, break-even\\n\\nTECH STACK TIERS\\nTier 1 (£0-50/mo), Tier 2 (£50-200/mo), Tier 3 (£200+/mo) — specific tool names\\n\\nQUALITY FRAMEWORK\\n5 non-negotiable principles. One audit method.\\n\\nSCALING ROADMAP\\nPhase 1 (0-6mo), Phase 2 (6-18mo), Phase 3 (18-36mo), Phase 4 (36mo+)"` : '';
+  return `You are the Omniforge System Forge — an engine that transforms raw intentions into complete, actionable systems.
+Think in systems, leverage points, first principles. Direct, specific, honest. No platitudes.
 FORGE DEPTH: ${d}
  
 CRITICAL RULES:
 1. Return ONLY a single valid JSON object. No markdown. No preamble. No trailing text.
 2. All values are strings. Use literal \\n for newlines within strings.
 3. Be SPECIFIC: real tool names, real numbers, concrete actions.
-4. Every asset must be usable tomorrow.
-5. The assumption audit is NOT optional — it is the most important section. Flag every assumption. Be honest about what you're guessing vs. what you know.
+4. The assumption audit and contradiction audit are mandatory — they are not optional extras.
+5. Generate contradictions LAST, after all other sections, so you can scan the whole output.
  
 RETURN THIS JSON:
 {
   "systemName": "Evocative name, 2-4 words",
   "coreSummary": "One sentence. What it is + why it matters + who it's for.",
-  ${ASSUMPTION_BLOCK}
+  "core_problem": "One sentence. The specific pain this system addresses — plain language, no jargon.",
+${ASSUMPTION_BLOCK}
   "framework": "FRAMEWORK\\n\\nProblem:\\n[specific pain]\\n\\nCore Mechanism:\\n[the central insight that makes this work]\\n\\nComponents:\\n1. [name]: [what it does]\\n\\nLeverage Points:\\n- [small effort = large effect]\\n\\nOperating Rule:\\n[one principle never to violate]",
   "assets": "ASSETS\\n\\n[${c.assets} assets. Each:]\\n\\n[N]. [NAME]\\nType: [tool/template/prompt/calculator/playbook]\\nWhat it is: [2-3 sentences]\\nFirst use: [exact first action]",
   "experiments": "EXPERIMENTS\\n\\n[${c.exp} experiments. Each:]\\n\\n[N]. [NAME]\\nHypothesis: [If X then Y because Z]\\nMethod: [exact steps]\\nTime: [hours or days]\\nSuccess = [measurable outcome]\\nFail signal = [what tells you it's wrong]",
   "pilot": "PILOT PLAN\\n\\nDuration: ${c.pilot} days\\nGoal: [what to prove]\\n\\n[week-by-week breakdown]\\n\\nMinimum Viable Version:\\n[simplest thing to ship]\\n\\nFirst Revenue Path:\\n[how to make first £100]\\n\\nDay ${mid} checkpoint:\\n[specific milestone]",
-  "sheet": "SYSTEM SHEET\\n\\nSystem: [name]\\nDomain: [domain]\\nAudience: [who]\\n\\nProblem in one line:\\n[...]\\n\\nSolution in one line:\\n[...]\\n\\nWhy this works:\\n[core mechanism]\\n\\nBiggest risk (honest):\\n[don't sugarcoat]\\n\\nRisk mitigation:\\n[practical]\\n\\nSuccess in 12 months:\\n[vivid, specific, numbers]\\n\\nDo NOT build this if:\\n[honest red flags]"${deployField}
+  "sheet": "SYSTEM SHEET\\n\\nProblem in one line:\\n[...]\\nSolution in one line:\\n[...]\\nWhy this works:\\n[core mechanism]\\nBiggest risk (honest):\\n[don't sugarcoat]\\nRisk mitigation:\\n[practical]\\nSuccess in 12 months:\\n[vivid, specific, numbers]\\nDo NOT build this if:\\n[honest red flags]"${deployField},
+${CONTRADICTION_BLOCK}
 }`;
 }
  
-/* ── STRESS TEST ────────────────────────────────────────── */
 function buildStressPrompt() {
-  return `You are a smart, unsentimental stress-tester. You have watched hundreds of startups, projects, and systems fail. You are not hostile for its own sake — you are brutally honest because you want the builder to succeed with reality, not with optimism.
+  return `You are a smart, unsentimental stress-tester. You have watched hundreds of systems fail. Not hostile for its own sake — brutally honest because you want the builder to succeed with reality, not with optimism.
  
-Your job: take apart the system described, find the dangerous assumptions, identify how it fails, and tell the builder exactly what to validate before spending another week on it.
- 
-You do not soften findings. You do not add encouragement. You tell the truth.
- 
-CRITICAL: Return ONLY valid JSON. No markdown. No preamble. No trailing text.
+CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
  
 {
-  "systemName": "Stress Test: [name of system being tested]",
+  "systemName": "Stress Test: [name of system]",
   "coreSummary": "One sentence: what this system claims to do and the single core bet it's making.",
-  "verdict": "HONEST VERDICT\\n\\n[2-3 paragraphs. What is this system actually claiming? What has to be true for it to work? Be blunt about whether you think it can work — not whether the idea is good, but whether the specific plan is executable by the specific person.]\\n\\nOverall assessment: [Viable as stated / Viable with significant changes / Needs fundamental rethink / Not viable]\\nReason: [one specific, honest sentence]",
-  "dangerousAssumptions": "DANGEROUS ASSUMPTIONS\\n\\nThe 5 most dangerous assumptions baked into this system. Ranked by risk.\\n\\n1. ASSUMPTION: [state it precisely — not vaguely]\\n   Why dangerous: [what breaks if it's wrong, specifically]\\n   Probability it's wrong: [Low / Medium / High] — [one-line reason]\\n   Kill test: [the cheapest, fastest way to find out — under £100 and 2 weeks]\\n\\n2. ASSUMPTION: [...]\\n   Why dangerous: [...]\\n   Probability it's wrong: [...]\\n   Kill test: [...]\\n\\n3. ASSUMPTION: [...]\\n   Why dangerous: [...]\\n   Probability it's wrong: [...]\\n   Kill test: [...]\\n\\n4. ASSUMPTION: [...]\\n   Why dangerous: [...]\\n   Probability it's wrong: [...]\\n   Kill test: [...]\\n\\n5. ASSUMPTION: [...]\\n   Why dangerous: [...]\\n   Probability it's wrong: [...]\\n   Kill test: [...]",
-  "failureModes": "TOP FAILURE MODES\\n\\n1. [Failure mode name — be specific, not generic]\\n   How it happens: [concrete scenario — names, numbers, sequence of events]\\n   Early warning sign: [observable signal — what would you see at week 3?]\\n   Can you recover from this?: [Yes / No / Partially — and how]\\n   Probability: [Low / Medium / High]\\n\\n2. [second failure mode]\\n   [same structure]\\n\\n3. [third failure mode]\\n   [same structure]",
-  "weakestLink": "WEAKEST LINK\\n\\n[The single thing most likely to break this system. Be specific — not 'market risk' but the exact assumption or dependency that is both most critical AND most uncertain. Explain why this is the load-bearing element.]\\n\\nIf it breaks:\\n[cascade — exactly what else fails when this goes wrong, in order]\\n\\nMitigation:\\n[one concrete action to reduce this specific risk — not generic advice]\\n\\nTime to discover if it's wrong:\\n[how long before you'd know this assumption is false]",
-  "killTests": "KILL TESTS — DO THESE BEFORE BUILDING FURTHER\\n\\nMinimum experiments to run before committing serious time, money, or team.\\n\\n1. [Test name]\\n   Assumption being tested: [which dangerous assumption does this address]\\n   Method: [exact steps — where to go, who to talk to, what to measure]\\n   Cost: [£X and X days — be specific]\\n   Pass = [specific, measurable outcome that says go]\\n   Fail = [specific outcome that says stop or pivot]\\n\\n2. [same structure]\\n\\n3. [same structure]\\n\\n4. [same structure]",
-  "salvage": "WHAT'S WORTH KEEPING\\n\\nEven if the core thesis is wrong, these elements have standalone value:\\n\\n1. [element] — why it's valuable regardless of whether the core works\\n2. [element] — why it's valuable regardless\\n3. [element] — why it's valuable regardless\\n\\nAlternative application:\\n[If the main system fails, where else could the best parts be applied? Be specific.]",
-  "hardQuestions": "HARD QUESTIONS\\n\\nAnswer these before going further. Write real answers, not the ones that make you feel good.\\n\\n1. [The question about the economics — does the math actually close?]\\n2. [The question about the founder-market fit — do you have what this actually requires?]\\n3. [The question about the assumption everyone is avoiding]\\n4. [The timing question — why now? what's different from 3 years ago?]\\n5. [The competition or alternative question — why won't people just use X instead?]\\n6. [The failure question — what is your actual plan if this doesn't work?]\\n7. [The question you most don't want to answer right now]"
+  "core_problem": "One sentence: the actual problem this stress test is revealing.",
+  "verdict": "HONEST VERDICT\\n\\n[2-3 paragraphs. What is this system actually claiming? What has to be true for it to work? Blunt assessment of whether the specific plan is executable.]\\n\\nOverall: [Viable as stated / Viable with changes / Needs fundamental rethink / Not viable]\\nReason: [one specific sentence]",
+  "dangerousAssumptions": "DANGEROUS ASSUMPTIONS\\n\\nTop 5, ranked by risk.\\n\\n1. ASSUMPTION: [state precisely]\\n   Why dangerous: [what breaks if wrong]\\n   Probability it's wrong: [Low/Medium/High] — [one-line reason]\\n   Kill test: [cheapest fastest way to find out — under £100 and 2 weeks]\\n\\n[repeat for 2-5]",
+  "failureModes": "TOP FAILURE MODES\\n\\n1. [Failure name — specific not generic]\\n   How it happens: [concrete scenario with numbers]\\n   Early warning sign: [observable signal at week 3]\\n   Recovery possible?: [Yes/No/Partially — how]\\n   Probability: [Low/Medium/High]\\n\\n[repeat for 2-3]",
+  "weakestLink": "WEAKEST LINK\\n\\n[The single thing most likely to break this — be specific, not 'market risk' but the exact assumption or dependency. Why is it load-bearing?]\\n\\nIf it breaks: [cascade — what fails next, in order]\\nMitigation: [one concrete action to reduce this specific risk]\\nTime to discover if wrong: [how long before you'd know]",
+  "killTests": "KILL TESTS — DO THESE BEFORE BUILDING FURTHER\\n\\n1. [Test name]\\n   Tests: [which assumption]\\n   Method: [exact steps]\\n   Cost: [£X and X days]\\n   Pass = [specific outcome]\\n   Fail = [specific stop signal]\\n\\n[repeat for 2-4]",
+  "salvage": "WHAT'S WORTH KEEPING\\n\\nEven if the core thesis is wrong:\\n1. [element] — why valuable regardless\\n2. [element] — why valuable regardless\\n3. [element] — why valuable regardless\\n\\nAlternative application: [where else the best parts could be used]",
+  "hardQuestions": "HARD QUESTIONS\\n\\n1. [The economics question — does the math actually close?]\\n2. [The founder-market fit question — do you have what this requires?]\\n3. [The assumption everyone is avoiding]\\n4. [The timing question — why now?]\\n5. [The competition question — why not just use X?]\\n6. [The failure question — what's your actual plan if this fails?]\\n7. [The question you most don't want to answer right now]"
 }`;
 }
  
-/* ── LANDING PAGE ───────────────────────────────────────── */
 function buildLandingPrompt() {
-  return `You are a world-class conversion copywriter and product strategist. You write landing pages that convert.
-Be specific, direct, and punchy. No filler. Every word earns its place.
+  return `You are a world-class conversion copywriter. Landing pages that convert. Every word earns its place.
 CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
 {
   "systemName": "Product name or page title",
   "coreSummary": "One-sentence pitch. What it does + who it's for + main benefit.",
-  ${ASSUMPTION_BLOCK}
-  "hero": "HERO SECTION\\n\\nHeadline: [bold, specific, benefit-first — max 8 words]\\nSubheadline: [expands headline, 15-25 words, includes who it's for]\\nCTA Button: [action verb + outcome — e.g. 'Start forging free']\\nHero Visual Idea: [describe what image/visual reinforces the message]",
-  "problem": "PROBLEM SECTION\\n\\nSection Headline: [name the pain]\\nParagraph: [2-3 sentences describing exactly what's broken and why]\\nPain Points:\\n- [specific frustration 1]\\n- [specific frustration 2]\\n- [specific frustration 3]",
-  "solution": "SOLUTION SECTION\\n\\nSection Headline: [your product as the answer]\\nParagraph: [how it solves the problem, 2-3 sentences]\\nFeature → Benefit pairs:\\n1. [feature]: [what it means for the user]\\n2. [feature]: [what it means for the user]\\n3. [feature]: [what it means for the user]\\n4. [feature]: [what it means for the user]",
-  "proof": "SOCIAL PROOF SECTION\\n\\n3 example testimonials (write realistic ones):\\n\\n[Quote 1] — [Name, Role/Context]\\n[Quote 2] — [Name, Role/Context]\\n[Quote 3] — [Name, Role/Context]\\n\\nProof stat ideas: [2-3 specific metrics to aim for and display]",
-  "pricing": "PRICING SECTION\\n\\nStrategy: [recommended approach: free trial / freemium / one-time / subscription]\\nRationale: [why this model fits this product]\\n\\nTier 1 — [name]: [price] — [what's included]\\nTier 2 — [name]: [price] — [what's included]\\nTier 3 — [name]: [price] — [what's included]\\n\\nAnchoring note: [which tier to highlight and why]",
-  "cta": "FINAL CTA SECTION\\n\\nHeadline: [urgency or transformation statement]\\nSubtext: [1 line removing last objection]\\nButton: [action text]\\nBelow button: [trust signal — e.g. 'No credit card · Cancel anytime']",
-  "seo": "SEO & META\\n\\nPage title (60 chars): [...]\\nMeta description (155 chars): [...]\\nPrimary keyword: [...]\\nSecondary keywords: [3-5 terms]\\nURL slug suggestion: [...]"
+  "core_problem": "One sentence. The specific frustration this product eliminates.",
+${ASSUMPTION_BLOCK}
+  "hero": "HERO SECTION\\n\\nHeadline: [bold, specific, benefit-first — max 8 words]\\nSubheadline: [expands headline, 15-25 words, includes who it's for]\\nCTA Button: [action verb + outcome]\\nHero Visual Idea: [describe the visual]",
+  "problem": "PROBLEM SECTION\\n\\nSection Headline: [name the pain]\\nParagraph: [2-3 sentences]\\nPain Points:\\n- [frustration 1]\\n- [frustration 2]\\n- [frustration 3]",
+  "solution": "SOLUTION SECTION\\n\\nSection Headline: [your product as the answer]\\nParagraph: [how it solves, 2-3 sentences]\\nFeature → Benefit pairs:\\n1. [feature]: [what it means for the user]\\n2. [feature]: [what it means for the user]\\n3. [feature]: [what it means for the user]\\n4. [feature]: [what it means for the user]",
+  "proof": "SOCIAL PROOF\\n\\n3 realistic testimonials:\\n[Quote 1] — [Name, Role]\\n[Quote 2] — [Name, Role]\\n[Quote 3] — [Name, Role]\\n\\nProof stats to aim for: [2-3 specific metrics]",
+  "pricing": "PRICING\\n\\nStrategy: [free trial / freemium / one-time / subscription]\\nRationale: [why this model fits]\\n\\nTier 1 — [name]: [price] — [included]\\nTier 2 — [name]: [price] ← RECOMMENDED — [included]\\nTier 3 — [name]: [price] — [included]",
+  "cta": "FINAL CTA\\n\\nHeadline: [urgency or transformation]\\nSubtext: [remove last objection]\\nButton: [action text]\\nTrust signal: [e.g. 'No credit card · Cancel anytime']",
+  "seo": "SEO & META\\n\\nPage title (60 chars): [...]\\nMeta description (155 chars): [...]\\nPrimary keyword: [...]\\nSecondary keywords: [3-5]\\nURL slug: [...]",
+${CONTRADICTION_BLOCK}
 }`;
 }
  
-/* ── OFFER BUILDER ──────────────────────────────────────── */
 function buildOfferPrompt() {
-  return `You are a positioning strategist and offer architect. You turn vague products into razor-sharp, priced, sellable offers.
-Be specific about pricing psychology, objection handling, and what makes people say yes.
+  return `You are a positioning strategist and offer architect. Sharp, priced, sellable offers.
 CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
 {
   "systemName": "Offer name — punchy, specific, benefit-led",
-  "coreSummary": "One sentence. What it is, who it's for, and the transformation it delivers.",
-  ${ASSUMPTION_BLOCK}
-  "positioning": "POSITIONING\\n\\nCategory: [what shelf does this sit on in the buyer's mind?]\\nUnique Mechanism: [the named process/method that makes yours different]\\nFor statement: [This is for X who Y and are tired of Z]\\nNot for statement: [This is NOT for people who...]\\nPrice anchor: [what do people currently spend on this problem?]",
-  "tiers": "OFFER TIERS\\n\\nTier 1 — [name] — [price]\\nWho it's for: [...]\\nIncludes: [specific deliverables]\\nTime to value: [when do they see results?]\\nPsychology: [why this price works]\\n\\nTier 2 — [name] — [price] ← RECOMMENDED\\nWho it's for: [...]\\nIncludes: [specific deliverables]\\nTime to value: [...]\\nPsychology: [...]\\n\\nTier 3 — [name] — [price]\\nWho it's for: [...]\\nIncludes: [specific deliverables]\\nTime to value: [...]\\nPsychology: [why someone pays premium]",
-  "objections": "KEY OBJECTIONS\\n\\n1. Objection: [most common reason not to buy]\\n   Answer: [specific, honest reframe — not platitudes]\\n\\n2. Objection: [price objection]\\n   Answer: [ROI framing or comparison]\\n\\n3. Objection: [trust/credibility objection]\\n   Answer: [how to prove it before they buy]\\n\\n4. Objection: [timing objection]\\n   Answer: [why now is the right time]",
-  "salesScript": "SALES SCRIPT\\n\\nOpener: [1-2 sentences to open a conversation]\\nProblem question: [question that surfaces the pain without being pushy]\\nBridge: [how you connect their problem to your offer]\\nPitch: [30-second verbal description of the offer]\\nClose: [specific ask — what to say to get a yes/next step]\\nFollow-up: [what to say if they say 'I need to think about it']",
-  "urgency": "URGENCY & SCARCITY\\n\\nHonest urgency mechanism: [what real reason creates time pressure?]\\nScarcity angle: [what genuinely limits supply?]\\nRisk reversal: [guarantee or trial structure]\\nLaunch sequence: [if new — how to build momentum and first 10 buyers]"
+  "coreSummary": "One sentence. What it is, who it's for, the transformation it delivers.",
+  "core_problem": "One sentence. The specific problem this offer solves better than alternatives.",
+${ASSUMPTION_BLOCK}
+  "positioning": "POSITIONING\\n\\nCategory: [what shelf in the buyer's mind]\\nUnique Mechanism: [the named process that makes yours different]\\nFor statement: [This is for X who Y and are tired of Z]\\nNot for: [explicitly NOT for...]\\nPrice anchor: [what people currently spend on this problem]",
+  "tiers": "OFFER TIERS\\n\\nTier 1 — [name] — [price]\\nFor: [...] Includes: [...] Time to value: [...] Psychology: [...]\\n\\nTier 2 — [name] — [price] ← RECOMMENDED\\nFor: [...] Includes: [...] Time to value: [...] Psychology: [...]\\n\\nTier 3 — [name] — [price]\\nFor: [...] Includes: [...] Time to value: [...] Psychology: [why someone pays premium]",
+  "objections": "KEY OBJECTIONS\\n\\n1. Objection: [most common] Answer: [specific honest reframe]\\n2. Objection: [price] Answer: [ROI framing]\\n3. Objection: [trust] Answer: [how to prove before they buy]\\n4. Objection: [timing] Answer: [why now]",
+  "salesScript": "SALES SCRIPT\\n\\nOpener: [1-2 sentences]\\nProblem question: [surfaces pain without being pushy]\\nBridge: [connect problem to offer]\\nPitch: [30-second verbal]\\nClose: [specific ask]\\nFollow-up: [if they say 'I need to think about it']",
+  "urgency": "URGENCY & SCARCITY\\n\\nHonest urgency: [real time pressure]\\nScarcity: [what genuinely limits supply]\\nRisk reversal: [guarantee or trial]\\nLaunch sequence: [how to get first 10 buyers]",
+${CONTRADICTION_BLOCK}
 }`;
 }
  
-/* ── CONTENT FORGE ──────────────────────────────────────── */
 function buildContentPrompt() {
-  return `You are a content strategist and editor who creates content that actually gets read, shared, and converts.
-You understand hooks, structure, distribution, and repurposing. Be specific and practical.
+  return `You are a content strategist who creates content that gets read, shared, and converts.
 CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
 {
   "systemName": "Content piece title — specific, hooky",
   "coreSummary": "One sentence. Topic + angle + who it's for + why it matters now.",
-  ${ASSUMPTION_BLOCK}
-  "hooks": "HOOK OPTIONS\\n\\n5 different opening hooks (pick the best one to use):\\n\\n1. [Contrarian hook — challenge a widely held belief]\\n2. [Story hook — open mid-scene]\\n3. [Data hook — surprising stat or fact]\\n4. [Question hook — create immediate curiosity]\\n5. [Bold claim hook — make a specific, defensible assertion]\\n\\nRecommended: Hook [number] because [reason]",
-  "structure": "ARTICLE STRUCTURE\\n\\nFormat: [longform / listicle / essay / how-to / opinion piece]\\nEstimated length: [word count]\\nReading time: [minutes]\\n\\nOutline:\\nIntro: [what it promises + why to keep reading]\\nSection 1 — [title]: [what it covers, 1 sentence]\\nSection 2 — [title]: [what it covers]\\nSection 3 — [title]: [what it covers]\\nSection 4 — [title]: [what it covers]\\nConclusion: [what the reader leaves with + CTA]\\n\\nKey examples to include: [3 specific, real examples to research]\\nStrongest argument: [the one point that makes this piece worth reading]",
-  "distribution": "DISTRIBUTION PLAN\\n\\nPrimary channel: [where to publish first and why]\\n\\nPlatform playbook:\\nLinkedIn: [specific angle for this platform — tone, length, visual]\\nTwitter/X: [thread angle — how to break it into 5-8 tweets]\\nNewsletter: [subject line + how to adapt for email]\\nReddit: [which subreddit + how to frame without being promotional]\\nYouTube/Video: [could this be a video? angle if yes]\\n\\nBest day/time to post: [specific recommendation]\\nOutreach targets: [3 types of people/accounts to share with]",
-  "repurpose": "REPURPOSING PLAN\\n\\nFrom this one piece, create:\\n1. [Short-form social post] — [platform + angle]\\n2. [Quote graphic] — [which line to pull + visual idea]\\n3. [Email sequence] — [how to break into 3-email drip]\\n4. [Podcast talking points] — [3 discussion angles]\\n5. [Slide deck outline] — [5 slides from this content]\\n\\nSEO keywords to target: [3-5 specific terms]\\nInternal links to create: [what other content should link to this?]",
-  "sheet": "CONTENT SYSTEM SHEET\\n\\nPiece title: [final recommended title]\\nAngle: [one-line description of the specific take]\\nTarget reader: [specific person — job, situation, problem]\\nDesired action after reading: [what should they do/feel/share?]\\nSuccess metric: [how will you know this performed well?]\\nBest month to publish: [seasonal/topical timing reason]"
+  "core_problem": "One sentence. The gap in understanding or belief this piece fills.",
+${ASSUMPTION_BLOCK}
+  "hooks": "HOOK OPTIONS\\n\\n5 different hooks:\\n1. [Contrarian — challenge a widely held belief]\\n2. [Story — open mid-scene]\\n3. [Data — surprising stat]\\n4. [Question — create immediate curiosity]\\n5. [Bold claim — specific, defensible]\\n\\nRecommended: Hook [N] because [reason]",
+  "structure": "ARTICLE STRUCTURE\\n\\nFormat: [longform/listicle/essay/how-to/opinion]\\nEstimated length: [word count]\\nReading time: [minutes]\\n\\nOutline:\\nIntro: [what it promises]\\nSection 1 — [title]: [what it covers]\\nSection 2 — [title]: [what it covers]\\nSection 3 — [title]: [what it covers]\\nConclusion: [what reader leaves with + CTA]\\n\\nStrongest argument: [the one point that makes this worth reading]",
+  "distribution": "DISTRIBUTION PLAN\\n\\nPrimary channel: [where first and why]\\nLinkedIn: [specific angle]\\nTwitter/X: [thread structure]\\nNewsletter: [subject line + adaptation]\\nReddit: [which subreddit + framing]\\nBest timing: [specific recommendation]",
+  "repurpose": "REPURPOSING PLAN\\n\\n1. [Short-form social] — [platform + angle]\\n2. [Quote graphic] — [line to pull]\\n3. [Email sequence] — [3-email drip structure]\\n4. [Podcast talking points] — [3 angles]\\n5. [Slide deck] — [5 slides]\\n\\nSEO keywords: [3-5 terms]",
+  "sheet": "CONTENT SHEET\\n\\nTitle: [...] Angle: [...] Target reader: [...] Desired action: [...] Success metric: [...] Best month to publish: [...]",
+${CONTRADICTION_BLOCK}
 }`;
 }
  
-/* ── MUSIC FORGE ────────────────────────────────────────── */
 function buildMusicPrompt() {
-  return `You are a music producer, AI prompt engineer, and release strategist specialising in generative AI music tools like Suno and Udio.
-You write prompts that produce distinctive, high-quality tracks. Be specific about sonic details — BPM, key, instruments, textures, vocal style.
+  return `You are a music producer, AI prompt engineer, and release strategist specialising in Suno and Udio.
 CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
 {
   "systemName": "Track title — evocative, specific",
-  "coreSummary": "One sentence. Genre + mood + who would listen to this + what it feels like.",
-  "sunoPrompts": "SUNO AI PROMPTS\\n\\nVariant 1 — [mood label]:\\n[Full Suno prompt — 50-80 words. Include: genre tags, instruments, BPM, key/mode, vocal style, production references, energy descriptors. Use Suno-style comma-separated tags mixed with descriptive phrases.]\\n\\nVariant 2 — [mood label — darker/lighter/more aggressive/more melodic]:\\n[Full Suno prompt — different angle, same core idea]\\n\\nVariant 3 — [mood label — experimental/alternative take]:\\n[Full Suno prompt — push the genre fusion or texture further]\\n\\nSuno tips for this track:\\n- [specific Suno technique that helps this style]\\n- [what to avoid in Suno for this genre]",
-  "udioPrompts": "UDIO AI PROMPTS\\n\\nVariant 1 — [mood label]:\\n[Full Udio prompt — slightly different structure. Udio responds well to more descriptive language and fewer raw tags. 60-90 words.]\\n\\nVariant 2 — [alternative take]:\\n[Full Udio prompt]\\n\\nUdio tips for this track:\\n- [specific Udio technique]\\n- [how Udio handles this genre differently from Suno]",
-  "production": "PRODUCTION NOTES\\n\\nBPM range: [exact range]\\nKey/Mode: [recommended]\\nCore instruments: [specific list]\\nSignature texture: [the one sonic detail that makes this track recognisable]\\nDrop/climax structure: [where should energy peak?]\\nReference tracks: [3 specific real tracks — Artist — Song]\\nWhat to steal from each reference: [specific element to borrow]",
-  "release": "RELEASE STRATEGY\\n\\nPlatform priority: [where to drop first — SoundCloud/Bandcamp/streaming/social]\\nBest format to release: [single / EP / as part of album / instrumental only / with vocals]\\nCaption/description template: [exact text to use when posting]\\nHashtags: [10 specific relevant hashtags]\\nBest communities to share in: [subreddits, Discord servers, Facebook groups]\\nCollaboration angle: [who to reach out to — vocalists, visual artists, sync supervisors]",
-  "visual": "VISUAL DIRECTION\\n\\nCover art concept: [specific visual — colour palette, subject, mood, style reference]\\nAI image prompt for cover: [detailed Midjourney/DALL-E prompt for the artwork]\\nVideo/visualiser idea: [what moving image would accompany this track]\\nColour palette: [3-4 specific hex codes or colour descriptions]\\nFont/typography feeling: [what kind of type represents this track]"
+  "coreSummary": "One sentence. Genre + mood + who would listen + what it feels like.",
+  "core_problem": "One sentence. What emotional or creative gap this track fills.",
+  "sunoPrompts": "SUNO AI PROMPTS\\n\\nVariant 1 — [mood label]:\\n[Full prompt — 50-80 words. Genre tags, instruments, BPM, key/mode, vocal style, production references, energy descriptors.]\\n\\nVariant 2 — [mood label]:\\n[Different angle, same core idea]\\n\\nVariant 3 — [experimental take]:\\n[Push the genre fusion further]\\n\\nSuno tips:\\n- [specific technique for this style]\\n- [what to avoid]",
+  "udioPrompts": "UDIO AI PROMPTS\\n\\nVariant 1 — [mood label]:\\n[Full Udio prompt — 60-90 words, more descriptive than Suno]\\n\\nVariant 2 — [alternative take]:\\n[Full Udio prompt]\\n\\nUdio tips:\\n- [specific technique]\\n- [how Udio handles this genre differently]",
+  "production": "PRODUCTION NOTES\\n\\nBPM range: [...] Key/Mode: [...] Core instruments: [...] Signature texture: [...] Drop/climax structure: [...] Reference tracks: [3 specific — Artist — Song] What to steal from each: [specific element]",
+  "release": "RELEASE STRATEGY\\n\\nPlatform priority: [...] Format: [...] Caption template: [...] Hashtags: [10] Best communities: [...] Collaboration angle: [...]",
+  "visual": "VISUAL DIRECTION\\n\\nCover art concept: [...] AI image prompt for cover: [...] Video/visualiser idea: [...] Colour palette: [...] Typography feeling: [...]"
 }`;
 }
  
-/* ── REBRAND FORGE ──────────────────────────────────────── */
 function buildRebrandPrompt() {
-  return `You are a brand strategist, naming expert, and identity architect. You diagnose broken brands and rebuild them into something sharp, memorable and true.
-Be honest about what's wrong. Be bold with new directions. No generic corporate advice.
+  return `You are a brand strategist, naming expert, and identity architect. Honest diagnosis, bold direction, no corporate speak.
 CRITICAL: Return ONLY valid JSON. No markdown. No preamble.
 {
   "systemName": "New brand name — the recommended choice",
-  "coreSummary": "One sentence. What the brand is, who it's for, and what feeling it creates.",
-  ${ASSUMPTION_BLOCK}
-  "diagnosis": "BRAND DIAGNOSIS\\n\\nCurrent brand problems:\\n1. [specific thing that's broken — name, positioning, perception]\\n2. [second problem]\\n3. [third problem]\\n\\nRoot cause: [the one underlying reason all these problems exist]\\nWhat the brand is accidentally communicating: [what people think you are vs what you actually are]\\nOpportunity: [the gap between current perception and what you could own]\\nCompetitors doing it better: [2 examples with specific reasons why]",
-  "names": "NAME OPTIONS\\n\\n1. [Name] — [type: coined/descriptive/metaphor/founder/abbreviation]\\n   Rationale: [why this works for this brand]\\n   Tagline that fits: [...]\\n   Risk: [what could go wrong with this name]\\n\\n2. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\n3. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\n4. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\n5. [Name] — [type]\\n   Rationale: [...]\\n   Tagline: [...]\\n   Risk: [...]\\n\\nRECOMMENDED: Name [number] because [specific strategic reason]",
-  "identity": "BRAND IDENTITY\\n\\nBrand in one word: [the single word that should define this brand]\\nBrand personality: [3 adjectives — specific, not generic]\\nTone of voice: [how it sounds — 3 characteristics with examples]\\nWhat it should NEVER sound like: [specific anti-examples]\\n\\nTagline options (top 3):\\n1. [tagline] — [rationale]\\n2. [tagline] — [rationale]\\n3. [tagline] — [rationale]\\n\\nColour direction: [recommended palette with psychology reasoning]\\nTypography feeling: [what kind of type fits — specific style, not specific font]",
-  "voice": "BRAND VOICE GUIDE\\n\\nWe always say: [3 specific phrases or approaches]\\nWe never say: [3 things to eliminate from comms]\\n\\nHow to introduce the brand:\\n[30-second verbal pitch in the new brand voice]\\n\\nSocial media voice example:\\n[Write one sample post in the new brand voice]\\n\\nEmail subject line style:\\n[3 example subject lines that feel right for this brand]",
-  "launch": "REBRAND LAUNCH PLAN\\n\\nPhase 1 — Internal (Week 1-2):\\n[what to update first, internally]\\n\\nPhase 2 — Soft launch (Week 3-4):\\n[how to introduce to existing audience]\\n\\nPhase 3 — Public launch (Month 2):\\n[announcement strategy]\\n\\nWhat to update immediately (Day 1): [specific list]\\nWhat can wait (Month 2+): [specific list]\\nHow to explain the change to existing customers: [exact messaging]\\nBiggest rebrand risk: [what could go wrong and how to mitigate it]"
+  "coreSummary": "One sentence. What the brand is, who it's for, what feeling it creates.",
+  "core_problem": "One sentence. The specific perception problem this rebrand must solve.",
+${ASSUMPTION_BLOCK}
+  "diagnosis": "BRAND DIAGNOSIS\\n\\nCurrent problems:\\n1. [specific — name, positioning, perception]\\n2. [second problem]\\n3. [third problem]\\n\\nRoot cause: [one underlying reason]\\nWhat the brand accidentally communicates: [vs. what you actually are]\\nOpportunity: [gap between current perception and what you could own]\\nCompetitors doing it better: [2 examples with reasons]",
+  "names": "NAME OPTIONS\\n\\n1. [Name] — [type: coined/descriptive/metaphor/founder]\\n   Rationale: [...] Tagline: [...] Risk: [...]\\n\\n2. [Name] — [...] Rationale: [...] Tagline: [...] Risk: [...]\\n3. [Name] — [...] Rationale: [...] Tagline: [...] Risk: [...]\\n4. [Name] — [...] Rationale: [...] Tagline: [...] Risk: [...]\\n5. [Name] — [...] Rationale: [...] Tagline: [...] Risk: [...]\\n\\nRECOMMENDED: Name [N] because [specific strategic reason]",
+  "identity": "BRAND IDENTITY\\n\\nBrand in one word: [...] Personality: [3 adjectives] Tone of voice: [3 characteristics with examples] Never sound like: [specific anti-examples]\\n\\nTaglines:\\n1. [...] — [rationale]\\n2. [...] — [rationale]\\n3. [...] — [rationale]\\n\\nColour direction: [...] Typography feeling: [...]",
+  "voice": "BRAND VOICE\\n\\nWe always say: [3 phrases/approaches] We never say: [3 things to eliminate]\\n\\n30-second pitch in new voice: [...]\\nSample social post: [...]\\nEmail subject lines: [3 examples]",
+  "launch": "REBRAND LAUNCH\\n\\nPhase 1 — Internal (Wk 1-2): [...] Phase 2 — Soft launch (Wk 3-4): [...] Phase 3 — Public (Month 2): [...]\\n\\nUpdate Day 1: [...] Update Month 2+: [...] How to explain change: [exact messaging] Biggest risk: [...]",
+${CONTRADICTION_BLOCK}
 }`;
 }
  
-/* ── REFORGE SYSTEM PROMPT ──────────────────────────────── */
 function buildReforgeSystemPrompt(originalData, targetSections, toolId) {
   const originalJson = JSON.stringify(originalData).slice(0, 4000);
-  return `You are the Omniforge Reforge Engine. You surgically update specific sections of existing system forges based on new information, test results, or changed conditions.
+  return `You are the Omniforge Reforge Engine. Surgically update specific sections of existing forge outputs based on new information.
  
 Rules:
-1. Only update sections that are genuinely affected by the new information.
-2. Be specific about what changed and why. Don't just rephrase the original.
-3. If new information validates an assumption, update the assumption audit accordingly.
-4. If new information contradicts the framework, update the framework to reflect reality.
-5. Return ONLY a valid JSON object containing ONLY the keys specified. No markdown. No preamble.
-6. Maintain the same format and depth as the original sections.
+1. Only change sections genuinely affected by the new information.
+2. Be specific — don't just rephrase the original with minor tweaks.
+3. If new info validates an assumption, note it. If it invalidates one, rebuild accordingly.
+4. Always regenerate the contradictions section if any core sections change.
+5. Return ONLY valid JSON with ONLY the keys that need updating. No markdown. No preamble.
  
-Original forge tool type: ${toolId}
-Original forge data (for context): ${originalJson}
- 
-Sections to update: ${targetSections.join(', ')}
- 
-Return format: a JSON object with only the updated section keys.`;
+Original forge type: ${toolId}
+Original data (context): ${originalJson}
+Sections to update: ${targetSections.join(', ')}`;
 }
  
 /* ══════════════════════════════════════════════════════════
@@ -1404,63 +1344,68 @@ Return format: a JSON object with only the updated section keys.`;
 ══════════════════════════════════════════════════════════ */
 const SECTIONS_BY_TOOL = {
   system: [
-    { key: 'assumptions', icon: '⚠️', name: 'Assumption Audit', isAssumptions: true },
-    { key: 'framework',   icon: '🏗', name: 'Framework' },
-    { key: 'assets',      icon: '📦', name: 'Assets' },
-    { key: 'experiments', icon: '🧪', name: 'Experiments' },
-    { key: 'pilot',       icon: '🚀', name: 'Pilot Plan' },
-    { key: 'sheet',       icon: '📋', name: 'System Sheet' },
-    { key: 'deployment',  icon: '⚙️', name: 'Deployment Layer' },
+    { key:'assumptions',    icon:'⚠️', name:'Assumption Audit',     isAssumptions:true },
+    { key:'framework',      icon:'🏗',  name:'Framework' },
+    { key:'assets',         icon:'📦', name:'Assets' },
+    { key:'experiments',    icon:'🧪', name:'Experiments' },
+    { key:'pilot',          icon:'🚀', name:'Pilot Plan' },
+    { key:'sheet',          icon:'📋', name:'System Sheet' },
+    { key:'deployment',     icon:'⚙️', name:'Deployment Layer' },
+    { key:'contradictions', icon:'⚡', name:'Contradiction Audit', isContradiction:true }
   ],
   landing: [
-    { key: 'assumptions', icon: '⚠️', name: 'Assumption Audit', isAssumptions: true },
-    { key: 'hero',        icon: '✦',  name: 'Hero Section' },
-    { key: 'problem',     icon: '⚡', name: 'Problem Section' },
-    { key: 'solution',    icon: '🏗', name: 'Solution Section' },
-    { key: 'proof',       icon: '💬', name: 'Social Proof' },
-    { key: 'pricing',     icon: '💰', name: 'Pricing Section' },
-    { key: 'cta',         icon: '🚀', name: 'Final CTA' },
-    { key: 'seo',         icon: '🔍', name: 'SEO & Meta' },
+    { key:'assumptions',    icon:'⚠️', name:'Assumption Audit',     isAssumptions:true },
+    { key:'hero',           icon:'✦',  name:'Hero Section' },
+    { key:'problem',        icon:'⚡', name:'Problem Section' },
+    { key:'solution',       icon:'🏗',  name:'Solution Section' },
+    { key:'proof',          icon:'💬', name:'Social Proof' },
+    { key:'pricing',        icon:'💰', name:'Pricing Section' },
+    { key:'cta',            icon:'🚀', name:'Final CTA' },
+    { key:'seo',            icon:'🔍', name:'SEO & Meta' },
+    { key:'contradictions', icon:'⚡', name:'Contradiction Audit', isContradiction:true }
   ],
   offer: [
-    { key: 'assumptions',  icon: '⚠️', name: 'Assumption Audit', isAssumptions: true },
-    { key: 'positioning',  icon: '🎯', name: 'Positioning' },
-    { key: 'tiers',        icon: '💰', name: 'Offer Tiers' },
-    { key: 'objections',   icon: '🛡', name: 'Key Objections' },
-    { key: 'salesScript',  icon: '💬', name: 'Sales Script' },
-    { key: 'urgency',      icon: '⏱', name: 'Urgency & Scarcity' },
+    { key:'assumptions',    icon:'⚠️', name:'Assumption Audit',     isAssumptions:true },
+    { key:'positioning',    icon:'🎯', name:'Positioning' },
+    { key:'tiers',          icon:'💰', name:'Offer Tiers' },
+    { key:'objections',     icon:'🛡',  name:'Key Objections' },
+    { key:'salesScript',    icon:'💬', name:'Sales Script' },
+    { key:'urgency',        icon:'⏱',  name:'Urgency & Scarcity' },
+    { key:'contradictions', icon:'⚡', name:'Contradiction Audit', isContradiction:true }
   ],
   content: [
-    { key: 'assumptions', icon: '⚠️', name: 'Assumption Audit', isAssumptions: true },
-    { key: 'hooks',       icon: '🎣', name: 'Hook Options' },
-    { key: 'structure',   icon: '🏗', name: 'Article Structure' },
-    { key: 'distribution',icon: '📡', name: 'Distribution Plan' },
-    { key: 'repurpose',   icon: '♻️', name: 'Repurposing Plan' },
-    { key: 'sheet',       icon: '📋', name: 'Content Sheet' },
+    { key:'assumptions',    icon:'⚠️', name:'Assumption Audit',     isAssumptions:true },
+    { key:'hooks',          icon:'🎣', name:'Hook Options' },
+    { key:'structure',      icon:'🏗',  name:'Article Structure' },
+    { key:'distribution',   icon:'📡', name:'Distribution Plan' },
+    { key:'repurpose',      icon:'♻️', name:'Repurposing Plan' },
+    { key:'sheet',          icon:'📋', name:'Content Sheet' },
+    { key:'contradictions', icon:'⚡', name:'Contradiction Audit', isContradiction:true }
   ],
   music: [
-    { key: 'sunoPrompts', icon: '🎵', name: 'Suno Prompts' },
-    { key: 'udioPrompts', icon: '🎶', name: 'Udio Prompts' },
-    { key: 'production',  icon: '🎛', name: 'Production Notes' },
-    { key: 'release',     icon: '🚀', name: 'Release Strategy' },
-    { key: 'visual',      icon: '🎨', name: 'Visual Direction' },
+    { key:'sunoPrompts',    icon:'🎵', name:'Suno Prompts' },
+    { key:'udioPrompts',    icon:'🎶', name:'Udio Prompts' },
+    { key:'production',     icon:'🎛',  name:'Production Notes' },
+    { key:'release',        icon:'🚀', name:'Release Strategy' },
+    { key:'visual',         icon:'🎨', name:'Visual Direction' }
   ],
   rebrand: [
-    { key: 'assumptions', icon: '⚠️', name: 'Assumption Audit', isAssumptions: true },
-    { key: 'diagnosis',   icon: '🔍', name: 'Brand Diagnosis' },
-    { key: 'names',       icon: '✦',  name: 'Name Options' },
-    { key: 'identity',    icon: '🎯', name: 'Brand Identity' },
-    { key: 'voice',       icon: '💬', name: 'Brand Voice' },
-    { key: 'launch',      icon: '🚀', name: 'Rebrand Launch Plan' },
+    { key:'assumptions',    icon:'⚠️', name:'Assumption Audit',     isAssumptions:true },
+    { key:'diagnosis',      icon:'🔍', name:'Brand Diagnosis' },
+    { key:'names',          icon:'✦',  name:'Name Options' },
+    { key:'identity',       icon:'🎯', name:'Brand Identity' },
+    { key:'voice',          icon:'💬', name:'Brand Voice' },
+    { key:'launch',         icon:'🚀', name:'Rebrand Launch Plan' },
+    { key:'contradictions', icon:'⚡', name:'Contradiction Audit', isContradiction:true }
   ],
   stress: [
-    { key: 'verdict',              icon: '⚖️', name: 'Honest Verdict', isStressVerdict: true },
-    { key: 'dangerousAssumptions', icon: '💣', name: 'Dangerous Assumptions', isStress: true },
-    { key: 'failureModes',         icon: '📉', name: 'Failure Modes', isStress: true },
-    { key: 'weakestLink',          icon: '🔗', name: 'Weakest Link', isStress: true },
-    { key: 'killTests',            icon: '🧪', name: 'Kill Tests — Validate Before Building' },
-    { key: 'salvage',              icon: '💎', name: 'What\'s Worth Keeping' },
-    { key: 'hardQuestions',        icon: '❓', name: 'Hard Questions' },
+    { key:'verdict',              icon:'⚖️', name:'Honest Verdict',           isStressVerdict:true },
+    { key:'dangerousAssumptions', icon:'💣', name:'Dangerous Assumptions',    isStress:true },
+    { key:'failureModes',         icon:'📉', name:'Failure Modes',            isStress:true },
+    { key:'weakestLink',          icon:'🔗', name:'Weakest Link',             isStress:true },
+    { key:'killTests',            icon:'🧪', name:'Kill Tests' },
+    { key:'salvage',              icon:'💎', name:'What\'s Worth Keeping' },
+    { key:'hardQuestions',        icon:'❓', name:'Hard Questions' }
   ]
 };
  
@@ -1469,51 +1414,80 @@ function getSectionsDef(toolId) {
 }
  
 /* ══════════════════════════════════════════════════════════
-   RUN FORGE — main streaming forge
+   STREAMING HELPER — reads an SSE response body
+══════════════════════════════════════════════════════════ */
+async function readStream(resp, onChunk) {
+  const reader = resp.body.getReader(), decoder = new TextDecoder();
+  let buffer = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream:true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') continue;
+      try {
+        const evt = JSON.parse(data);
+        if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') onChunk(evt.delta.text);
+      } catch (_) {}
+    }
+  }
+}
+ 
+async function callClaude(systemPrompt, userMsg, maxTokens) {
+  const key = DB.getKey();
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens || 4000,
+      system: systemPrompt,
+      stream: true,
+      messages: [{ role:'user', content:userMsg }]
+    })
+  });
+  if (!resp.ok) {
+    const e = await resp.json().catch(() => ({}));
+    throw new Error(e.error?.message || `API error ${resp.status} — check your key in Settings`);
+  }
+  return resp;
+}
+ 
+/* ══════════════════════════════════════════════════════════
+   RUN FORGE
 ══════════════════════════════════════════════════════════ */
 async function runForge() {
-  const idea   = document.getElementById('idea').value.trim();
-  const dom    = document.getElementById('domain').value;
-  const aud    = document.getElementById('audience').value.trim();
-  const risk   = document.getElementById('risk').value.trim();
-  const key    = DB.getKey();
+  const idea = document.getElementById('idea').value.trim();
+  const dom  = document.getElementById('domain').value;
+  const aud  = document.getElementById('audience').value.trim();
+  const risk = document.getElementById('risk').value.trim();
   const isStress = activeTool === 'stress';
  
   if (!idea) { document.getElementById('idea').focus(); return; }
-  if (!key)  { switchView('settings'); return; }
+  if (!DB.getKey()) { switchView('settings'); return; }
  
-  const btn = document.getElementById('forge-btn');
-  btn.disabled = true;
+  document.getElementById('forge-btn').disabled = true;
   showOutputState('loading');
-  startPipeline(isStress);
+  startPipeline(isStress ? 'stress' : 'forge');
   currentToolAtForge = activeTool;
  
   const userMsg = isStress
-    ? `STRESS TEST TARGET:\n${idea}\n\nDomain context: ${dom}\nAudience: ${aud || 'not specified'}`
-    : `IDEA / INPUT: ${idea}\n\nDOMAIN: ${dom}\nAUDIENCE: ${aud || 'not specified'}\nBIGGEST RISK / UNKNOWN: ${risk || 'not specified'}\nFORGE TYPE: ${activeTool}\nDEPTH: ${depth}\n\nRun the complete forge pipeline including a thorough assumption audit. Return only the JSON.`;
+    ? `STRESS TEST TARGET:\n${idea}\n\nDomain: ${dom}\nAudience: ${aud || 'not specified'}`
+    : `IDEA: ${idea}\nDOMAIN: ${dom}\nAUDIENCE: ${aud || 'not specified'}\nBIGGEST RISK: ${risk || 'not specified'}\nFORGE TYPE: ${activeTool}\nDEPTH: ${depth}\n\nRun the complete forge pipeline including assumption audit and contradiction scan. Return only the JSON.`;
+ 
+  const maxTok = isStress ? 4000 : (depth === 'Deep' ? 5500 : 3800);
  
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: activeTool === 'stress' ? 4000 : (depth === 'Deep' ? 5000 : 3500),
-        system: buildSysPrompt(depth),
-        stream: true,
-        messages: [{ role: 'user', content: userMsg }]
-      })
-    });
- 
-    if (!resp.ok) {
-      const e = await resp.json().catch(() => ({}));
-      throw new Error(e.error?.message || `API error ${resp.status} — check your key in Settings`);
-    }
+    const resp = await callClaude(buildSysPrompt(depth), userMsg, maxTok);
  
     stopPipeline();
     showOutputState('streaming');
@@ -1521,66 +1495,55 @@ async function runForge() {
     const streamEl = document.getElementById('stream-output');
     const countEl  = document.getElementById('stream-token-count');
     const peekEl   = document.getElementById('stream-peek');
-    const streamLabel = document.getElementById('streaming-label');
-    if (streamLabel) streamLabel.textContent = isStress ? 'STRESS TEST RUNNING' : 'STREAMING OUTPUT';
+    document.getElementById('streaming-label').textContent = isStress ? 'STRESS TEST RUNNING' : 'STREAMING OUTPUT';
  
     const sectionKeys = getSectionsDef(activeTool).map(s => s.key);
     const peekChips = {};
-    peekEl.innerHTML = sectionKeys.map(k =>
-      `<span class="stream-peek-chip" id="peek-${k}">${k}</span>`
-    ).join('');
+    peekEl.innerHTML = sectionKeys.map(k => `<span class="stream-peek-chip" id="peek-${k}">${k}</span>`).join('');
     sectionKeys.forEach(k => { peekChips[k] = document.getElementById('peek-' + k); });
  
     let fullText = '';
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
- 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') continue;
-        try {
-          const evt = JSON.parse(data);
-          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
-            fullText += evt.delta.text;
-            if (streamEl) { streamEl.textContent = fullText; streamEl.scrollTop = streamEl.scrollHeight; }
-            if (countEl) countEl.textContent = fullText.length.toLocaleString() + ' chars';
-            sectionKeys.forEach(k => {
-              if (peekChips[k] && !peekChips[k].classList.contains('found')) {
-                if (fullText.includes('"' + k + '"')) peekChips[k].classList.add('found');
-              }
-            });
-          }
-        } catch (e) { /* skip malformed SSE */ }
-      }
-    }
+    await readStream(resp, (chunk) => {
+      fullText += chunk;
+      if (streamEl) { streamEl.textContent = fullText; streamEl.scrollTop = streamEl.scrollHeight; }
+      if (countEl)  countEl.textContent = fullText.length.toLocaleString() + ' chars';
+      sectionKeys.forEach(k => {
+        if (peekChips[k] && !peekChips[k].classList.contains('found') && fullText.includes('"' + k + '"'))
+          peekChips[k].classList.add('found');
+      });
+    });
  
     const clean = fullText.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '').trim();
     let parsed;
     try { parsed = JSON.parse(clean); }
-    catch (pe) { throw new Error('Model returned malformed JSON. Try again — this is rare. Raw output shown above.'); }
+    catch (_) { throw new Error('Model returned malformed JSON. Try again — this is rare.'); }
  
     currentData = parsed;
     currentToolAtForge = activeTool;
-    const sName = parsed.systemName || idea.slice(0, 40);
-    rawOutput = buildRawText(parsed, sName, activeTool);
+    const sName  = parsed.systemName || idea.slice(0, 40);
+    const fState = isStress ? 'stressed' : 'forged';
+    const fId    = buildForgeId();
+    rawOutput    = buildRawText(parsed, sName, activeTool);
  
     const forgeRecord = {
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
+      id: fId, date: new Date().toISOString(),
       idea, domain: dom, audience: aud, risk, depth,
-      tool: activeTool,
-      systemName: sName,
+      tool: activeTool, systemName: sName,
       coreSummary: parsed.coreSummary || '',
-      data: parsed, rawOutput
+      core_problem: parsed.core_problem || '',
+      forge_state: fState,
+      derivedFrom: null, children: [],
+      data: parsed, rawOutput,
+      _reforged: 0, _lastReforge: null
     };
+ 
+    // If stress test was launched from a specific forge, update that forge's state + lineage
+    if (isStress && stressTargetId) {
+      DB.updateForge(stressTargetId, { forge_state: 'stressed', children: [...(DB.getHistory().find(x=>x.id===stressTargetId)?.children||[]), fId] });
+      forgeRecord.derivedFrom = stressTargetId;
+      stressTargetId = null;
+    }
+ 
     DB.saveForge(forgeRecord);
     activeHistoryId = forgeRecord.id;
     renderHistory();
@@ -1588,50 +1551,65 @@ async function runForge() {
     fetch('https://api.countapi.xyz/hit/omniforge-systemforge.com/forges').catch(() => {});
  
     showOutputState('result');
-    renderResult(parsed, activeTool, 0, null);
+    renderResult(parsed, activeTool, 0, null, fState, parsed.core_problem || '');
  
   } catch (err) {
-    stopPipeline();
-    showOutputState('error');
+    stopPipeline(); showOutputState('error');
     document.getElementById('error-msg').textContent = err.message;
   }
  
-  btn.disabled = false;
+  document.getElementById('forge-btn').disabled = false;
 }
  
 /* ══════════════════════════════════════════════════════════
    RENDER RESULT
 ══════════════════════════════════════════════════════════ */
-function renderResult(data, toolId, reforgeCount, lastReforgeDate) {
-  const tool = toolId || currentToolAtForge || 'system';
+function renderResult(data, toolId, reforgeCount, lastReforgeDate, forgeState, coreProblem) {
+  const tool    = toolId || currentToolAtForge || 'system';
+  const state   = forgeState || 'forged';
+  const stateInfo = FORGE_STATES[state] || FORGE_STATES.forged;
+  const isStress = tool === 'stress';
+ 
   document.getElementById('out-name').textContent = data.systemName || 'Your System';
+ 
+  // Core problem (shown as a diagnostic line under the name)
+  const probEl = document.getElementById('out-problem');
+  if (coreProblem) { probEl.textContent = 'CORE PROBLEM: ' + coreProblem; probEl.style.display = ''; }
+  else { probEl.style.display = 'none'; }
+ 
   document.getElementById('out-summary').textContent = data.coreSummary || '';
  
   // Chips
   const toolDef = TOOLS.find(t => t.id === tool) || TOOLS[0];
-  const chips = document.getElementById('out-chips');
-  const isStress = tool === 'stress';
-  chips.innerHTML = `
+  document.getElementById('out-chips').innerHTML = `
     <span class="chip chip-green">✓ ${isStress ? 'Stress Tested' : 'Forged'}</span>
-    ${!isStress && data.assumptions ? '<span class="chip chip-amber">⚠ Assumptions audited</span>' : ''}
-    ${!isStress ? `<span class="chip chip-fire">${esc(depth)} Depth</span>` : '<span class="chip chip-red">⚔ Adversarial</span>'}
-    <span class="chip chip-muted">${toolDef.icon} ${esc(toolDef.name)}</span>
+    <span class="chip ${stateInfo.chipClass}">◉ ${stateInfo.label}${stateInfo.next ? ' · ' + stateInfo.next : ''}</span>
+    ${!isStress && depth !== 'Standard' ? `<span class="chip chip-fire">${esc(depth)}</span>` : ''}
+    ${data.assumptions ? '<span class="chip chip-amber">⚠ Audited</span>' : ''}
+    ${data.contradictions && !data.contradictions.includes('NO SIGNIFICANT') ? '<span class="chip chip-cyan">⚡ Contradictions found</span>' : ''}
+    <span class="chip chip-muted">${toolDef.icon} ${toolDef.name}</span>
   `;
  
-  // Assumption banner
-  const asmBanner = document.getElementById('assumption-banner');
-  if (asmBanner) asmBanner.style.display = (!isStress && data.assumptions) ? '' : 'none';
+  // Stress nudge — show if forged and not yet stressed
+  document.getElementById('stress-nudge').style.display = (state === 'forged' && !isStress) ? '' : 'none';
  
-  // Reforge banner
+  // Assumption banner
+  document.getElementById('assumption-banner').style.display = (!isStress && data.assumptions) ? '' : 'none';
+ 
+  // Reforged banner
   const rfBanner = document.getElementById('reforged-banner');
   const rfText   = document.getElementById('reforged-text');
-  if (rfBanner && rfText) {
-    if (reforgeCount > 0) {
-      rfBanner.style.display = '';
-      rfText.textContent = `Reforged ${reforgeCount}× — last updated ${relDate(lastReforgeDate)}`;
-    } else {
-      rfBanner.style.display = 'none';
-    }
+  if (reforgeCount > 0) {
+    rfBanner.style.display = '';
+    rfText.textContent = `Reforged ${reforgeCount}× — last updated ${relDate(lastReforgeDate)}`;
+  } else { rfBanner.style.display = 'none'; }
+ 
+  // Ready button state
+  const readyBtn = document.getElementById('btn-ready');
+  if (readyBtn) {
+    const isReady = state === 'ready';
+    readyBtn.textContent = isReady ? '✓ Ready' : '✓ Mark Ready';
+    readyBtn.classList.toggle('is-ready', isReady);
   }
  
   // Sections
@@ -1641,14 +1619,12 @@ function renderResult(data, toolId, reforgeCount, lastReforgeDate) {
     const text = data[def.key];
     if (!text || text === 'null' || text === null) return;
     const sec = document.createElement('div');
-    const classes = ['section', 'section-anim'];
-    if (def.isAssumptions)   classes.push('is-assumptions');
-    if (def.isStress)        classes.push('is-stress');
-    if (def.isStressVerdict) classes.push('is-stress-verdict');
-    // Start assumptions collapsed by default on stress-test results to avoid overwhelm;
-    // expand assumptions on regular forges so users see them
-    if (def.isStress || def.isStressVerdict) { /* start open */ }
-    sec.className = classes.join(' ');
+    sec.className = ['section','section-anim',
+      def.isAssumptions   ? 'is-assumptions'  : '',
+      def.isContradiction ? 'is-contradiction' : '',
+      def.isStress        ? 'is-stress'        : '',
+      def.isStressVerdict ? 'is-stress-verdict': ''
+    ].filter(Boolean).join(' ');
     sec.id = 'sec-' + def.key;
     sec.innerHTML = `
       <div class="section-head">
@@ -1658,37 +1634,111 @@ function renderResult(data, toolId, reforgeCount, lastReforgeDate) {
         </div>
         <div class="section-toggle">▾</div>
       </div>
-      <div class="section-body">${esc(text)}</div>
-    `;
+      <div class="section-body">${esc(text)}</div>`;
     sec.querySelector('.section-head').addEventListener('click', () => sec.classList.toggle('collapsed'));
     container.appendChild(sec);
   });
 }
  
-function scrollToAssumptions() {
-  const el = document.getElementById('sec-assumptions');
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function scrollToSection(key) {
+  document.getElementById('sec-' + key)?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
  
 /* ══════════════════════════════════════════════════════════
    STRESS TEST (launch from result)
 ══════════════════════════════════════════════════════════ */
 function launchStressTest() {
-  if (!currentData) return;
-  // Pre-fill the idea field with a summary of the current forge
-  const summary = [
-    `SYSTEM: ${currentData.systemName || 'Unknown'}`,
-    currentData.coreSummary ? `SUMMARY: ${currentData.coreSummary}` : '',
-    currentData.framework   ? `FRAMEWORK:\n${currentData.framework.slice(0, 600)}` : '',
-    currentData.sheet       ? `SYSTEM SHEET:\n${currentData.sheet.slice(0, 400)}`  : ''
-  ].filter(Boolean).join('\n\n');
- 
+  stressTargetId = activeHistoryId;
+  if (currentData) {
+    const summary = [
+      currentData.systemName   ? `SYSTEM: ${currentData.systemName}` : '',
+      currentData.core_problem ? `CORE PROBLEM: ${currentData.core_problem}` : '',
+      currentData.coreSummary  ? `SUMMARY: ${currentData.coreSummary}` : '',
+      currentData.framework    ? `FRAMEWORK:\n${currentData.framework.slice(0,600)}` : '',
+      currentData.sheet        ? `SYSTEM SHEET:\n${currentData.sheet.slice(0,400)}` : ''
+    ].filter(Boolean).join('\n\n');
+    document.getElementById('idea').value = summary;
+  }
   activeTool = 'stress';
-  renderToolSelector();
-  updateForgeUI();
-  document.getElementById('idea').value = summary;
+  renderToolSelector(); updateForgeUI();
   document.getElementById('main-area').scrollTop = 0;
   showOutputState('empty');
+}
+ 
+/* ══════════════════════════════════════════════════════════
+   FORK
+══════════════════════════════════════════════════════════ */
+function doFork() {
+  if (!activeHistoryId) return;
+  const reason = prompt('Fork reason (optional):', 'Testing alternate direction') || 'Forked';
+  const fork = DB.forkForge(activeHistoryId, reason);
+  if (!fork) return;
+  activeHistoryId = fork.id;
+  currentData = fork.data;
+  rawOutput = fork.rawOutput;
+  renderHistory();
+  // Show a brief confirmation in the chip area
+  const chips = document.getElementById('out-chips');
+  const notice = document.createElement('span');
+  notice.className = 'chip chip-cyan';
+  notice.textContent = '⑂ Forked — now editing copy';
+  chips.prepend(notice);
+  setTimeout(() => notice.remove(), 3000);
+}
+ 
+/* ══════════════════════════════════════════════════════════
+   MARK READY
+══════════════════════════════════════════════════════════ */
+function toggleReady() {
+  if (!activeHistoryId || !currentData) return;
+  const h = DB.getHistory().find(x => x.id === activeHistoryId);
+  if (!h) return;
+  const newState = h.forge_state === 'ready' ? (h._reforged ? 'reforged' : 'forged') : 'ready';
+  DB.updateForge(activeHistoryId, { forge_state: newState });
+  renderHistory();
+  renderResult(currentData, currentToolAtForge, h._reforged||0, h._lastReforge, newState, h.core_problem||'');
+}
+ 
+/* ══════════════════════════════════════════════════════════
+   AI PACKET MODAL
+══════════════════════════════════════════════════════════ */
+function openPacketModal() {
+  if (!currentData) return;
+  updatePacketDesc();
+  document.getElementById('packet-overlay').classList.add('open');
+}
+function closePacketModal() { document.getElementById('packet-overlay').classList.remove('open'); }
+function updatePacketDesc() {
+  const task = document.getElementById('packet-task').value;
+  document.getElementById('packet-desc-box').textContent = PACKET_DESCS[task] || '';
+}
+ 
+function buildAIPacketText(task) {
+  const sName = currentData?.systemName || 'Unnamed System';
+  const summaryText = buildRawText(currentData, sName, currentToolAtForge).slice(0, 3000);
+  const SEP = '═'.repeat(60);
+ 
+  const headers = {
+    stress:         `YOUR TASK: STRESS TEST\n\nYou are a smart, unsentimental stress-tester. Attack the assumptions. Find failure modes. Identify the weakest link.\n\nReturn:\n1. DANGEROUS ASSUMPTIONS (top 5, with probability and kill test)\n2. FAILURE MODES (top 3, with early warning signs)\n3. WEAKEST LINK (single load-bearing assumption)\n4. KILL TESTS (4 minimum experiments before building)\n5. HARD QUESTIONS (7 questions the builder is avoiding)`,
+    reforge:        `YOUR TASK: REFORGE\n\nYou are a system architect. Update specific sections based on new information.\n\nADD BELOW: "WHAT CHANGED: [your new information]"\nADD BELOW: "UPDATE THESE SECTIONS: [list section names]"\n\nReturn only the updated sections in the same format as the original.`,
+    extend:         `YOUR TASK: EXTEND\n\nYou are a system designer. Add a new dimension to this system.\n\nADD BELOW: "ADD THIS: [what new dimension, section, or analysis you want]"\n\nReturn the new section in the same format as the original output.`,
+    assumptions:    `YOUR TASK: ASSUMPTION EXTRACTION\n\nPull every assumption embedded in this system. Categorise by type (market / behavioural / technical / financial). For each assumption, suggest the cheapest validation method.\n\nReturn a structured list: assumption → type → validation method → cost estimate.`,
+    contradictions: `YOUR TASK: CONTRADICTION AUDIT\n\nScan every section of this system for logical conflicts, impossible combinations, or hidden tensions. Be specific — name the sections in conflict and explain why the tension breaks something.\n\nReturn: contradiction → sections in conflict → why it breaks → resolution path.`
+  };
+ 
+  return `${SEP}\nOMNIFORGE AI PACKET\nSystem: ${sName}\nForge Type: ${currentToolAtForge}\nGenerated: ${new Date().toLocaleString()}\n${SEP}\n\n${headers[task] || headers.stress}\n\n${SEP}\nSYSTEM OUTPUT:\n${SEP}\n\n${summaryText}\n\n${SEP}\nEND OF PACKET — Paste your result back into Omniforge via Reforge\n${SEP}`;
+}
+ 
+async function copyPacket() {
+  const task = document.getElementById('packet-task').value;
+  const text = buildAIPacketText(task);
+  const btn  = document.getElementById('packet-copy-btn');
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = '✓ Packet Copied — Paste into any AI';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Packet →'; btn.classList.remove('copied'); }, 2500);
+  } catch (_) { alert('Copy failed — please select the text manually.'); }
 }
  
 /* ══════════════════════════════════════════════════════════
@@ -1696,140 +1746,72 @@ function launchStressTest() {
 ══════════════════════════════════════════════════════════ */
 function openReforgeDrawer() {
   if (!currentData) return;
-  // Populate section checkboxes — exclude assumptions (always regenerated from new context)
   const checks = document.getElementById('reforge-section-checks');
   const defs = getSectionsDef(currentToolAtForge);
   checks.innerHTML = defs.map(d => `
     <label class="reforge-check is-checked" id="rc-wrap-${d.key}">
       <input type="checkbox" value="${d.key}" checked
-        onchange="this.closest('.reforge-check').classList.toggle('is-checked', this.checked)"/>
+        onchange="this.closest('.reforge-check').classList.toggle('is-checked',this.checked)"/>
       <span class="reforge-check-label">${d.icon} ${d.name}</span>
-    </label>
-  `).join('');
+    </label>`).join('');
   document.getElementById('reforge-drawer').classList.add('open');
 }
- 
-function closeReforgeDrawer() {
-  document.getElementById('reforge-drawer').classList.remove('open');
-}
+function closeReforgeDrawer() { document.getElementById('reforge-drawer').classList.remove('open'); }
  
 async function runReforge() {
   if (!currentData) return;
   const context = document.getElementById('reforge-context').value.trim();
   if (!context) { document.getElementById('reforge-context').focus(); return; }
- 
   const checked = [...document.querySelectorAll('#reforge-section-checks input:checked')].map(i => i.value);
   if (!checked.length) { alert('Select at least one section to update.'); return; }
+  // Always include contradictions if other sections changed
+  if (!checked.includes('contradictions') && getSectionsDef(currentToolAtForge).find(d => d.key === 'contradictions')) checked.push('contradictions');
  
   const btn = document.getElementById('reforge-run-btn');
-  btn.disabled = true;
-  btn.textContent = 'Reforging…';
+  btn.disabled = true; btn.textContent = 'Reforging…';
   closeReforgeDrawer();
   showOutputState('loading');
-  startPipeline(false);
+  startPipeline('reforge');
  
-  const key = DB.getKey();
   const sysPrompt = buildReforgeSystemPrompt(currentData, checked, currentToolAtForge);
-  const userMsg = `REFORGE REQUEST
- 
-ORIGINAL SYSTEM: ${currentData.systemName || 'Unknown'}
-ORIGINAL TOOL TYPE: ${currentToolAtForge}
- 
-WHAT HAS CHANGED / NEW INFORMATION:
-${context}
- 
-SECTIONS TO UPDATE: ${checked.join(', ')}
- 
-Be specific about how the new information changes each section. Update the assumption audit to reflect what has been validated or invalidated. Return ONLY the updated sections as JSON.`;
+  const userMsg = `REFORGE REQUEST\n\nORIGINAL SYSTEM: ${currentData.systemName || 'Unknown'}\nTOOL TYPE: ${currentToolAtForge}\n\nWHAT HAS CHANGED:\n${context}\n\nSECTIONS TO UPDATE: ${checked.join(', ')}\n\nReturn only the updated sections as JSON.`;
  
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 3500,
-        system: sysPrompt,
-        stream: true,
-        messages: [{ role: 'user', content: userMsg }]
-      })
-    });
+    const resp = await callClaude(sysPrompt, userMsg, 3500);
+    stopPipeline(); showOutputState('streaming');
  
-    if (!resp.ok) {
-      const e = await resp.json().catch(() => ({}));
-      throw new Error(e.error?.message || `API error ${resp.status}`);
-    }
- 
-    stopPipeline();
-    showOutputState('streaming');
- 
-    let fullText = '';
     const streamEl = document.getElementById('stream-output');
     const countEl  = document.getElementById('stream-token-count');
-    const reader   = resp.body.getReader();
-    const decoder  = new TextDecoder();
-    let buffer = '';
- 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') continue;
-        try {
-          const evt = JSON.parse(data);
-          if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
-            fullText += evt.delta.text;
-            if (streamEl) { streamEl.textContent = fullText; streamEl.scrollTop = streamEl.scrollHeight; }
-            if (countEl) countEl.textContent = fullText.length.toLocaleString() + ' chars';
-          }
-        } catch (e) { /* skip */ }
-      }
-    }
+    document.getElementById('streaming-label').textContent = 'REFORGING';
+    let fullText = '';
+    await readStream(resp, (chunk) => {
+      fullText += chunk;
+      if (streamEl) { streamEl.textContent = fullText; streamEl.scrollTop = streamEl.scrollHeight; }
+      if (countEl)  countEl.textContent = fullText.length.toLocaleString() + ' chars';
+    });
  
     const clean = fullText.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '').trim();
     const updates = JSON.parse(clean);
- 
-    // Merge updates into currentData
     Object.assign(currentData, updates);
-    const reforgeCount = (currentData._reforged || 0) + 1;
-    const lastReforgeDate = new Date().toISOString();
-    currentData._reforged = reforgeCount;
-    currentData._lastReforge = lastReforgeDate;
  
+    const reforgeCount    = (currentData._reforged || 0) + 1;
+    const lastReforgeDate = new Date().toISOString();
+    currentData._reforged    = reforgeCount;
+    currentData._lastReforge = lastReforgeDate;
     rawOutput = buildRawText(currentData, currentData.systemName, currentToolAtForge);
  
-    // Persist to history
     if (activeHistoryId) {
-      DB.updateForge(activeHistoryId, {
-        data: currentData,
-        rawOutput,
-        _reforged: reforgeCount,
-        _lastReforge: lastReforgeDate
-      });
+      DB.updateForge(activeHistoryId, { data:currentData, rawOutput, forge_state:'reforged', _reforged:reforgeCount, _lastReforge:lastReforgeDate });
     }
     renderHistory();
- 
     showOutputState('result');
-    renderResult(currentData, currentToolAtForge, reforgeCount, lastReforgeDate);
+    renderResult(currentData, currentToolAtForge, reforgeCount, lastReforgeDate, 'reforged', currentData.core_problem || '');
  
   } catch (err) {
-    stopPipeline();
-    showOutputState('error');
+    stopPipeline(); showOutputState('error');
     document.getElementById('error-msg').textContent = err.message;
   }
- 
-  btn.disabled = false;
-  btn.textContent = '🔄 Run Reforge →';
+  btn.disabled = false; btn.textContent = '🔄 Run Reforge →';
   document.getElementById('reforge-context').value = '';
 }
  
@@ -1839,7 +1821,9 @@ Be specific about how the new information changes each section. Update the assum
 function buildRawText(data, name, toolId) {
   const tool = toolId || currentToolAtForge || 'system';
   const line = '═'.repeat(60);
-  let out = `OMNIFORGE SYSTEM FORGE\n${name || 'System Sheet'}\nGenerated: ${new Date().toLocaleString()}\n\n`;
+  let out = `OMNIFORGE SYSTEM FORGE v4\n${name || 'System'}\nGenerated: ${new Date().toLocaleString()}\n`;
+  if (data?.core_problem) out += `Core problem: ${data.core_problem}\n`;
+  out += '\n';
   getSectionsDef(tool).forEach(def => {
     const t = data[def.key];
     if (!t || t === 'null') return;
@@ -1850,7 +1834,9 @@ function buildRawText(data, name, toolId) {
  
 function buildMarkdown(data, name, toolId) {
   const tool = toolId || currentToolAtForge || 'system';
-  let out = `# ${name || 'System Sheet'}\n*Generated with Omniforge System Forge™ v3 — ${new Date().toLocaleString()}*\n\n`;
+  let out = `# ${name || 'System'}\n`;
+  if (data?.core_problem) out += `> **Core problem:** ${data.core_problem}\n\n`;
+  out += `*Generated with Omniforge System Forge™ v4 — ${new Date().toLocaleString()}*\n\n`;
   getSectionsDef(tool).forEach(def => {
     const t = data[def.key];
     if (!t || t === 'null') return;
@@ -1866,18 +1852,16 @@ async function copyOutput() {
     const btn = document.getElementById('btn-copy');
     btn.textContent = '✓ Copied'; btn.classList.add('active');
     setTimeout(() => { btn.textContent = '⎘ Copy'; btn.classList.remove('active'); }, 1800);
-  } catch { alert('Copy failed — select all text manually.'); }
+  } catch (_) { alert('Copy failed — select all text manually.'); }
 }
  
 function downloadOutput(fmt) {
   if (!currentData) return;
   const name = (currentData.systemName || 'omniforge').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-  const content = fmt === 'md'
-    ? buildMarkdown(currentData, currentData.systemName, currentToolAtForge)
-    : rawOutput;
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
+  const content = fmt === 'md' ? buildMarkdown(currentData, currentData.systemName, currentToolAtForge) : rawOutput;
+  const blob = new Blob([content], { type:'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url; a.download = `${name}.${fmt}`; a.click();
   URL.revokeObjectURL(url);
 }
@@ -1887,49 +1871,48 @@ function downloadOutput(fmt) {
 ══════════════════════════════════════════════════════════ */
 function refreshSettings() {
   updateKeyBadge();
-  const k  = DB.getKey();
+  const k = DB.getKey();
   const kd = document.getElementById('key-display');
   if (kd) kd.textContent = k ? 'sk-ant-…' + k.slice(-8) : 'Not set';
   const h = DB.getHistory();
-  const stTotal  = document.getElementById('stat-total');
-  const stDeep   = document.getElementById('stat-deep');
-  const stDom    = document.getElementById('stat-domains');
-  if (stTotal)  stTotal.textContent  = h.length;
-  if (stDeep)   stDeep.textContent   = h.filter(x => x.depth === 'Deep').length;
-  if (stDom)    stDom.textContent    = new Set(h.map(x => x.domain).filter(Boolean)).size;
+  const el = (id) => document.getElementById(id);
+  if (el('stat-total'))    el('stat-total').textContent   = h.length;
+  if (el('stat-stressed')) el('stat-stressed').textContent = h.filter(x => ['stressed','reforged','ready'].includes(x.forge_state)).length;
+  if (el('stat-ready'))    el('stat-ready').textContent   = h.filter(x => x.forge_state === 'ready').length;
 }
  
+// Settings event bindings
 document.getElementById('change-key-btn').addEventListener('click', () => {
   document.getElementById('change-key-form').style.display = 'block';
-  document.getElementById('change-key-btn').style.display = 'none';
+  document.getElementById('change-key-btn').style.display  = 'none';
   document.getElementById('new-key-input').focus();
 });
 document.getElementById('cancel-key-change').addEventListener('click', () => {
   document.getElementById('change-key-form').style.display = 'none';
-  document.getElementById('change-key-btn').style.display = '';
+  document.getElementById('change-key-btn').style.display  = '';
 });
 document.getElementById('save-new-key').addEventListener('click', () => {
   const v = document.getElementById('new-key-input').value.trim();
   if (!v || !v.startsWith('sk-ant')) { alert('Invalid key — should start with sk-ant-'); return; }
   DB.setKey(v);
   document.getElementById('change-key-form').style.display = 'none';
-  document.getElementById('change-key-btn').style.display = '';
+  document.getElementById('change-key-btn').style.display  = '';
   document.getElementById('new-key-input').value = '';
   refreshSettings(); updateKeyBadge();
 });
 document.getElementById('clear-history-btn').addEventListener('click', () => {
-  if (!confirm('Delete all forge history? This cannot be undone.')) return;
-  DB.clearHistory(); renderHistory(); refreshSettings();
-  showOutputState('empty'); activeHistoryId = null; currentData = null;
+  if (!confirm('Delete all forge history? Cannot be undone.')) return;
+  DB.clearHistory(); renderHistory(); refreshSettings(); showOutputState('empty');
+  activeHistoryId = null; currentData = null;
 });
 document.getElementById('reset-all-btn').addEventListener('click', () => {
-  if (!confirm('Delete everything including your API key? You\'ll need to set up again.')) return;
+  if (!confirm('Delete everything including your API key?')) return;
   DB.clearAll(); location.reload();
 });
 document.getElementById('export-all-btn').addEventListener('click', () => {
   const h = DB.getHistory();
   if (!h.length) { alert('No forges to export yet.'); return; }
-  const blob = new Blob([JSON.stringify(h, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(h, null, 2)], { type:'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url; a.download = 'omniforge-history.json'; a.click();
@@ -1940,7 +1923,7 @@ document.getElementById('export-all-btn').addEventListener('click', () => {
    UTILS
 ══════════════════════════════════════════════════════════ */
 function esc(str) {
-  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
  
 /* ══════════════════════════════════════════════════════════
