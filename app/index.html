@@ -763,7 +763,7 @@ select{cursor:pointer;padding-right:32px;appearance:none}
         </select>
         <div class="packet-desc-box" id="packet-desc-box"></div>
         <button class="packet-copy-btn" id="packet-copy-btn">Copy Packet →</button>
-        <div class="packet-note">Works with Claude, ChatGPT, Gemini, or any AI that accepts structured prompts.<br/>Paste the packet → add any context → run it → paste the result back here via Reforge.</div>
+        <div class="packet-note">RunPack v1.1 packet · Works with ChatGPT, Claude, Gemini, or any local model.<br/>Paste → add context if needed → run → paste result back via Reforge.</div>
       </div>
     </div>
   </div>
@@ -1715,18 +1715,67 @@ function updatePacketDesc() {
  
 function buildAIPacketText(task) {
   const sName = currentData?.systemName || 'Unnamed System';
-  const summaryText = buildRawText(currentData, sName, currentToolAtForge).slice(0, 3000);
-  const SEP = '═'.repeat(60);
- 
-  const headers = {
-    stress:         `YOUR TASK: STRESS TEST\n\nYou are a smart, unsentimental stress-tester. Attack the assumptions. Find failure modes. Identify the weakest link.\n\nReturn:\n1. DANGEROUS ASSUMPTIONS (top 5, with probability and kill test)\n2. FAILURE MODES (top 3, with early warning signs)\n3. WEAKEST LINK (single load-bearing assumption)\n4. KILL TESTS (4 minimum experiments before building)\n5. HARD QUESTIONS (7 questions the builder is avoiding)`,
-    reforge:        `YOUR TASK: REFORGE\n\nYou are a system architect. Update specific sections based on new information.\n\nADD BELOW: "WHAT CHANGED: [your new information]"\nADD BELOW: "UPDATE THESE SECTIONS: [list section names]"\n\nReturn only the updated sections in the same format as the original.`,
-    extend:         `YOUR TASK: EXTEND\n\nYou are a system designer. Add a new dimension to this system.\n\nADD BELOW: "ADD THIS: [what new dimension, section, or analysis you want]"\n\nReturn the new section in the same format as the original output.`,
-    assumptions:    `YOUR TASK: ASSUMPTION EXTRACTION\n\nPull every assumption embedded in this system. Categorise by type (market / behavioural / technical / financial). For each assumption, suggest the cheapest validation method.\n\nReturn a structured list: assumption → type → validation method → cost estimate.`,
-    contradictions: `YOUR TASK: CONTRADICTION AUDIT\n\nScan every section of this system for logical conflicts, impossible combinations, or hidden tensions. Be specific — name the sections in conflict and explain why the tension breaks something.\n\nReturn: contradiction → sections in conflict → why it breaks → resolution path.`
+  
+  const taskMap = {
+    stress:         'system_generation',
+    reforge:        'framework_expansion',
+    extend:         'framework_expansion',
+    assumptions:    'system_generation',
+    contradictions: 'system_generation'
   };
- 
-  return `${SEP}\nOMNIFORGE AI PACKET\nSystem: ${sName}\nForge Type: ${currentToolAtForge}\nGenerated: ${new Date().toLocaleString()}\n${SEP}\n\n${headers[task] || headers.stress}\n\n${SEP}\nSYSTEM OUTPUT:\n${SEP}\n\n${summaryText}\n\n${SEP}\nEND OF PACKET — Paste your result back into Omniforge via Reforge\n${SEP}`;
+
+  const rulesMap = {
+    stress:         ['attack_assumptions', 'find_failure_modes', 'identify_weakest_link', 'return_structured_json', 'no_preamble'],
+    reforge:        ['update_only_changed_sections', 'preserve_unchanged_sections', 'return_updated_sections_json', 'no_preamble'],
+    extend:         ['add_requested_dimension', 'match_existing_format', 'return_new_section_json', 'no_preamble'],
+    assumptions:    ['extract_all_assumptions', 'categorise_by_type', 'suggest_validation_method', 'return_structured_json', 'no_preamble'],
+    contradictions: ['scan_all_sections', 'identify_logical_conflicts', 'suggest_resolutions', 'return_structured_json', 'no_preamble']
+  };
+
+  const instructionMap = {
+    stress:         'Stress test this system. Attack the assumptions, find failure modes, identify the weakest link. Return: dangerous_assumptions (top 5), failure_modes (top 3), weakest_link, kill_tests (4 minimum), hard_questions (7).',
+    reforge:        'Update specific sections of this system based on new information. Add what changed after the input block. Return only the updated sections in the same structure.',
+    extend:         'Add a new dimension to this system. Specify what to add after the input block. Return the new section in the same format as existing sections.',
+    assumptions:    'Extract every assumption embedded in this system. Categorise by type: market, behavioural, technical, financial. For each, suggest the cheapest validation method and a cost estimate.',
+    contradictions: 'Scan every section for logical conflicts, impossible combinations, or hidden tensions. For each contradiction: name the sections in conflict, explain why it breaks, suggest a resolution.'
+  };
+
+  const forgeSnapshot = {
+    systemName:   currentData?.systemName,
+    coreSummary:  currentData?.coreSummary,
+    core_problem: currentData?.core_problem,
+    framework:    currentData?.framework,
+    sheet:        currentData?.sheet,
+    assumptions:  currentData?.assumptions,
+    contradictions: currentData?.contradictions
+  };
+
+  // Remove undefined keys
+  Object.keys(forgeSnapshot).forEach(k => {
+    if (!forgeSnapshot[k]) delete forgeSnapshot[k];
+  });
+
+  const packet = {
+    runpack_version:    '1.1',
+    legacy_aip_version: '1.1',
+    aip_version:        '1.1',
+    packet_type:        'runpack_task',
+    task_id:            'omf-' + Date.now().toString(36).toUpperCase(),
+    app:                'Omniforge System Forge',
+    app_version:        'v4',
+    task:               taskMap[task] || 'system_generation',
+    mode:               task,
+    instruction:        instructionMap[task],
+    input: {
+      forge_type: currentToolAtForge,
+      forge_name: sName,
+      forge_data: forgeSnapshot
+    },
+    rules:         rulesMap[task] || ['return_structured_json', 'no_preamble'],
+    output_format: 'json'
+  };
+
+  return JSON.stringify(packet, null, 2);
 }
  
 async function copyPacket() {
@@ -1735,7 +1784,7 @@ async function copyPacket() {
   const btn  = document.getElementById('packet-copy-btn');
   try {
     await navigator.clipboard.writeText(text);
-    btn.textContent = '✓ Packet Copied — Paste into any AI';
+    btn.textContent = '✓ RunPack Copied — Paste into ChatGPT, Claude, or Gemini';
     btn.classList.add('copied');
     setTimeout(() => { btn.textContent = 'Copy Packet →'; btn.classList.remove('copied'); }, 2500);
   } catch (_) { alert('Copy failed — please select the text manually.'); }
