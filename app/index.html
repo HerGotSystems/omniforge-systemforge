@@ -868,14 +868,13 @@ select{cursor:pointer;padding-right:32px;appearance:none}
         <div class="packet-field-label">Task to run in your AI</div>
         <select id="packet-task" class="packet-select">
           <option value="stress">⚔ Stress Test — attack assumptions, find failure modes</option>
-          <option value="reforge">🔄 Reforge — update sections with new information</option>
           <option value="extend">🔁 Extend — add a new section or dimension</option>
           <option value="assumptions">🔍 Assumption Extraction — pull and validate all assumptions</option>
           <option value="contradictions">⚡ Contradiction Check — find logical conflicts between sections</option>
         </select>
         <div class="packet-desc-box" id="packet-desc-box"></div>
         <button class="packet-copy-btn" id="packet-copy-btn">Copy Packet →</button>
-        <div class="packet-note">RunPack v1.1 packet · Works with ChatGPT, Claude, Gemini, or any local model.<br/>Paste → add context if needed → run → paste result back via Reforge.</div>
+        <div class="packet-note">RunPack v1.1 packet · Works with ChatGPT, Claude, Gemini, or any local model.<br/>These are exploratory tasks — read the result and act on it yourself; there's no automatic import for them.<br/>To update this forge's sections with new information, use the 🔄 Reforge button instead — it has its own built-in RunPack + paste-back import.</div>
       </div>
     </div>
   </div>
@@ -1136,6 +1135,7 @@ function setExecutionMode(mode) {
   syncExecModeUI();
 }
 let pendingForgeContext = null; // the context a RunPack packet was built from, for "Import Result"
+let pendingPacketKind = 'forge'; // 'forge' (new forge/stress) | 'reforge' (merge into currentData)
 
 let depth = 'Standard';
 let activeTool = 'system';
@@ -1989,7 +1989,7 @@ function buildRunPackForgeJSON(ctx) {
   return {
     runpack_version: '1.1',
     packet_type: 'runpack_forge_task',
-    task: 'generate_forge',
+    task: ctx.packetTask || 'generate_forge',
     app: 'Omniforge System Forge',
     app_version: 'v4',
     forge_type: ctx.activeTool,
@@ -2001,6 +2001,7 @@ function buildRunPackForgeJSON(ctx) {
 }
 
 function runForgeViaRunPack(ctx) {
+  pendingPacketKind = 'forge';
   pendingForgeContext = ctx;
   document.getElementById('packet-preview').textContent = buildPlainPacketText(ctx);
   document.getElementById('packet-result-input').value = '';
@@ -2034,6 +2035,14 @@ function importPacketResult() {
   let parsed;
   try { parsed = JSON.parse(clean); }
   catch (_) { errEl.textContent = "Couldn't parse that as JSON — paste the AI's full raw response, without extra commentary around it."; errEl.style.display = ''; return; }
+
+  if (pendingPacketKind === 'reforge') {
+    if (!currentData) { errEl.textContent = 'No active forge to update — start a new forge.'; errEl.style.display = ''; return; }
+    mergeReforgeUpdates(parsed, 'external-ai');
+    pendingPacketKind = 'forge';
+    return;
+  }
+
   if (!pendingForgeContext) { errEl.textContent = 'No pending RunPack context — start a new forge.'; errEl.style.display = ''; return; }
   finalizeForgeResult(parsed, pendingForgeContext, 'external-ai');
 }
@@ -2234,6 +2243,29 @@ function updatePacketDesc() {
   document.getElementById('packet-desc-box').textContent = PACKET_DESCS[task] || '';
 }
  
+/* Generic, forge-type-agnostic snapshot of a forge result for export
+   (post-forge RunPack, and anywhere else a portable copy of the current
+   result is needed). Works for any forge — System, Campaign, or any
+   future type — without maintaining a per-forge field list here.
+   Excludes internal bookkeeping (leading-underscore keys, e.g.
+   _reforged/_lastReforge) and, defensively, anything that looks like a
+   credential — currentData is only ever assigned from parsed model
+   output and never merged with API key material anywhere in this app,
+   so this filter should never actually remove anything real; it's
+   cheap insurance against ever exporting a secret by accident. */
+function buildForgeSnapshot(data) {
+  const snapshot = {};
+  if (!data) return snapshot;
+  Object.keys(data).forEach(k => {
+    if (k.startsWith('_')) return;
+    if (/key|secret|token|password/i.test(k)) return;
+    const v = data[k];
+    if (v === undefined || v === null || v === '') return;
+    snapshot[k] = v;
+  });
+  return snapshot;
+}
+
 function buildAIPacketText(task) {
   const sName = currentData?.systemName || 'Unnamed System';
   
@@ -2261,20 +2293,7 @@ function buildAIPacketText(task) {
     contradictions: 'Scan every section for logical conflicts, impossible combinations, or hidden tensions. For each contradiction: name the sections in conflict, explain why it breaks, suggest a resolution.'
   };
 
-  const forgeSnapshot = {
-    systemName:   currentData?.systemName,
-    coreSummary:  currentData?.coreSummary,
-    core_problem: currentData?.core_problem,
-    framework:    currentData?.framework,
-    sheet:        currentData?.sheet,
-    assumptions:  currentData?.assumptions,
-    contradictions: currentData?.contradictions
-  };
-
-  // Remove undefined keys
-  Object.keys(forgeSnapshot).forEach(k => {
-    if (!forgeSnapshot[k]) delete forgeSnapshot[k];
-  });
+  const forgeSnapshot = buildForgeSnapshot(currentData);
 
   const packet = {
     runpack_version:    '1.1',
@@ -2328,32 +2347,39 @@ function openReforgeDrawer() {
 }
 function closeReforgeDrawer() { document.getElementById('reforge-drawer').classList.remove('open'); }
  
-async function runReforge() {
+function runReforge() {
   if (!currentData) return;
-  if (executionMode !== 'api' || !DB.getKey()) {
-    alert('Reforge runs a live AI call, so it needs "Connect AI API" mode with a key set in Settings.\n\nIn "Run With My AI" mode, use the 📦 RunPack button instead — it supports Reforge as a copy-paste packet, no key required.');
-    return;
-  }
   const context = document.getElementById('reforge-context').value.trim();
   if (!context) { document.getElementById('reforge-context').focus(); return; }
   const checked = [...document.querySelectorAll('#reforge-section-checks input:checked')].map(i => i.value);
   if (!checked.length) { alert('Select at least one section to update.'); return; }
   // Always include contradictions if other sections changed
   if (!checked.includes('contradictions') && getSectionsDef(currentToolAtForge).find(d => d.key === 'contradictions')) checked.push('contradictions');
- 
+
+  if (executionMode === 'api' && DB.getKey()) {
+    return runReforgeViaApi(context, checked);
+  }
+  runReforgeViaRunPack(context, checked);
+}
+
+function buildReforgeUserMsg(context, checked) {
+  return `REFORGE REQUEST\n\nORIGINAL SYSTEM: ${currentData.systemName || 'Unknown'}\nTOOL TYPE: ${currentToolAtForge}\n\nWHAT HAS CHANGED:\n${context}\n\nSECTIONS TO UPDATE: ${checked.join(', ')}\n\nReturn only the updated sections as JSON.`;
+}
+
+async function runReforgeViaApi(context, checked) {
   const btn = document.getElementById('reforge-run-btn');
   btn.disabled = true; btn.textContent = 'Reforging…';
   closeReforgeDrawer();
   showOutputState('loading');
   startPipeline('reforge');
- 
+
   const sysPrompt = buildReforgeSystemPrompt(currentData, checked, currentToolAtForge);
-  const userMsg = `REFORGE REQUEST\n\nORIGINAL SYSTEM: ${currentData.systemName || 'Unknown'}\nTOOL TYPE: ${currentToolAtForge}\n\nWHAT HAS CHANGED:\n${context}\n\nSECTIONS TO UPDATE: ${checked.join(', ')}\n\nReturn only the updated sections as JSON.`;
- 
+  const userMsg = buildReforgeUserMsg(context, checked);
+
   try {
     const resp = await callClaude(sysPrompt, userMsg, 3500);
     stopPipeline(); showOutputState('streaming');
- 
+
     const streamEl = document.getElementById('stream-output');
     const countEl  = document.getElementById('stream-token-count');
     document.getElementById('streaming-label').textContent = 'REFORGING';
@@ -2363,30 +2389,55 @@ async function runReforge() {
       if (streamEl) { streamEl.textContent = fullText; streamEl.scrollTop = streamEl.scrollHeight; }
       if (countEl)  countEl.textContent = fullText.length.toLocaleString() + ' chars';
     });
- 
+
     const clean = fullText.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '').trim();
     const updates = JSON.parse(clean);
-    Object.assign(currentData, updates);
- 
-    const reforgeCount    = (currentData._reforged || 0) + 1;
-    const lastReforgeDate = new Date().toISOString();
-    currentData._reforged    = reforgeCount;
-    currentData._lastReforge = lastReforgeDate;
-    rawOutput = buildRawText(currentData, currentData.systemName, currentToolAtForge);
- 
-    if (activeHistoryId) {
-      DB.updateForge(activeHistoryId, { data:currentData, rawOutput, forge_state:'reforged', _reforged:reforgeCount, _lastReforge:lastReforgeDate });
-    }
-    renderHistory();
-    showOutputState('result');
-    renderResult(currentData, currentToolAtForge, reforgeCount, lastReforgeDate, 'reforged', currentData.core_problem || '');
- 
+    mergeReforgeUpdates(updates, null);
+
   } catch (err) {
     stopPipeline();
     showForgeError(err, null);
   }
   btn.disabled = false; btn.textContent = '🔄 Run Reforge →';
   document.getElementById('reforge-context').value = '';
+}
+
+/* ══════════════════════════════════════════════════════════
+   REFORGE VIA RUNPACK — no API key. Same packet UI as the
+   initial-forge RunPack (#out-packet), driven by pendingPacketKind
+   so one paste-back path serves both flows correctly.
+══════════════════════════════════════════════════════════ */
+function runReforgeViaRunPack(context, checked) {
+  const sysPrompt = buildReforgeSystemPrompt(currentData, checked, currentToolAtForge);
+  const userMsg = buildReforgeUserMsg(context, checked);
+  pendingPacketKind = 'reforge';
+  pendingForgeContext = { sysPrompt, userMsg, activeTool: currentToolAtForge, packetTask: 'reforge_forge' };
+  closeReforgeDrawer();
+  document.getElementById('packet-preview').textContent = buildPlainPacketText(pendingForgeContext);
+  document.getElementById('packet-result-input').value = '';
+  document.getElementById('packet-import-error').style.display = 'none';
+  document.getElementById('packet-copy-status').textContent = '';
+  document.getElementById('reforge-context').value = '';
+  showOutputState('packet');
+}
+
+function mergeReforgeUpdates(updates, source) {
+  Object.assign(currentData, updates);
+
+  const reforgeCount    = (currentData._reforged || 0) + 1;
+  const lastReforgeDate = new Date().toISOString();
+  currentData._reforged    = reforgeCount;
+  currentData._lastReforge = lastReforgeDate;
+  rawOutput = buildRawText(currentData, currentData.systemName, currentToolAtForge);
+
+  const patch = { data: currentData, rawOutput, forge_state: 'reforged', _reforged: reforgeCount, _lastReforge: lastReforgeDate };
+  if (source) patch.source = source;
+  if (activeHistoryId) DB.updateForge(activeHistoryId, patch);
+
+  renderHistory();
+  showOutputState('result');
+  const historySource = activeHistoryId ? (DB.getHistory().find(x => x.id === activeHistoryId) || {}).source : source;
+  renderResult(currentData, currentToolAtForge, reforgeCount, lastReforgeDate, 'reforged', currentData.core_problem || '', historySource);
 }
  
 /* ══════════════════════════════════════════════════════════
