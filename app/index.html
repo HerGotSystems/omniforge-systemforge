@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Omniforge — System Forge™</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo="/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@300;400;600;700;800&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
@@ -102,6 +103,16 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .setup-error{padding:10px 14px;border:1px solid var(--red-border);border-radius:var(--r);
   background:var(--red-bg);font-family:'JetBrains Mono',monospace;font-size:11px;
   color:var(--red);margin-bottom:14px;display:none;line-height:1.5}
+.exec-mode-card{border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);
+  padding:14px 16px;cursor:pointer;margin-bottom:10px;transition:all .15s}
+.exec-mode-card:hover{border-color:var(--border2)}
+.exec-mode-card.sel{border-color:var(--fire-dim);background:var(--fire-faint)}
+.exec-mode-card.disabled{opacity:.45;cursor:not-allowed}
+.exec-mode-title{font-family:'Oxanium',sans-serif;font-weight:700;font-size:15px;margin-bottom:3px}
+.exec-mode-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.exec-mode-desc{font-size:13px;color:var(--text2);line-height:1.5}
+.seg-opt.disabled{opacity:.4;cursor:not-allowed}
  
 /* ── APP LAYOUT ─────────────────────────────────────── */
 #view-app{flex-direction:column}
@@ -178,11 +189,11 @@ textarea{min-height:120px;resize:vertical;line-height:1.65}
   color:var(--muted);pointer-events:none;font-size:11px}
 select{cursor:pointer;padding-right:32px;appearance:none}
 .depth-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.depth-opt{border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);
+.depth-opt,.seg-opt{border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);
   color:var(--muted);padding:11px 8px;cursor:pointer;text-align:center;
   transition:all .15s;user-select:none;display:flex;flex-direction:column;gap:3px;align-items:center}
-.depth-opt:hover{border-color:var(--border2);color:var(--text2)}
-.depth-opt.sel{border-color:var(--fire-dim);background:var(--fire-faint);color:var(--fire)}
+.depth-opt:hover,.seg-opt:hover{border-color:var(--border2);color:var(--text2)}
+.depth-opt.sel,.seg-opt.sel{border-color:var(--fire-dim);background:var(--fire-faint);color:var(--fire)}
 .depth-label{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;
   letter-spacing:.04em;text-transform:uppercase}
 .depth-desc{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.04em;opacity:.7}
@@ -257,6 +268,11 @@ select{cursor:pointer;padding-right:32px;appearance:none}
   padding:16px 18px;min-height:200px;max-height:60vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 #stream-output::-webkit-scrollbar{width:4px}
 #stream-output::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+#packet-preview{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text2);
+  line-height:1.8;white-space:pre-wrap;word-break:break-word;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;max-height:280px;overflow-y:auto}
+.status{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:.06em}
+.status.ok{color:var(--green)}
 .stream-section-peek{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px}
 .stream-peek-chip{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);
   padding:2px 8px;border:1px solid var(--faint);border-radius:3px;letter-spacing:.06em;text-transform:uppercase;transition:all .3s}
@@ -519,21 +535,41 @@ select{cursor:pointer;padding-right:32px;appearance:none}
     <div class="setup-hero">
       <div class="setup-icon">⚒</div>
       <div class="setup-title">OMNI<em>FORGE</em></div>
-      <div class="setup-sub">Turn any idea into a complete system<br/>You need your own Anthropic API key to use this tool</div>
+      <div class="setup-sub">Turn any idea into a complete system<br/>No API key required to get started</div>
     </div>
     <div class="setup-body">
-      <div class="setup-steps">
-        <div class="setup-step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> and create a free account</div></div>
-        <div class="setup-step"><div class="step-num">2</div><div class="step-text">Click <strong>API Keys</strong> → <strong>Create Key</strong> → copy it</div></div>
-        <div class="setup-step"><div class="step-num">3</div><div class="step-text">Paste it below. Your key stays on <strong>your device only</strong> — never sent anywhere except Anthropic directly</div></div>
+      <div class="exec-mode-card sel" data-mode="runpack">
+        <div class="exec-mode-title">⚡ Run With My AI</div>
+        <div class="exec-mode-tag">Default · No API key needed</div>
+        <div class="exec-mode-desc">Omniforge prepares a complete, ready-to-run packet. Paste it into ChatGPT, Claude, Gemini, or any AI you already use, then paste the result back in.</div>
       </div>
-      <div class="setup-field">
-        <label>Your Anthropic API Key</label>
-        <input type="password" id="setup-key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+      <div class="exec-mode-card" data-mode="api">
+        <div class="exec-mode-title">🔌 Connect AI API</div>
+        <div class="exec-mode-tag">Optional · Your own Anthropic key</div>
+        <div class="exec-mode-desc">Forges run automatically inside Omniforge via your own Anthropic API key. Billed directly to your Anthropic account — Omniforge never sees or charges for this.</div>
       </div>
-      <div class="setup-hint">A new account comes with free credits — enough for dozens of forges.<br/>One forge costs approx. $0.02–0.08 depending on depth.</div>
+      <div class="exec-mode-card disabled" data-mode="hosted">
+        <div class="exec-mode-title">☁ Omniforge Hosted</div>
+        <div class="exec-mode-tag">Coming soon · EMVY credits</div>
+        <div class="exec-mode-desc">Run forges on Omniforge's own infrastructure — no key, no external AI needed. Not available yet.</div>
+      </div>
+
+      <div id="setup-api-fields" style="display:none;margin-top:18px">
+        <div class="setup-field">
+          <label>Your Anthropic API Key</label>
+          <input type="password" id="setup-key-input" placeholder="sk-ant-api03-…" autocomplete="off"/>
+        </div>
+        <label class="reforge-check" id="setup-remember-wrap" style="margin-bottom:14px">
+          <input type="checkbox" id="setup-remember-key"/>
+          <span class="reforge-check-label">Remember this API key on this device</span>
+        </label>
+        <div class="setup-hint">
+          Unchecked, your key lives only in this browser tab and is gone once you close it. Never sent to any EMVY/Omniforge server — only directly to api.anthropic.com.<br/><br/>
+          Billing is entirely yours: usage is charged to <strong>your own Anthropic account</strong>. A Claude.ai subscription does <strong>not</strong> include Anthropic API usage — they are billed separately. Omniforge never receives or sees your API charges.
+        </div>
+      </div>
       <div class="setup-error" id="setup-error"></div>
-      <button class="btn-primary" id="setup-save-btn" style="width:100%">Save Key &amp; Start Forging</button>
+      <button class="btn-primary" id="setup-continue-btn" style="width:100%">Continue →</button>
     </div>
   </div>
 </div>
@@ -576,6 +612,15 @@ select{cursor:pointer;padding-right:32px;appearance:none}
       <div class="forge-pane" id="forge-pane">
         <div class="pane-title" id="pane-title">What do you want to build?</div>
         <div class="pane-sub" id="pane-sub">Idea in → Complete system + contradiction audit out</div>
+        <div class="field">
+          <label>Execution</label>
+          <div class="depth-row">
+            <div class="seg-opt exec-opt sel" data-mode="runpack"><span class="depth-label">⚡ Run With My AI</span><span class="depth-desc">No API key</span></div>
+            <div class="seg-opt exec-opt" data-mode="api"><span class="depth-label">🔌 Connect AI API</span><span class="depth-desc">Your key</span></div>
+            <div class="seg-opt exec-opt disabled" data-mode="hosted"><span class="depth-label">☁ Hosted</span><span class="depth-desc">Coming soon</span></div>
+          </div>
+          <div class="field-hint" id="exec-mode-hint"></div>
+        </div>
         <div class="tool-selector">
           <div class="tool-selector-label">// Select Forge Type</div>
           <div class="tool-grid" id="tool-grid"></div>
@@ -609,9 +654,51 @@ select{cursor:pointer;padding-right:32px;appearance:none}
           </div>
         </div>
         <div class="field" id="risk-row">
-          <label>Biggest Unknown or Risk</label>
+          <label id="risk-label">Biggest Unknown or Risk</label>
           <input type="text" id="risk" placeholder="What are you most unsure about? What keeps you up at night?"/>
-          <div class="field-hint">This directly shapes your experiments, pilot plan, and contradiction audit.</div>
+          <div class="field-hint" id="risk-hint">This directly shapes your experiments, pilot plan, and contradiction audit.</div>
+        </div>
+        <div id="campaign-fields-row" style="display:none">
+          <div class="field">
+            <label>Offer</label>
+            <textarea id="campaign-offer" rows="2" placeholder="What exactly are they being offered? Product, price, deal, deliverable."></textarea>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Proof / Assets Available</label>
+              <textarea id="campaign-proof" rows="2" placeholder="What you already have — photos, footage, testimonials, data, demos, screen recordings…"></textarea>
+            </div>
+            <div class="field">
+              <label>CTA</label>
+              <textarea id="campaign-cta" rows="2" placeholder="The action you want people to take — buy, sign up, follow, reply, book a call…"></textarea>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field">
+              <label>Brand Voice</label>
+              <input type="text" id="campaign-voice" placeholder="e.g. blunt and technical, warm and playful, no corporate speak…"/>
+            </div>
+            <div class="field">
+              <label>Campaign Duration</label>
+              <input type="text" id="campaign-duration" placeholder="e.g. 7 days, 2 weeks, 30 days…" value="7 days"/>
+            </div>
+          </div>
+          <div class="field">
+            <label>Channels</label>
+            <div class="tool-grid" id="campaign-channels" style="grid-template-columns:repeat(4,1fr)"></div>
+            <div class="field-hint">Select every channel this campaign needs copy for.</div>
+          </div>
+          <div class="field" id="emvy-preset-field">
+            <label>EMVY CHECK Preset</label>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <label class="reforge-check" id="emvy-preset-wrap" style="flex:0 0 auto">
+                <input type="checkbox" id="emvy-preset-toggle"/>
+                <span class="reforge-check-label">Use EMVY CHECK framing (BUY IT / MAKE IT / USE IT)</span>
+              </label>
+              <button type="button" class="settings-action" id="emvy-preset-fill" style="display:none">Fill EMVY Defaults</button>
+            </div>
+            <div class="field-hint">Applies accurate EMVY positioning rules to the prompt: Canvas Grid (public) vs. Master Canvas (private, never customer-facing), and correct AI-in-workflow framing — never "AI-free".</div>
+          </div>
         </div>
         <div class="field" id="depth-row-el">
           <label>Forge Depth</label>
@@ -709,14 +796,39 @@ select{cursor:pointer;padding-right:32px;appearance:none}
         <!-- ERROR -->
         <div id="out-error" style="display:none">
           <div class="output-error">
-            <strong>⚠ FORGE ERROR</strong>
-            <span id="error-msg"></span>
+            <strong id="error-title">⚠ FORGE ERROR</strong>
+            <span id="error-msg" style="white-space:pre-wrap"></span>
+            <div id="error-actions" style="display:none;gap:8px;flex-wrap:wrap;margin-top:14px">
+              <button class="tool-btn" id="error-btn-runpack">⚡ Switch to Run With My AI</button>
+              <button class="tool-btn" id="error-btn-settings">⚙ Open Settings</button>
+            </div>
+          </div>
+        </div>
+        <!-- RUNPACK PACKET (no-key mode) -->
+        <div id="out-packet" style="display:none">
+          <div class="output-streaming">
+            <div class="streaming-header">
+              <span class="streaming-label" style="color:var(--cyan)">📦 RUNPACK READY — PREPARED BY OMNIFORGE</span>
+            </div>
+            <div class="field-hint" style="margin-bottom:14px;line-height:1.7">No AI has run yet — this is the exact instruction Omniforge would send. Copy it into any AI you already use, or download the structured packet for another tool or agent. Once you have the result, paste it back below.</div>
+            <div class="result-toolbar" style="padding:0 0 14px;border-bottom:none">
+              <button class="tool-btn" id="btn-copy-chatgpt">⎘ Copy for ChatGPT</button>
+              <button class="tool-btn" id="btn-copy-claude">⎘ Copy for Claude</button>
+              <button class="tool-btn" id="btn-copy-universal">⎘ Copy Universal</button>
+              <button class="tool-btn" id="btn-download-runpack">↓ Download RunPack</button>
+            </div>
+            <div class="status" id="packet-copy-status" style="text-align:left;margin-bottom:10px"></div>
+            <div id="packet-preview"></div>
+            <div class="reforge-col-label" style="margin-top:20px">Paste the AI's result back here — GENERATED BY CONNECTED AI once imported</div>
+            <textarea id="packet-result-input" class="reforge-context-area" style="min-height:140px" placeholder="Paste the JSON your AI returned…"></textarea>
+            <div class="output-error" id="packet-import-error" style="display:none;margin-top:10px"></div>
+            <button class="forge-btn" id="btn-import-result" style="margin-top:14px">✓ Import Result</button>
           </div>
         </div>
       </div>
     </div>
   </div>
- 
+
   <!-- REFORGE DRAWER -->
   <div id="reforge-drawer" class="reforge-drawer">
     <div class="reforge-drawer-header">
@@ -756,14 +868,13 @@ select{cursor:pointer;padding-right:32px;appearance:none}
         <div class="packet-field-label">Task to run in your AI</div>
         <select id="packet-task" class="packet-select">
           <option value="stress">⚔ Stress Test — attack assumptions, find failure modes</option>
-          <option value="reforge">🔄 Reforge — update sections with new information</option>
           <option value="extend">🔁 Extend — add a new section or dimension</option>
           <option value="assumptions">🔍 Assumption Extraction — pull and validate all assumptions</option>
           <option value="contradictions">⚡ Contradiction Check — find logical conflicts between sections</option>
         </select>
         <div class="packet-desc-box" id="packet-desc-box"></div>
         <button class="packet-copy-btn" id="packet-copy-btn">Copy Packet →</button>
-        <div class="packet-note">RunPack v1.1 packet · Works with ChatGPT, Claude, Gemini, or any local model.<br/>Paste → add context if needed → run → paste result back via Reforge.</div>
+        <div class="packet-note">RunPack v1.1 packet · Works with ChatGPT, Claude, Gemini, or any local model.<br/>These are exploratory tasks — read the result and act on it yourself; there's no automatic import for them.<br/>To update this forge's sections with new information, use the 🔄 Reforge button instead — it has its own built-in RunPack + paste-back import.</div>
       </div>
     </div>
   </div>
@@ -784,18 +895,43 @@ select{cursor:pointer;padding-right:32px;appearance:none}
       <div style="padding:28px 20px 0"><span style="font-family:'Oxanium',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-.02em">Settings</span></div>
       <div style="padding:20px">
         <div class="settings-section">
+          <div class="settings-title">Execution Mode</div>
+          <div class="depth-row">
+            <div class="seg-opt exec-opt" data-mode="runpack"><span class="depth-label">⚡ Run With My AI</span><span class="depth-desc">No API key</span></div>
+            <div class="seg-opt exec-opt" data-mode="api"><span class="depth-label">🔌 Connect AI API</span><span class="depth-desc">Your key</span></div>
+            <div class="seg-opt exec-opt disabled" data-mode="hosted"><span class="depth-label">☁ Hosted</span><span class="depth-desc">Coming soon</span></div>
+          </div>
+          <div class="settings-meta" style="margin-top:10px">Basic Omniforge access never requires an API key. Connect AI API is optional, for people who want forges to run automatically inside the app.</div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">AI Model</div>
+          <div class="grid-2" id="model-picker">
+            <div class="seg-opt" data-model="sonnet-5"><span class="depth-label">Sonnet 5</span><span class="depth-desc">Recommended</span></div>
+            <div class="seg-opt" data-model="haiku-4-5"><span class="depth-label">Haiku 4.5</span><span class="depth-desc">Fast / Lower Cost</span></div>
+          </div>
+          <div class="settings-meta" style="margin-top:10px">Used for Connect AI API forges. Currently: <span id="current-model-label">—</span></div>
+        </div>
+        <div class="settings-section">
           <div class="settings-title">API Key</div>
           <div class="settings-row">
-            <div class="settings-row-info"><div class="settings-label">Anthropic API Key</div><div class="settings-meta">Stored locally on your device only</div></div>
+            <div class="settings-row-info"><div class="settings-label">Anthropic API Key</div><div class="settings-meta" id="key-storage-meta">Session-only — cleared when this tab closes</div></div>
             <div class="key-display" id="key-display">—</div>
             <button class="settings-action" id="change-key-btn">Change</button>
           </div>
           <div id="change-key-form" style="display:none;margin-top:14px">
             <div class="setup-field"><label>New API Key</label><input type="password" id="new-key-input" placeholder="sk-ant-api03-…"/></div>
+            <label class="reforge-check" id="settings-remember-wrap" style="margin-top:10px">
+              <input type="checkbox" id="settings-remember-key"/>
+              <span class="reforge-check-label">Remember this API key on this device</span>
+            </label>
             <div style="display:flex;gap:8px;margin-top:10px">
               <button class="btn-primary" id="save-new-key" style="flex:1">Save</button>
               <button class="btn-secondary" id="cancel-key-change" style="flex:1">Cancel</button>
             </div>
+          </div>
+          <div class="settings-meta" style="margin-top:14px;line-height:1.7">
+            Only used for Connect AI API mode. Never sent to any EMVY/Omniforge server — only directly to api.anthropic.com.<br/><br/>
+            <strong>Billing is entirely yours:</strong> API usage is charged to your own Anthropic account. A Claude.ai subscription does <strong>not</strong> include Anthropic API usage — they're billed separately. Omniforge never receives or sees your API charges.
           </div>
         </div>
         <div class="settings-section">
@@ -824,8 +960,8 @@ select{cursor:pointer;padding-right:32px;appearance:none}
         <div class="settings-section">
           <div class="settings-title">About</div>
           <div class="settings-row"><div class="settings-row-info"><div class="settings-label">Omniforge System Forge™</div><div class="settings-meta">v4.0 · Universal Schema · Contradiction Audit · Lifecycle State · 📦 RunPack · Lineage</div></div><span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">v4.0</span></div>
-          <div class="settings-row"><div class="settings-row-info"><div class="settings-label">AI Model</div><div class="settings-meta">Claude Sonnet 4 via Anthropic API · Streaming enabled</div></div></div>
-          <div class="settings-row"><div class="settings-row-info"><div class="settings-label">Cost per forge</div><div class="settings-meta">Approx. $0.02–0.08 from your API credits depending on depth</div></div></div>
+          <div class="settings-row"><div class="settings-row-info"><div class="settings-label">Cost per forge (Connect AI API mode)</div><div class="settings-meta">Approx. $0.02–0.08 from your API credits depending on depth and model</div></div></div>
+          <div class="settings-row"><div class="settings-row-info"><div class="settings-label">Questions or feedback</div><div class="settings-meta">Contact EMVY CHECK: <a href="mailto:emvycheck@gmail.com">emvycheck@gmail.com</a></div></div></div>
         </div>
       </div>
     </div>
@@ -861,6 +997,11 @@ const TOOLS = [
     title:'Forge your rebrand', sub:'Broken brand in → Sharp identity out',
     placeholder:'Describe your current brand. Name, what you do, what\'s wrong with how it\'s perceived, and what feeling you want to create.',
     showDepth:false, showRisk:false, showDomainAudience:true },
+  { id:'campaign', icon:'📣', name:'Campaign Forge', desc:'Brief → full campaign',
+    title:'Build your campaign', sub:'Product + goal in → Full multi-platform campaign out',
+    placeholder:'Describe the project or product and what this campaign needs to achieve. What\'s launching, what changes if it works, what\'s the real goal?',
+    showDepth:false, showRisk:true, showDomainAudience:true, showCampaignFields:true,
+    riskLabel:'Special Positioning / Constraints', riskPlaceholder:'Anything that shapes what you can say or show — legal limits, brand red lines, sensitive claims to avoid, must-include disclaimers…' },
   { id:'stress',  icon:'⚔️', name:'Stress Test', desc:'Attack the system',
     title:'What system do you want to stress test?', sub:'System in → Adversarial analysis out',
     placeholder:'Describe or paste the system, plan, or idea you want torn apart.\n\nPaste your existing forge output or describe your plan. The more specific you are, the more useful the attack.',
@@ -889,8 +1030,21 @@ const PACKET_DESCS = {
    STORAGE
 ══════════════════════════════════════════════════════════ */
 const DB = {
-  getKey:     () => localStorage.getItem('omniforge_key') || '',
-  setKey:     (k) => localStorage.setItem('omniforge_key', k),
+  // API key is session-only (sessionStorage) by default — cleared when the tab closes,
+  // never written to disk unless the user explicitly opts in via "remember".
+  getKey:     () => sessionStorage.getItem('omniforge_key_session')
+                    || (localStorage.getItem('omniforge_remember_key') === '1' ? (localStorage.getItem('omniforge_key') || '') : ''),
+  keyIsRemembered: () => localStorage.getItem('omniforge_remember_key') === '1' && !!localStorage.getItem('omniforge_key'),
+  setKey:     (k, remember) => {
+    sessionStorage.setItem('omniforge_key_session', k);
+    if (remember) { localStorage.setItem('omniforge_key', k); localStorage.setItem('omniforge_remember_key', '1'); }
+    else { localStorage.removeItem('omniforge_key'); localStorage.removeItem('omniforge_remember_key'); }
+  },
+  clearKey:   () => {
+    sessionStorage.removeItem('omniforge_key_session');
+    localStorage.removeItem('omniforge_key');
+    localStorage.removeItem('omniforge_remember_key');
+  },
   getHistory: () => JSON.parse(localStorage.getItem('omniforge_history') || '[]'),
   saveForge:  (f) => {
     const h = DB.getHistory(); h.unshift(f);
@@ -923,7 +1077,13 @@ const DB = {
     return fork;
   },
   clearHistory: () => localStorage.removeItem('omniforge_history'),
-  clearAll:     () => { localStorage.removeItem('omniforge_key'); localStorage.removeItem('omniforge_history'); }
+  clearAll:     () => {
+    DB.clearKey();
+    localStorage.removeItem('omniforge_history');
+    localStorage.removeItem('omniforge_exec_mode');
+    localStorage.removeItem('omniforge_model');
+    localStorage.removeItem('omniforge_onboarded');
+  }
 };
  
 function buildForgeId() {
@@ -942,6 +1102,42 @@ function switchView(name) {
 /* ══════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════
+   MODEL CONFIG — single source of truth for model ids.
+   Never hard-code a model id anywhere else in this file.
+══════════════════════════════════════════════════════════ */
+const MODELS = {
+  'sonnet-5':  { id: 'claude-sonnet-5',              label: 'Sonnet 5',  tag: 'Recommended',        desc: 'Best depth and reasoning. Default choice.' },
+  'haiku-4-5': { id: 'claude-haiku-4-5-20251001',    label: 'Haiku 4.5', tag: 'Fast / Lower Cost',  desc: 'Faster and cheaper, slightly less depth on long forges.' }
+};
+const DEFAULT_MODEL_KEY = 'sonnet-5';
+let selectedModelKey = localStorage.getItem('omniforge_model') || DEFAULT_MODEL_KEY;
+function getModel() { return MODELS[selectedModelKey] || MODELS[DEFAULT_MODEL_KEY]; }
+function setModel(key) {
+  if (!MODELS[key]) return;
+  selectedModelKey = key;
+  localStorage.setItem('omniforge_model', key);
+  syncModelPickerUI();
+}
+
+/* ══════════════════════════════════════════════════════════
+   EXECUTION MODE — how a forge actually gets run.
+   'runpack' (default, no key) | 'api' (direct, user's key) |
+   'hosted' (reserved for a future Omniforge-hosted/EMVY-credits
+   provider — not implemented, kept here so adding it later is
+   a matter of adding one more branch, not restructuring this).
+══════════════════════════════════════════════════════════ */
+let executionMode = localStorage.getItem('omniforge_exec_mode') || 'runpack';
+function setExecutionMode(mode) {
+  if (mode !== 'runpack' && mode !== 'api' && mode !== 'hosted') return;
+  if (mode === 'hosted') { alert('Omniforge Hosted (EMVY credits) is not available yet. Use "Run With My AI" or "Connect AI API".'); return; }
+  executionMode = mode;
+  localStorage.setItem('omniforge_exec_mode', mode);
+  syncExecModeUI();
+}
+let pendingForgeContext = null; // the context a RunPack packet was built from, for "Import Result"
+let pendingPacketKind = 'forge'; // 'forge' (new forge/stress) | 'reforge' (merge into currentData)
+
 let depth = 'Standard';
 let activeTool = 'system';
 let currentData = null;
@@ -950,34 +1146,132 @@ let rawOutput = '';
 let activeHistoryId = null;
 let pipeInterval = null;
 let stressTargetId = null; // id of forge being stress-tested (for lineage)
+
+/* ══════════════════════════════════════════════════════════
+   CAMPAIGN FORGE — CHANNELS + EMVY PRESET
+══════════════════════════════════════════════════════════ */
+const CHANNELS = ['TikTok','Instagram/Reels','YouTube Shorts','Facebook','Pinterest','LinkedIn','Threads','Bluesky'];
+let selectedChannels = ['TikTok','Instagram/Reels','YouTube Shorts'];
+let emvyPreset = false;
+
+const EMVY_PRESET_RULES = `EMVY CHECK PRESET — MANDATORY FRAMING RULES (do not violate any of these):
+1. Core buyer framing is BUY IT / MAKE IT / USE IT. Organise angles and hooks around whichever of these three modes fits the audience segment.
+2. Canvas Grid has two distinct layers. The PUBLIC CANVAS GRID is the user-facing product — that is the only one customers use, see, or are ever told about. The MASTER CANVAS is EMVY's private internal studio. NEVER write copy that implies customers have, could get, or should want access to the Master Canvas.
+3. AI positioning must be accurate. NEVER claim EMVY or Canvas Grid is "AI free" or "no AI". The accurate framing: AI is used in EMVY's own development and workflows, but Canvas Grid itself is a coded, seed-driven procedural/generative art system — not a text-to-image AI generator. Use language like "coded generative art engine" or "procedural, not AI-generated art", never "AI-free".
+4. No fabricated testimonials, no speculative or specific revenue/earnings claims, no earnings promises. Social proof language must stay generic and honest ("early users say…" is fine; inventing a name, number, or dollar figure is not).`;
+
+function renderCampaignChannels() {
+  const el = document.getElementById('campaign-channels');
+  if (!el) return;
+  el.innerHTML = CHANNELS.map(c => `
+    <div class="tool-card${selectedChannels.includes(c) ? ' sel' : ''}" data-channel="${esc(c)}" style="padding:9px 4px">
+      <div class="tool-card-name" style="font-size:9px">${esc(c)}</div>
+    </div>`).join('');
+  el.querySelectorAll('.tool-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const c = card.dataset.channel;
+      if (selectedChannels.includes(c)) selectedChannels = selectedChannels.filter(x => x !== c);
+      else selectedChannels.push(c);
+      card.classList.toggle('sel', selectedChannels.includes(c));
+    });
+  });
+}
+
+function bindCampaignEvents() {
+  const toggle = document.getElementById('emvy-preset-toggle');
+  const fillBtn = document.getElementById('emvy-preset-fill');
+  if (!toggle) return;
+  toggle.addEventListener('change', () => {
+    emvyPreset = toggle.checked;
+    document.getElementById('emvy-preset-wrap').classList.toggle('is-checked', emvyPreset);
+    if (fillBtn) fillBtn.style.display = emvyPreset ? '' : 'none';
+  });
+  if (fillBtn) fillBtn.addEventListener('click', fillEmvyDefaults);
+}
+
+function fillEmvyDefaults() {
+  const setIfEmpty = (id, val) => { const el = document.getElementById(id); if (el && !el.value.trim()) el.value = val; };
+  setIfEmpty('idea', 'EMVY CHECK — Canvas Grid, a coded generative art system for wall displays. This campaign should drive people to try Canvas Grid for the first time.');
+  document.getElementById('domain').value = 'Product / Tool';
+  setIfEmpty('audience', 'people who want striking, always-changing wall art without owning a screen full of stock loops');
+  setIfEmpty('campaign-offer', 'Canvas Grid — buy a licence, make your own generative art, or use a curated piece as a living wall display.');
+  setIfEmpty('campaign-proof', 'Live Canvas Grid demo, product screenshots, short screen recordings of the generative engine running.');
+  setIfEmpty('campaign-cta', 'Try Canvas Grid');
+  setIfEmpty('campaign-voice', 'direct, technical-but-warm, no hype, no corporate speak');
+  document.getElementById('risk').value = document.getElementById('risk').value || 'Never imply access to the private Master Canvas studio. Never say "AI-free" — Canvas Grid is coded/generative, not AI-generated, but AI is used elsewhere in EMVY\'s workflow.';
+}
  
 /* ══════════════════════════════════════════════════════════
    BOOT
 ══════════════════════════════════════════════════════════ */
 function initSetup() {
-  if (DB.getKey()) { switchView('app'); initApp(); return; }
+  if (localStorage.getItem('omniforge_onboarded') === '1') { switchView('app'); initApp(); return; }
   switchView('setup');
-  document.getElementById('setup-save-btn').addEventListener('click', saveSetupKey);
-  document.getElementById('setup-key-input').addEventListener('keydown', e => { if (e.key === 'Enter') saveSetupKey(); });
+  bindSetupEvents();
 }
-async function saveSetupKey() {
-  const v = document.getElementById('setup-key-input').value.trim();
+
+let setupSelectedMode = 'runpack';
+function bindSetupEvents() {
+  document.querySelectorAll('#view-setup .exec-mode-card').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.classList.contains('disabled')) { alert('Omniforge Hosted (EMVY credits) is not available yet.'); return; }
+      setupSelectedMode = el.dataset.mode;
+      document.querySelectorAll('#view-setup .exec-mode-card').forEach(x => x.classList.toggle('sel', x === el));
+      document.getElementById('setup-api-fields').style.display = setupSelectedMode === 'api' ? '' : 'none';
+    });
+  });
+  document.getElementById('setup-continue-btn').addEventListener('click', handleSetupContinue);
+  document.getElementById('setup-key-input').addEventListener('keydown', e => { if (e.key === 'Enter') handleSetupContinue(); });
+}
+function handleSetupContinue() {
   const err = document.getElementById('setup-error');
   err.style.display = 'none';
-  if (!v || !v.startsWith('sk-ant')) { err.textContent = 'Doesn\'t look like an Anthropic key — should start with sk-ant-'; err.style.display = 'block'; return; }
-  DB.setKey(v); switchView('app'); initApp();
+  if (setupSelectedMode === 'api') {
+    const v = document.getElementById('setup-key-input').value.trim();
+    if (!v || !v.startsWith('sk-ant')) { err.textContent = 'Doesn\'t look like an Anthropic key — should start with sk-ant-'; err.style.display = 'block'; return; }
+    DB.setKey(v, document.getElementById('setup-remember-key').checked);
+  }
+  executionMode = setupSelectedMode;
+  localStorage.setItem('omniforge_exec_mode', executionMode);
+  localStorage.setItem('omniforge_onboarded', '1');
+  switchView('app'); initApp();
 }
- 
+
 function initApp() {
-  updateKeyBadge(); renderToolSelector(); renderHistory();
-  bindForgeEvents(); bindOutputEvents(); bindNavEvents(); bindReforgeEvents(); bindPacketEvents();
+  updateKeyBadge(); renderToolSelector(); renderHistory(); renderCampaignChannels();
+  bindForgeEvents(); bindOutputEvents(); bindNavEvents(); bindReforgeEvents(); bindPacketEvents(); bindCampaignEvents();
+  bindExecModeEvents(); bindModelPicker();
+  syncExecModeUI(); syncModelPickerUI();
   showOutputState('empty'); updateForgeUI();
 }
- 
+
 function updateKeyBadge() {
   const k = DB.getKey(), masked = k ? '…' + k.slice(-6) : 'No key';
   ['key-label','key-label-s'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = masked; });
   ['key-dot','key-dot-s'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.toggle('off', !k); });
+}
+
+/* ══════════════════════════════════════════════════════════
+   EXECUTION MODE UI (shared between forge pane + settings)
+══════════════════════════════════════════════════════════ */
+function bindExecModeEvents() {
+  document.querySelectorAll('.exec-opt').forEach(el => {
+    el.addEventListener('click', () => setExecutionMode(el.dataset.mode));
+  });
+}
+function syncExecModeUI() {
+  document.querySelectorAll('.exec-opt').forEach(el => el.classList.toggle('sel', el.dataset.mode === executionMode));
+  updateForgeUI();
+}
+function bindModelPicker() {
+  document.querySelectorAll('[data-model]').forEach(el => {
+    el.addEventListener('click', () => setModel(el.dataset.model));
+  });
+}
+function syncModelPickerUI() {
+  document.querySelectorAll('[data-model]').forEach(el => el.classList.toggle('sel', el.dataset.model === selectedModelKey));
+  const label = document.getElementById('current-model-label');
+  if (label) label.textContent = `${getModel().label} (${getModel().id})`;
 }
  
 /* ══════════════════════════════════════════════════════════
@@ -1010,9 +1304,25 @@ function updateForgeUI() {
   if (ideaEl && !ideaEl.value) ideaEl.placeholder = t.placeholder;
   if (el('depth-row-el'))        el('depth-row-el').style.display        = t.showDepth ? '' : 'none';
   if (el('risk-row'))            el('risk-row').style.display            = t.showRisk  ? '' : 'none';
+  if (el('risk-label'))          el('risk-label').textContent            = t.riskLabel || 'Biggest Unknown or Risk';
+  const riskInput = el('risk');
+  if (riskInput) riskInput.placeholder = t.riskPlaceholder || 'What are you most unsure about? What keeps you up at night?';
   if (el('domain-audience-row')) el('domain-audience-row').style.display = t.showDomainAudience ? '' : 'none';
+  if (el('campaign-fields-row')) el('campaign-fields-row').style.display = t.showCampaignFields ? '' : 'none';
   const btn = el('forge-btn');
-  if (btn) { btn.textContent = t.isStressTool ? '⚔ STRESS TEST' : '⚡ FORGE'; btn.classList.toggle('stress-mode', !!t.isStressTool); }
+  const isStressTool = !!t.isStressTool;
+  if (btn) {
+    if (executionMode === 'runpack') btn.textContent = '📦 PREPARE RUNPACK';
+    else btn.textContent = isStressTool ? '⚔ STRESS TEST' : '⚡ FORGE';
+    btn.classList.toggle('stress-mode', isStressTool);
+  }
+  if (el('exec-mode-hint')) {
+    el('exec-mode-hint').textContent = executionMode === 'runpack'
+      ? 'No API key needed — Omniforge prepares a copy-paste packet for any AI you already use.'
+      : executionMode === 'api'
+      ? `Runs automatically via your Anthropic key, using ${getModel().label}. Billed to your Anthropic account.`
+      : 'Omniforge Hosted is not available yet.';
+  }
 }
  
 /* ══════════════════════════════════════════════════════════
@@ -1058,8 +1368,20 @@ function loadForge(id) {
   document.getElementById('audience').value   = f.audience  || '';
   document.getElementById('risk').value       = f.risk      || '';
   document.querySelectorAll('.depth-opt').forEach(el => el.classList.toggle('sel', el.dataset.d === f.depth));
+  if (f.tool === 'campaign') {
+    document.getElementById('campaign-offer').value    = f.campaign?.offer    || '';
+    document.getElementById('campaign-proof').value    = f.campaign?.proof    || '';
+    document.getElementById('campaign-cta').value      = f.campaign?.cta      || '';
+    document.getElementById('campaign-voice').value    = f.campaign?.voice    || '';
+    document.getElementById('campaign-duration').value = f.campaign?.duration || '7 days';
+    selectedChannels = f.channels && f.channels.length ? [...f.channels] : [...CHANNELS];
+    emvyPreset = !!f.emvyPreset;
+    const toggle = document.getElementById('emvy-preset-toggle');
+    if (toggle) { toggle.checked = emvyPreset; document.getElementById('emvy-preset-wrap').classList.toggle('is-checked', emvyPreset); document.getElementById('emvy-preset-fill').style.display = emvyPreset ? '' : 'none'; }
+    renderCampaignChannels();
+  }
   showOutputState('result');
-  renderResult(f.data, f.tool || 'system', f._reforged || 0, f._lastReforge, f.forge_state || 'forged', f.core_problem || '');
+  renderResult(f.data, f.tool || 'system', f._reforged || 0, f._lastReforge, f.forge_state || 'forged', f.core_problem || '', f.source);
   renderHistory(); renderToolSelector(); updateForgeUI();
 }
  
@@ -1096,6 +1418,11 @@ function bindOutputEvents() {
   on('btn-ready',        toggleReady);
   on('stress-nudge-btn', launchStressTest);
   on('stress-nudge-dismiss', () => { document.getElementById('stress-nudge').style.display = 'none'; });
+  on('btn-copy-chatgpt',   () => copyPacketPlain('ChatGPT'));
+  on('btn-copy-claude',    () => copyPacketPlain('Claude'));
+  on('btn-copy-universal', () => copyPacketPlain('any AI model'));
+  on('btn-download-runpack', downloadRunPackJSON);
+  on('btn-import-result',  importPacketResult);
 }
  
 function bindNavEvents() {
@@ -1117,10 +1444,15 @@ function bindPacketEvents() {
 function resetForge() {
   activeHistoryId = null; currentData = null; rawOutput = ''; stressTargetId = null;
   showOutputState('empty');
-  ['idea','audience','risk'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['idea','audience','risk','campaign-offer','campaign-proof','campaign-cta','campaign-voice'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('domain').selectedIndex = 0;
+  document.getElementById('campaign-duration').value = '7 days';
   document.querySelectorAll('.depth-opt').forEach(b => b.classList.toggle('sel', b.dataset.d === 'Standard'));
   depth = 'Standard'; activeTool = 'system';
+  selectedChannels = ['TikTok','Instagram/Reels','YouTube Shorts']; emvyPreset = false;
+  const toggle = document.getElementById('emvy-preset-toggle');
+  if (toggle) { toggle.checked = false; document.getElementById('emvy-preset-wrap').classList.remove('is-checked'); document.getElementById('emvy-preset-fill').style.display = 'none'; }
+  renderCampaignChannels();
   renderHistory(); renderToolSelector(); updateForgeUI();
   document.getElementById('idea').focus();
 }
@@ -1129,7 +1461,7 @@ function resetForge() {
    OUTPUT STATE
 ══════════════════════════════════════════════════════════ */
 function showOutputState(state) {
-  ['empty','loading','streaming','result','error'].forEach(s => {
+  ['empty','loading','streaming','result','error','packet'].forEach(s => {
     document.getElementById('out-' + s).style.display = state === s ? '' : 'none';
   });
 }
@@ -1185,6 +1517,7 @@ function buildSysPrompt(d) {
   if (activeTool === 'content')  return buildContentPrompt();
   if (activeTool === 'music')    return buildMusicPrompt();
   if (activeTool === 'rebrand')  return buildRebrandPrompt();
+  if (activeTool === 'campaign') return buildCampaignPrompt();
   return buildSystemForgePrompt(d);
 }
  
@@ -1323,6 +1656,46 @@ ${CONTRADICTION_BLOCK}
 }`;
 }
  
+function buildCampaignPrompt() {
+  const channels = selectedChannels.length ? selectedChannels : CHANNELS;
+  const channelList = channels.join(', ');
+  const duration = (document.getElementById('campaign-duration')?.value || '7 days').trim();
+  const presetBlock = emvyPreset ? `\n${EMVY_PRESET_RULES}\n` : '';
+  return `You are the Omniforge Campaign Forge — a marketing campaign strategist and orchestrator. You turn a product/goal brief into a complete, ready-to-execute multi-platform campaign package. Direct, specific, no filler, no fabricated proof.
+${presetBlock}
+CRITICAL RULES:
+1. Return ONLY a single valid JSON object. No markdown. No preamble. No trailing text.
+2. All values are strings. Use literal \\n for newlines within strings.
+3. Be SPECIFIC: concrete hooks, real platform conventions, exact CTA wording, real filenames.
+4. Never invent testimonials, named customers, review quotes, or specific revenue/earnings numbers. If proof is thin, say so plainly and suggest what to capture instead.
+5. Only write platform-specific copy for these selected channels: ${channelList}. Skip any platform not in this list.
+6. The assumption audit and contradiction audit are mandatory.
+7. Generate contradictions LAST, after all other sections.
+
+RETURN THIS JSON:
+{
+  "systemName": "Campaign name, 2-5 words",
+  "coreSummary": "One sentence: what this campaign promotes, to whom, over what timeframe.",
+  "core_problem": "One sentence: the specific gap in awareness/trust/action this campaign closes.",
+${ASSUMPTION_BLOCK}
+  "thesis": "CAMPAIGN THESIS\\n\\nWhat we're proving: [the one belief this campaign needs the audience to reach]\\nWhy now: [timing rationale]\\nSingle most important message: [one sentence, everything else supports this]\\nWhat success looks like at the end of ${duration}: [concrete, honest, no invented numbers]",
+  "angles": "AUDIENCE ANGLES\\n\\n[3-5 distinct angles, each:]\\n[N]. [Angle name] — for [specific audience slice]\\nPain/desire: [what this angle taps into]\\nWhy this works for them specifically: [reason]",
+  "hooks": "HOOKS\\n\\n[8-10 hooks, mixed styles — contrarian, question, bold claim, story-open, data/visual-first. Each on its own line, under 12 words, ready to use as a video opener or first line of copy.]",
+  "concepts": "SHORT-FORM VIDEO CONCEPTS\\n\\n[4-6 concepts, each:]\\n[N]. [Concept name] — [format: talking head / screen recording / b-roll montage / before-after / demo]\\nHook: [first line]\\nCore beat: [what happens in the middle]\\nPayoff: [the moment it lands]\\nLength: [seconds]",
+  "scripts": "SCRIPTS\\n\\n[One full script per concept above, same order. Each:]\\n[N]. [Concept name]\\n0-3s: [line + visual]\\n3-Ns: [beat by beat, line + visual, timestamped]\\nCTA line: [exact words]",
+  "shotlists": "SHOT LISTS\\n\\n[One shot list per concept, same order. Each:]\\n[N]. [Concept name]\\nShot 1: [framing, subject, action, duration]\\nShot 2: [...]\\n[continue until concept is fully covered]\\nRequired assets: [what needs to exist before filming — from proof/assets available, or what to capture new]",
+  "platformCopy": "PLATFORM-SPECIFIC COPY\\n\\n[Only for the selected channels: ${channelList}. For each channel present a heading in ALL CAPS on its own line, then caption + hashtags + platform-native notes matching that platform's real conventions (length, tone, hashtag count, link-in-bio handling, etc.)]",
+  "ctaVariants": "CTA VARIANTS\\n\\n[6-8 short variants of the core CTA, tuned for different moments: cold hook, mid-funnel, urgency, low-commitment, direct-response.]",
+  "launchSequence": "7-DAY LAUNCH SEQUENCE\\n\\nDay 1: [what posts, where, why first]\\nDay 2: [...]\\nDay 3: [...]\\nDay 4: [...]\\nDay 5: [...]\\nDay 6: [...]\\nDay 7: [...]\\n\\n[If campaign duration is longer than 7 days, add a one-paragraph note on how this sequence repeats/evolves for the remainder.]",
+  "repurposing": "REPURPOSING PLAN\\n\\n[For each concept: 2-3 ways to cut it down or reuse it — a static carousel, a quote graphic, a longer YouTube version, an email snippet, a Pinterest pin. Be specific about which source asset feeds which repurposed piece.]",
+  "visualRecipe": "VISUAL ASSET RECIPE\\n\\nLook: [colour/mood/typography direction, consistent with brand voice]\\nEnd card: [what it shows — CTA, handle, wordmark]\\nTitle/hook text style: [placement, font weight, on-screen duration]\\nTransitions: [simple, consistent choice — cut / crossfade / hard cut on beat]\\nAspect ratios needed: [9:16, 1:1, 16:9 — which for which channel]",
+  "assetChecklist": "REQUIRED FILENAMES / ASSETS\\n\\n[A flat checklist of every file this campaign needs, using a clear naming convention, e.g.:]\\n[campaign-slug]_concept1_9x16.mp4\\n[campaign-slug]_concept1_1x1.mp4\\n[campaign-slug]_endcard.png\\n[continue for every concept × required aspect ratio, plus any static graphics]",
+  "metricool": "METRICOOL-READY PUBLISHING PACKAGE\\n\\n[One row per scheduled post, in order:]\\nDate | Platform | Asset filename | Caption (first line only) | CTA\\n[repeat for every post across the launch sequence]\\n\\nNotes for scheduling: [best posting windows if relevant, any platform-specific timing notes]",
+  "runpack": "RUNPACK / PORTABLE EXECUTION PACKET\\n\\nWhat this packet hands off: [the minimum a freelancer/VA/other AI model needs to execute this campaign without more context]\\nRequired inputs still missing: [anything a human must supply — real footage, final pricing, legal sign-off]\\nHandoff order: [assets first / copy first / schedule first — whichever is practical]",
+${CONTRADICTION_BLOCK}
+}`;
+}
+
 function buildReforgeSystemPrompt(originalData, targetSections, toolId) {
   const originalJson = JSON.stringify(originalData).slice(0, 4000);
   return `You are the Omniforge Reforge Engine. Surgically update specific sections of existing forge outputs based on new information.
@@ -1398,6 +1771,24 @@ const SECTIONS_BY_TOOL = {
     { key:'launch',         icon:'🚀', name:'Rebrand Launch Plan' },
     { key:'contradictions', icon:'⚡', name:'Contradiction Audit', isContradiction:true }
   ],
+  campaign: [
+    { key:'assumptions',    icon:'⚠️', name:'Assumption Audit',      isAssumptions:true },
+    { key:'thesis',         icon:'🎯', name:'Campaign Thesis' },
+    { key:'angles',         icon:'🧭', name:'Audience Angles' },
+    { key:'hooks',          icon:'🎣', name:'Hooks' },
+    { key:'concepts',       icon:'🎬', name:'Video Concepts' },
+    { key:'scripts',        icon:'📝', name:'Scripts' },
+    { key:'shotlists',      icon:'🎞️', name:'Shot Lists' },
+    { key:'platformCopy',   icon:'📱', name:'Platform Copy' },
+    { key:'ctaVariants',    icon:'👉', name:'CTA Variants' },
+    { key:'launchSequence', icon:'🚀', name:'7-Day Launch Sequence' },
+    { key:'repurposing',    icon:'♻️', name:'Repurposing Plan' },
+    { key:'visualRecipe',   icon:'🎨', name:'Visual Asset Recipe' },
+    { key:'assetChecklist', icon:'🗂️', name:'Required Filenames / Assets' },
+    { key:'metricool',      icon:'📅', name:'Metricool Publishing Package' },
+    { key:'runpack',        icon:'📦', name:'RunPack Execution Packet' },
+    { key:'contradictions', icon:'⚡', name:'Contradiction Audit', isContradiction:true }
+  ],
   stress: [
     { key:'verdict',              icon:'⚖️', name:'Honest Verdict',           isStressVerdict:true },
     { key:'dangerousAssumptions', icon:'💣', name:'Dangerous Assumptions',    isStress:true },
@@ -1448,7 +1839,7 @@ async function callClaude(systemPrompt, userMsg, maxTokens) {
       'anthropic-dangerous-direct-browser-access': 'true'
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: getModel().id,
       max_tokens: maxTokens || 4000,
       system: systemPrompt,
       stream: true,
@@ -1457,51 +1848,110 @@ async function callClaude(systemPrompt, userMsg, maxTokens) {
   });
   if (!resp.ok) {
     const e = await resp.json().catch(() => ({}));
-    throw new Error(e.error?.message || `API error ${resp.status} — check your key in Settings`);
+    const rawMsg = e.error?.message || `API error ${resp.status} — check your key in Settings`;
+    const err = new Error(rawMsg);
+    if (/credit balance is too low|insufficient credit|plans\s*&\s*billing/i.test(rawMsg)) err.code = 'insufficient_credit';
+    throw err;
   }
   return resp;
 }
  
 /* ══════════════════════════════════════════════════════════
-   RUN FORGE
+   RUN FORGE — dispatches to the selected execution mode.
+   Every mode shares one context builder and one result finaliser
+   so Campaign Forge (and every other forge) works identically in
+   both RunPack and direct-API mode with no per-tool branching here.
 ══════════════════════════════════════════════════════════ */
-async function runForge() {
+function buildForgeContext() {
   const idea = document.getElementById('idea').value.trim();
   const dom  = document.getElementById('domain').value;
   const aud  = document.getElementById('audience').value.trim();
   const risk = document.getElementById('risk').value.trim();
   const isStress = activeTool === 'stress';
- 
-  if (!idea) { document.getElementById('idea').focus(); return; }
-  if (!DB.getKey()) { switchView('settings'); return; }
- 
-  document.getElementById('forge-btn').disabled = true;
-  showOutputState('loading');
-  startPipeline(isStress ? 'stress' : 'forge');
-  currentToolAtForge = activeTool;
- 
+
+  if (!idea) { document.getElementById('idea').focus(); return null; }
+
+  const isCampaign = activeTool === 'campaign';
+  const camp = isCampaign ? {
+    offer:    document.getElementById('campaign-offer').value.trim(),
+    proof:    document.getElementById('campaign-proof').value.trim(),
+    cta:      document.getElementById('campaign-cta').value.trim(),
+    voice:    document.getElementById('campaign-voice').value.trim(),
+    duration: document.getElementById('campaign-duration').value.trim() || '7 days'
+  } : null;
+
   const userMsg = isStress
     ? `STRESS TEST TARGET:\n${idea}\n\nDomain: ${dom}\nAudience: ${aud || 'not specified'}`
+    : isCampaign
+    ? `PROJECT / PRODUCT + GOAL: ${idea}\nDOMAIN: ${dom}\nAUDIENCE: ${aud || 'not specified'}\nOFFER: ${camp.offer || 'not specified'}\nPROOF / ASSETS AVAILABLE: ${camp.proof || 'none specified — flag this in the assumption audit'}\nCTA: ${camp.cta || 'not specified'}\nBRAND VOICE: ${camp.voice || 'not specified'}\nCAMPAIGN DURATION: ${camp.duration}\nSPECIAL POSITIONING / CONSTRAINTS: ${risk || 'none specified'}\nCHANNELS: ${(selectedChannels.length ? selectedChannels : CHANNELS).join(', ')}\n\nRun the complete campaign forge pipeline including assumption audit and contradiction scan. Return only the JSON.`
     : `IDEA: ${idea}\nDOMAIN: ${dom}\nAUDIENCE: ${aud || 'not specified'}\nBIGGEST RISK: ${risk || 'not specified'}\nFORGE TYPE: ${activeTool}\nDEPTH: ${depth}\n\nRun the complete forge pipeline including assumption audit and contradiction scan. Return only the JSON.`;
- 
-  const maxTok = isStress ? 4000 : (depth === 'Deep' ? 5500 : 3800);
- 
+
+  const maxTok = isStress ? 4000 : isCampaign ? 7000 : (depth === 'Deep' ? 5500 : 3800);
+
+  return {
+    idea, dom, aud, risk, depth, isStress, isCampaign, camp,
+    activeTool, userMsg, sysPrompt: buildSysPrompt(depth), maxTok,
+    channelsSnapshot: [...selectedChannels], emvyPresetSnapshot: emvyPreset
+  };
+}
+
+async function runForge() {
+  const ctx = buildForgeContext();
+  if (!ctx) return;
+  currentToolAtForge = ctx.activeTool;
+  if (executionMode === 'api') return runForgeViaApi(ctx);
+  if (executionMode === 'runpack') return runForgeViaRunPack(ctx);
+  alert('Omniforge Hosted is not available yet. Switch to "Run With My AI" or "Connect AI API" above.');
+}
+
+/* ══════════════════════════════════════════════════════════
+   ERROR DISPLAY — generic errors stay generic; a low-credit
+   billing error gets a specific, friendly message and one-click
+   routes back to a usable state (no automatic retries/spending).
+══════════════════════════════════════════════════════════ */
+function showForgeError(err, ctx) {
+  showOutputState('error');
+  const titleEl = document.getElementById('error-title');
+  const msgEl = document.getElementById('error-msg');
+  const actionsEl = document.getElementById('error-actions');
+  if (err && err.code === 'insufficient_credit') {
+    titleEl.textContent = '⚠ NO API CREDIT AVAILABLE';
+    msgEl.textContent = 'Your Anthropic API account has no available credit.\n\nYou can add API credit in your Anthropic account, or switch to Run With My AI and continue without API billing.';
+    actionsEl.style.display = 'flex';
+    document.getElementById('error-btn-runpack').onclick = () => {
+      setExecutionMode('runpack');
+      if (ctx) runForgeViaRunPack(ctx);
+    };
+    document.getElementById('error-btn-settings').onclick = () => switchView('settings');
+  } else {
+    titleEl.textContent = '⚠ FORGE ERROR';
+    msgEl.textContent = (err && err.message) || 'Unknown error.';
+    actionsEl.style.display = 'none';
+  }
+}
+
+async function runForgeViaApi(ctx) {
+  if (!DB.getKey()) { switchView('settings'); return; }
+  document.getElementById('forge-btn').disabled = true;
+  showOutputState('loading');
+  startPipeline(ctx.isStress ? 'stress' : 'forge');
+
   try {
-    const resp = await callClaude(buildSysPrompt(depth), userMsg, maxTok);
- 
+    const resp = await callClaude(ctx.sysPrompt, ctx.userMsg, ctx.maxTok);
+
     stopPipeline();
     showOutputState('streaming');
- 
+
     const streamEl = document.getElementById('stream-output');
     const countEl  = document.getElementById('stream-token-count');
     const peekEl   = document.getElementById('stream-peek');
-    document.getElementById('streaming-label').textContent = isStress ? 'STRESS TEST RUNNING' : 'STREAMING OUTPUT';
- 
-    const sectionKeys = getSectionsDef(activeTool).map(s => s.key);
+    document.getElementById('streaming-label').textContent = ctx.isStress ? 'STRESS TEST RUNNING' : 'STREAMING OUTPUT';
+
+    const sectionKeys = getSectionsDef(ctx.activeTool).map(s => s.key);
     const peekChips = {};
     peekEl.innerHTML = sectionKeys.map(k => `<span class="stream-peek-chip" id="peek-${k}">${k}</span>`).join('');
     sectionKeys.forEach(k => { peekChips[k] = document.getElementById('peek-' + k); });
- 
+
     let fullText = '';
     await readStream(resp, (chunk) => {
       fullText += chunk;
@@ -1512,59 +1962,139 @@ async function runForge() {
           peekChips[k].classList.add('found');
       });
     });
- 
+
     const clean = fullText.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '').trim();
     let parsed;
     try { parsed = JSON.parse(clean); }
     catch (_) { throw new Error('Model returned malformed JSON. Try again — this is rare.'); }
- 
-    currentData = parsed;
-    currentToolAtForge = activeTool;
-    const sName  = parsed.systemName || idea.slice(0, 40);
-    const fState = isStress ? 'stressed' : 'forged';
-    const fId    = buildForgeId();
-    rawOutput    = buildRawText(parsed, sName, activeTool);
- 
-    const forgeRecord = {
-      id: fId, date: new Date().toISOString(),
-      idea, domain: dom, audience: aud, risk, depth,
-      tool: activeTool, systemName: sName,
-      coreSummary: parsed.coreSummary || '',
-      core_problem: parsed.core_problem || '',
-      forge_state: fState,
-      derivedFrom: null, children: [],
-      data: parsed, rawOutput,
-      _reforged: 0, _lastReforge: null
-    };
- 
-    // If stress test was launched from a specific forge, update that forge's state + lineage
-    if (isStress && stressTargetId) {
-      DB.updateForge(stressTargetId, { forge_state: 'stressed', children: [...(DB.getHistory().find(x=>x.id===stressTargetId)?.children||[]), fId] });
-      forgeRecord.derivedFrom = stressTargetId;
-      stressTargetId = null;
-    }
- 
-    DB.saveForge(forgeRecord);
-    activeHistoryId = forgeRecord.id;
-    renderHistory();
- 
-    fetch('https://api.countapi.xyz/hit/omniforge-systemforge.com/forges').catch(() => {});
- 
-    showOutputState('result');
-    renderResult(parsed, activeTool, 0, null, fState, parsed.core_problem || '');
- 
+
+    finalizeForgeResult(parsed, ctx, 'direct-api');
+
   } catch (err) {
-    stopPipeline(); showOutputState('error');
-    document.getElementById('error-msg').textContent = err.message;
+    stopPipeline();
+    showForgeError(err, ctx);
   }
- 
+
+  document.getElementById('forge-btn').disabled = false;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RUNPACK MODE — no API key. Prepares a copy-paste / downloadable
+   packet instead of calling any AI. Nothing here is "GENERATED BY
+   CONNECTED AI" until the user pastes a real result back in.
+══════════════════════════════════════════════════════════ */
+function buildPlainPacketText(ctx) {
+  return `${ctx.sysPrompt}\n\n---\n\nTASK INPUT:\n${ctx.userMsg}\n\nReturn ONLY the JSON object described above. No markdown, no preamble, no extra commentary.`;
+}
+function buildRunPackForgeJSON(ctx) {
+  return {
+    runpack_version: '1.1',
+    packet_type: 'runpack_forge_task',
+    task: ctx.packetTask || 'generate_forge',
+    app: 'Omniforge System Forge',
+    app_version: 'v4',
+    forge_type: ctx.activeTool,
+    system_prompt: ctx.sysPrompt,
+    user_input: ctx.userMsg,
+    rules: ['return_structured_json', 'no_preamble', 'no_markdown_fences'],
+    output_format: 'json'
+  };
+}
+
+function runForgeViaRunPack(ctx) {
+  pendingPacketKind = 'forge';
+  pendingForgeContext = ctx;
+  document.getElementById('packet-preview').textContent = buildPlainPacketText(ctx);
+  document.getElementById('packet-result-input').value = '';
+  document.getElementById('packet-import-error').style.display = 'none';
+  document.getElementById('packet-copy-status').textContent = '';
+  showOutputState('packet');
+}
+
+function copyPacketPlain(label) {
+  if (!pendingForgeContext) return;
+  navigator.clipboard.writeText(buildPlainPacketText(pendingForgeContext))
+    .then(() => { document.getElementById('packet-copy-status').textContent = `✓ Copied — paste into ${label}`; document.getElementById('packet-copy-status').className = 'status ok'; })
+    .catch(() => alert('Copy failed — select the text in the preview box manually.'));
+}
+
+function downloadRunPackJSON() {
+  if (!pendingForgeContext) return;
+  const blob = new Blob([JSON.stringify(buildRunPackForgeJSON(pendingForgeContext), null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'omniforge-runpack.json';
+  a.click();
+}
+
+function importPacketResult() {
+  const raw = document.getElementById('packet-result-input').value.trim();
+  const errEl = document.getElementById('packet-import-error');
+  errEl.style.display = 'none';
+  if (!raw) { errEl.textContent = "Paste the AI's JSON result first."; errEl.style.display = ''; return; }
+  const clean = raw.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '').trim();
+  let parsed;
+  try { parsed = JSON.parse(clean); }
+  catch (_) { errEl.textContent = "Couldn't parse that as JSON — paste the AI's full raw response, without extra commentary around it."; errEl.style.display = ''; return; }
+
+  if (pendingPacketKind === 'reforge') {
+    if (!currentData) { errEl.textContent = 'No active forge to update — start a new forge.'; errEl.style.display = ''; return; }
+    mergeReforgeUpdates(parsed, 'external-ai');
+    pendingPacketKind = 'forge';
+    return;
+  }
+
+  if (!pendingForgeContext) { errEl.textContent = 'No pending RunPack context — start a new forge.'; errEl.style.display = ''; return; }
+  finalizeForgeResult(parsed, pendingForgeContext, 'external-ai');
+}
+
+/* ══════════════════════════════════════════════════════════
+   FINALIZE — shared tail for every execution mode: save to
+   history, render, and tag the result's provenance.
+══════════════════════════════════════════════════════════ */
+function finalizeForgeResult(parsed, ctx, source) {
+  currentData = parsed;
+  currentToolAtForge = ctx.activeTool;
+  const sName  = parsed.systemName || ctx.idea.slice(0, 40);
+  const fState = ctx.isStress ? 'stressed' : 'forged';
+  const fId    = buildForgeId();
+  rawOutput    = buildRawText(parsed, sName, ctx.activeTool);
+
+  const forgeRecord = {
+    id: fId, date: new Date().toISOString(),
+    idea: ctx.idea, domain: ctx.dom, audience: ctx.aud, risk: ctx.risk, depth: ctx.depth,
+    tool: ctx.activeTool, systemName: sName,
+    coreSummary: parsed.coreSummary || '',
+    core_problem: parsed.core_problem || '',
+    forge_state: fState,
+    derivedFrom: null, children: [],
+    data: parsed, rawOutput, source,
+    _reforged: 0, _lastReforge: null,
+    ...(ctx.isCampaign ? { campaign: ctx.camp, channels: ctx.channelsSnapshot, emvyPreset: ctx.emvyPresetSnapshot } : {})
+  };
+
+  // If stress test was launched from a specific forge, update that forge's state + lineage
+  if (ctx.isStress && stressTargetId) {
+    DB.updateForge(stressTargetId, { forge_state: 'stressed', children: [...(DB.getHistory().find(x=>x.id===stressTargetId)?.children||[]), fId] });
+    forgeRecord.derivedFrom = stressTargetId;
+    stressTargetId = null;
+  }
+
+  DB.saveForge(forgeRecord);
+  activeHistoryId = forgeRecord.id;
+  renderHistory();
+
+  if (source === 'direct-api') fetch('https://api.countapi.xyz/hit/omniforge-systemforge.com/forges').catch(() => {});
+
+  showOutputState('result');
+  renderResult(parsed, ctx.activeTool, 0, null, fState, parsed.core_problem || '', source);
   document.getElementById('forge-btn').disabled = false;
 }
  
 /* ══════════════════════════════════════════════════════════
    RENDER RESULT
 ══════════════════════════════════════════════════════════ */
-function renderResult(data, toolId, reforgeCount, lastReforgeDate, forgeState, coreProblem) {
+function renderResult(data, toolId, reforgeCount, lastReforgeDate, forgeState, coreProblem, source) {
   const tool    = toolId || currentToolAtForge || 'system';
   const state   = forgeState || 'forged';
   const stateInfo = FORGE_STATES[state] || FORGE_STATES.forged;
@@ -1583,6 +2113,7 @@ function renderResult(data, toolId, reforgeCount, lastReforgeDate, forgeState, c
   const toolDef = TOOLS.find(t => t.id === tool) || TOOLS[0];
   document.getElementById('out-chips').innerHTML = `
     <span class="chip chip-green">✓ ${isStress ? 'Stress Tested' : 'Forged'}</span>
+    ${source ? `<span class="chip chip-cyan">🤖 Generated by Connected AI${source === 'external-ai' ? ' · via RunPack' : ' · Direct API'}</span>` : ''}
     <span class="chip ${stateInfo.chipClass}">◉ ${stateInfo.label}${stateInfo.next ? ' · ' + stateInfo.next : ''}</span>
     ${!isStress && depth !== 'Standard' ? `<span class="chip chip-fire">${esc(depth)}</span>` : ''}
     ${data.assumptions ? '<span class="chip chip-amber">⚠ Audited</span>' : ''}
@@ -1713,6 +2244,29 @@ function updatePacketDesc() {
   document.getElementById('packet-desc-box').textContent = PACKET_DESCS[task] || '';
 }
  
+/* Generic, forge-type-agnostic snapshot of a forge result for export
+   (post-forge RunPack, and anywhere else a portable copy of the current
+   result is needed). Works for any forge — System, Campaign, or any
+   future type — without maintaining a per-forge field list here.
+   Excludes internal bookkeeping (leading-underscore keys, e.g.
+   _reforged/_lastReforge) and, defensively, anything that looks like a
+   credential — currentData is only ever assigned from parsed model
+   output and never merged with API key material anywhere in this app,
+   so this filter should never actually remove anything real; it's
+   cheap insurance against ever exporting a secret by accident. */
+function buildForgeSnapshot(data) {
+  const snapshot = {};
+  if (!data) return snapshot;
+  Object.keys(data).forEach(k => {
+    if (k.startsWith('_')) return;
+    if (/key|secret|token|password/i.test(k)) return;
+    const v = data[k];
+    if (v === undefined || v === null || v === '') return;
+    snapshot[k] = v;
+  });
+  return snapshot;
+}
+
 function buildAIPacketText(task) {
   const sName = currentData?.systemName || 'Unnamed System';
   
@@ -1740,20 +2294,7 @@ function buildAIPacketText(task) {
     contradictions: 'Scan every section for logical conflicts, impossible combinations, or hidden tensions. For each contradiction: name the sections in conflict, explain why it breaks, suggest a resolution.'
   };
 
-  const forgeSnapshot = {
-    systemName:   currentData?.systemName,
-    coreSummary:  currentData?.coreSummary,
-    core_problem: currentData?.core_problem,
-    framework:    currentData?.framework,
-    sheet:        currentData?.sheet,
-    assumptions:  currentData?.assumptions,
-    contradictions: currentData?.contradictions
-  };
-
-  // Remove undefined keys
-  Object.keys(forgeSnapshot).forEach(k => {
-    if (!forgeSnapshot[k]) delete forgeSnapshot[k];
-  });
+  const forgeSnapshot = buildForgeSnapshot(currentData);
 
   const packet = {
     runpack_version:    '1.1',
@@ -1807,7 +2348,7 @@ function openReforgeDrawer() {
 }
 function closeReforgeDrawer() { document.getElementById('reforge-drawer').classList.remove('open'); }
  
-async function runReforge() {
+function runReforge() {
   if (!currentData) return;
   const context = document.getElementById('reforge-context').value.trim();
   if (!context) { document.getElementById('reforge-context').focus(); return; }
@@ -1815,20 +2356,31 @@ async function runReforge() {
   if (!checked.length) { alert('Select at least one section to update.'); return; }
   // Always include contradictions if other sections changed
   if (!checked.includes('contradictions') && getSectionsDef(currentToolAtForge).find(d => d.key === 'contradictions')) checked.push('contradictions');
- 
+
+  if (executionMode === 'api' && DB.getKey()) {
+    return runReforgeViaApi(context, checked);
+  }
+  runReforgeViaRunPack(context, checked);
+}
+
+function buildReforgeUserMsg(context, checked) {
+  return `REFORGE REQUEST\n\nORIGINAL SYSTEM: ${currentData.systemName || 'Unknown'}\nTOOL TYPE: ${currentToolAtForge}\n\nWHAT HAS CHANGED:\n${context}\n\nSECTIONS TO UPDATE: ${checked.join(', ')}\n\nReturn only the updated sections as JSON.`;
+}
+
+async function runReforgeViaApi(context, checked) {
   const btn = document.getElementById('reforge-run-btn');
   btn.disabled = true; btn.textContent = 'Reforging…';
   closeReforgeDrawer();
   showOutputState('loading');
   startPipeline('reforge');
- 
+
   const sysPrompt = buildReforgeSystemPrompt(currentData, checked, currentToolAtForge);
-  const userMsg = `REFORGE REQUEST\n\nORIGINAL SYSTEM: ${currentData.systemName || 'Unknown'}\nTOOL TYPE: ${currentToolAtForge}\n\nWHAT HAS CHANGED:\n${context}\n\nSECTIONS TO UPDATE: ${checked.join(', ')}\n\nReturn only the updated sections as JSON.`;
- 
+  const userMsg = buildReforgeUserMsg(context, checked);
+
   try {
     const resp = await callClaude(sysPrompt, userMsg, 3500);
     stopPipeline(); showOutputState('streaming');
- 
+
     const streamEl = document.getElementById('stream-output');
     const countEl  = document.getElementById('stream-token-count');
     document.getElementById('streaming-label').textContent = 'REFORGING';
@@ -1838,30 +2390,55 @@ async function runReforge() {
       if (streamEl) { streamEl.textContent = fullText; streamEl.scrollTop = streamEl.scrollHeight; }
       if (countEl)  countEl.textContent = fullText.length.toLocaleString() + ' chars';
     });
- 
+
     const clean = fullText.replace(/^```(?:json)?\s*/, '').replace(/```\s*$/, '').trim();
     const updates = JSON.parse(clean);
-    Object.assign(currentData, updates);
- 
-    const reforgeCount    = (currentData._reforged || 0) + 1;
-    const lastReforgeDate = new Date().toISOString();
-    currentData._reforged    = reforgeCount;
-    currentData._lastReforge = lastReforgeDate;
-    rawOutput = buildRawText(currentData, currentData.systemName, currentToolAtForge);
- 
-    if (activeHistoryId) {
-      DB.updateForge(activeHistoryId, { data:currentData, rawOutput, forge_state:'reforged', _reforged:reforgeCount, _lastReforge:lastReforgeDate });
-    }
-    renderHistory();
-    showOutputState('result');
-    renderResult(currentData, currentToolAtForge, reforgeCount, lastReforgeDate, 'reforged', currentData.core_problem || '');
- 
+    mergeReforgeUpdates(updates, null);
+
   } catch (err) {
-    stopPipeline(); showOutputState('error');
-    document.getElementById('error-msg').textContent = err.message;
+    stopPipeline();
+    showForgeError(err, null);
   }
   btn.disabled = false; btn.textContent = '🔄 Run Reforge →';
   document.getElementById('reforge-context').value = '';
+}
+
+/* ══════════════════════════════════════════════════════════
+   REFORGE VIA RUNPACK — no API key. Same packet UI as the
+   initial-forge RunPack (#out-packet), driven by pendingPacketKind
+   so one paste-back path serves both flows correctly.
+══════════════════════════════════════════════════════════ */
+function runReforgeViaRunPack(context, checked) {
+  const sysPrompt = buildReforgeSystemPrompt(currentData, checked, currentToolAtForge);
+  const userMsg = buildReforgeUserMsg(context, checked);
+  pendingPacketKind = 'reforge';
+  pendingForgeContext = { sysPrompt, userMsg, activeTool: currentToolAtForge, packetTask: 'reforge_forge' };
+  closeReforgeDrawer();
+  document.getElementById('packet-preview').textContent = buildPlainPacketText(pendingForgeContext);
+  document.getElementById('packet-result-input').value = '';
+  document.getElementById('packet-import-error').style.display = 'none';
+  document.getElementById('packet-copy-status').textContent = '';
+  document.getElementById('reforge-context').value = '';
+  showOutputState('packet');
+}
+
+function mergeReforgeUpdates(updates, source) {
+  Object.assign(currentData, updates);
+
+  const reforgeCount    = (currentData._reforged || 0) + 1;
+  const lastReforgeDate = new Date().toISOString();
+  currentData._reforged    = reforgeCount;
+  currentData._lastReforge = lastReforgeDate;
+  rawOutput = buildRawText(currentData, currentData.systemName, currentToolAtForge);
+
+  const patch = { data: currentData, rawOutput, forge_state: 'reforged', _reforged: reforgeCount, _lastReforge: lastReforgeDate };
+  if (source) patch.source = source;
+  if (activeHistoryId) DB.updateForge(activeHistoryId, patch);
+
+  renderHistory();
+  showOutputState('result');
+  const historySource = activeHistoryId ? (DB.getHistory().find(x => x.id === activeHistoryId) || {}).source : source;
+  renderResult(currentData, currentToolAtForge, reforgeCount, lastReforgeDate, 'reforged', currentData.core_problem || '', historySource);
 }
  
 /* ══════════════════════════════════════════════════════════
@@ -1920,9 +2497,12 @@ function downloadOutput(fmt) {
 ══════════════════════════════════════════════════════════ */
 function refreshSettings() {
   updateKeyBadge();
+  syncExecModeUI(); syncModelPickerUI();
   const k = DB.getKey();
   const kd = document.getElementById('key-display');
   if (kd) kd.textContent = k ? 'sk-ant-…' + k.slice(-8) : 'Not set';
+  const meta = document.getElementById('key-storage-meta');
+  if (meta) meta.textContent = !k ? 'Not set' : DB.keyIsRemembered() ? 'Remembered on this device' : 'Session-only — cleared when this tab closes';
   const h = DB.getHistory();
   const el = (id) => document.getElementById(id);
   if (el('stat-total'))    el('stat-total').textContent   = h.length;
@@ -1943,10 +2523,11 @@ document.getElementById('cancel-key-change').addEventListener('click', () => {
 document.getElementById('save-new-key').addEventListener('click', () => {
   const v = document.getElementById('new-key-input').value.trim();
   if (!v || !v.startsWith('sk-ant')) { alert('Invalid key — should start with sk-ant-'); return; }
-  DB.setKey(v);
+  DB.setKey(v, document.getElementById('settings-remember-key').checked);
   document.getElementById('change-key-form').style.display = 'none';
   document.getElementById('change-key-btn').style.display  = '';
   document.getElementById('new-key-input').value = '';
+  document.getElementById('settings-remember-key').checked = false;
   refreshSettings(); updateKeyBadge();
 });
 document.getElementById('clear-history-btn').addEventListener('click', () => {

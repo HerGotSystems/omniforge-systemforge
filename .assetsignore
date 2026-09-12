@@ -1,0 +1,12 @@
+# Cloudflare Workers static assets — exclude repo/dev files that
+# aren't part of the public site. Everything else at the repo root
+# (index.html, app/, robots.txt, ai.txt, llms.txt, LICENSE-PHUL.txt,
+# WELCOME.txt, meta-tags.html, _headers) is served as-is.
+
+.git/
+.github/
+docs/
+README.md
+PROJECT_INDEX.md
+wrangler.jsonc
+.assetsignore
