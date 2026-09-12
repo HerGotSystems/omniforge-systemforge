@@ -53,7 +53,7 @@ Campaign Forge works in both execution modes — Run With My AI (no key) and Con
 These apply across every forge type, not just System Forge:
 
 - **Lifecycle states** — `forged → stressed → reforged → ready`, tracked per output and shown in history.
-- **Reforge** — feed in new information (a test result, a pivot, a constraint) and surgically update only the affected sections, without re-running the whole forge. Requires Connect AI API mode (it's a live call); in Run With My AI mode, use the RunPack button instead.
+- **Reforge** — feed in new information (a test result, a pivot, a constraint) and surgically update only the affected sections, without re-running the whole forge. In Connect AI API mode this runs live; in Run With My AI mode it prepares a Reforge RunPack (context + selected sections + current data) you paste into any AI, then paste the result back in to merge it.
 - **Fork** — branch an output to explore an alternate direction while preserving lineage back to the original.
 - **RunPack** — export any forge, or any post-hoc action (stress test, reforge, extend, assumption/contradiction extraction), as a portable JSON task packet you can paste into ChatGPT, Gemini, or any other model to continue the work outside Omniforge (bring-your-own-AI, no lock-in).
 - **History** — every forge is saved locally (up to 100), with lineage (`derivedFrom` / `children`) between forks and stress tests, and tagged with its execution source (direct API vs. pasted-back RunPack result).
@@ -72,3 +72,7 @@ These apply across every forge type, not just System Forge:
 ## Status
 
 Deployed as a product, not a concept. See [`PROJECT_INDEX.md`](PROJECT_INDEX.md) for open direction and known gaps, and [`docs/campaign-forge-test-status.md`](docs/campaign-forge-test-status.md) for what has and hasn't been verified against a live Anthropic API call.
+
+## Contact
+
+Questions, collaborations, business enquiries, or support — contact EMVY CHECK: [emvycheck@gmail.com](mailto:emvycheck@gmail.com)
