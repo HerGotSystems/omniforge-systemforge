@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "omniforge-systemforge",
+  "main": "./cloudflare/m8-proxy-worker.example.js",
+  "compatibility_date": "2026-09-30",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+  "services": [
+    {
+      "binding": "M8",
+      "service": "REPLACE_WITH_PRIVATE_M8_WORKER_NAME"
+    }
+  ],
+  "vars": {
+    "M8_TENANT_ID": "omniforge-owner",
+    "M8_ROLES": "owner,tester",
+    "M8_ALLOWED_TOOLS": "web,drive_read,gmail_read,gmail_draft,github_read,github_write,calendar_read"
+  }
+}
