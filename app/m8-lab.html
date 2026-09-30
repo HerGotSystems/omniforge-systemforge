@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>M8 Lab — OmniForge</title>
+<style>
+:root{
+  --bg:#0b0b0a;--panel:#151410;--panel2:#1c1a14;--line:#302d24;
+  --text:#f2eee8;--muted:#968c7c;--fire:#f97316;--gold:#fbbf24;
+  --good:#4ade80;--bad:#fb7185;--blue:#60a5fa;--r:12px
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+body{background-image:radial-gradient(circle at 20% -10%,rgba(249,115,22,.10),transparent 32rem)}
+button,input,textarea{font:inherit}
+.top{height:58px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;background:rgba(11,11,10,.92);backdrop-filter:blur(12px);z-index:10}
+.brand{font-weight:900;letter-spacing:.05em}.brand b{color:var(--fire)}
+.badge{font-size:11px;padding:5px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;max-width:1450px;margin:0 auto;padding:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.card-h{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.card-h strong{font-size:13px;text-transform:uppercase;letter-spacing:.08em}
+.card-b{padding:14px}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:7px}
+textarea{width:100%;min-height:150px;resize:vertical;border:1px solid var(--line);background:#0f0e0c;color:var(--text);border-radius:10px;padding:13px;outline:none;line-height:1.5}
+textarea:focus,input:focus{border-color:var(--fire)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:9px 13px;cursor:pointer;font-weight:700}
+.btn:hover{border-color:#554d3e}.btn.primary{background:var(--fire);color:#111;border-color:var(--fire)}.btn.primary:hover{background:var(--gold);border-color:var(--gold)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}.dot{width:8px;height:8px;border-radius:50%;background:#555}.dot.good{background:var(--good);box-shadow:0 0 9px rgba(74,222,128,.5)}.dot.bad{background:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.stat{padding:10px;border:1px solid var(--line);border-radius:9px;background:#100f0c}.stat b{display:block;font-size:17px}.stat span{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tabs{display:flex;border-bottom:1px solid var(--line)}.tab{padding:10px 14px;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}.tab.active{color:var(--text);border-color:var(--fire)}
+.view{display:none;padding:16px;min-height:260px}.view.active{display:block}
+.answer{white-space:pre-wrap;line-height:1.65;font-size:15px}
+pre{white-space:pre-wrap;word-break:break-word;background:#0d0c0a;border:1px solid var(--line);border-radius:10px;padding:12px;color:#d7d0c5;overflow:auto}
+.route-list{display:grid;gap:8px}.route-item{border:1px solid var(--line);border-radius:9px;padding:10px}.route-item b{color:var(--fire)}
+.side{display:flex;flex-direction:column;gap:16px}
+input[type=text],input[type=password]{width:100%;background:#0f0e0c;border:1px solid var(--line);border-radius:9px;padding:9px 10px;color:var(--text);outline:none}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tool{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:center}
+.note{font-size:12px;line-height:1.5;color:var(--muted)}
+.kv{display:grid;grid-template-columns:105px 1fr;gap:6px;font-size:12px}.kv div:nth-child(odd){color:var(--muted)}
+.error{padding:10px;border:1px solid rgba(251,113,133,.35);background:rgba(251,113,133,.08);color:#fecdd3;border-radius:8px;margin-top:10px;display:none}
+@media(max-width:950px){.layout{grid-template-columns:1fr}.side{grid-row:1}.grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">OMNI<b>FORGE</b> · M8 LAB</div>
+  <div class="status"><span id="statusDot" class="dot"></span><span id="statusText">Not checked</span></div>
+</header>
+
+<main class="layout">
+  <section>
+    <div class="card">
+      <div class="card-h"><strong>Ask M8</strong><span class="badge">Owner / tester surface</span></div>
+      <div class="card-b">
+        <div class="label">Task</div>
+        <textarea id="task" placeholder="Describe what you want M8 to solve, design, investigate or decide..."></textarea>
+        <div class="actions">
+          <button id="planBtn" class="btn">Inspect plan</button>
+          <button id="runBtn" class="btn primary">Run M8</button>
+          <button id="clearBtn" class="btn">Clear</button>
+        </div>
+        <div id="error" class="error"></div>
+        <div class="grid">
+          <div class="stat"><b id="leadStat">—</b><span>Lead</span></div>
+          <div class="stat"><b id="supportStat">—</b><span>Support</span></div>
+          <div class="stat"><b id="callsStat">—</b><span>Provider calls</span></div>
+          <div class="stat"><b id="latencyStat">—</b><span>Latency</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <div class="tabs">
+        <div class="tab active" data-tab="answer">Answer</div>
+        <div class="tab" data-tab="route">Route</div>
+        <div class="tab" data-tab="audit">Audit</div>
+        <div class="tab" data-tab="raw">Raw</div>
+      </div>
+      <div id="answerView" class="view active"><div id="answer" class="answer">Run M8 to see the answer here.</div></div>
+      <div id="routeView" class="view"><div id="route" class="route-list"></div></div>
+      <div id="auditView" class="view"><pre id="audit">{}</pre></div>
+      <div id="rawView" class="view"><pre id="raw">{}</pre></div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="card">
+      <div class="card-h"><strong>Connection</strong><span class="badge">session only</span></div>
+      <div class="card-b">
+        <div class="label">M8 API base</div>
+        <input id="apiBase" type="text" value="/api/m8"/>
+        <div class="label" style="margin-top:12px">Bearer token (optional)</div>
+        <input id="token" type="password" placeholder="Normally unnecessary behind Cloudflare Access"/>
+        <div class="actions"><button id="checkBtn" class="btn">Check health</button></div>
+        <p class="note">Cloudflare Access/session cookies are sent automatically. An optional bearer token is kept only in this tab.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><strong>Requested tools</strong><span class="badge">server authorizes</span></div>
+      <div class="card-b">
+        <div id="tools" class="tools"></div>
+        <p class="note">Checking a tool only requests it. M8 still denies tools your authenticated principal is not allowed to use.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><strong>Execution</strong></div>
+      <div class="card-b">
+        <div id="executionKv" class="kv">
+          <div>Request</div><div>—</div>
+          <div>Principal</div><div>—</div>
+          <div>Version</div><div>—</div>
+          <div>Mode</div><div>—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><strong>Not connected yet</strong></div>
+      <div class="card-b note">
+        Memory controls, usage credits, billing, file uploads and side-effect approval dialogs will appear here after the access/storage layers exist. This page intentionally does not fake those capabilities.
+      </div>
+    </div>
+  </aside>
+</main>
+
+<script type="module">
+import { M8Client } from './lib/m8-client.js';
+
+const $=id=>document.getElementById(id);
+const toolIds=['web','drive_read','gmail_read','gmail_draft','gmail_send','github_read','github_write','calendar_read','calendar_write'];
+for(const id of toolIds){
+  const label=document.createElement('label');
+  label.className='tool';
+  label.innerHTML=`<input type="checkbox" value="${id}"/> <span>${id}</span>`;
+  $('tools').appendChild(label);
+}
+
+const client=new M8Client();
+let lastPayload=null;
+let started=0;
+
+function configClient(){
+  client.setBaseUrl($('apiBase').value);
+  client.setToken($('token').value);
+}
+function requestedTools(){
+  return [...document.querySelectorAll('#tools input:checked')].map(x=>x.value);
+}
+function busy(value){
+  $('planBtn').disabled=value;$('runBtn').disabled=value;$('checkBtn').disabled=value;
+}
+function fail(error){
+  $('error').style.display='block';
+  $('error').textContent=error?.payload?.error?.message||error?.message||String(error);
+}
+function clearError(){ $('error').style.display='none'; $('error').textContent=''; }
+function setStatus(ok,text){
+  $('statusDot').className='dot '+(ok?'good':'bad');
+  $('statusText').textContent=text;
+}
+function leadName(plan){
+  return plan?.route?.lead?.name||plan?.route?.lead?.character?.name||plan?.route?.lead?.id||'—';
+}
+function supportCount(plan){
+  const support=plan?.route?.support||plan?.constellation?.support||[];
+  return Array.isArray(support)?support.length:0;
+}
+function renderRoute(plan){
+  const route=plan?.route||{};
+  const items=[];
+  if(route.lead) items.push(['Lead',route.lead]);
+  for(const x of route.support||[]) items.push(['Support',x]);
+  if(!items.length){$('route').innerHTML='<div class="note">No route details returned.</div>';return;}
+  $('route').innerHTML=items.map(([role,x])=>{
+    const name=x?.name||x?.character?.name||x?.id||String(x);
+    const why=x?.reasons||x?.reason||x?.capabilities||'';
+    return `<div class="route-item"><b>${role}: ${escapeHtml(name)}</b><div class="note">${escapeHtml(Array.isArray(why)?why.join(', '):String(why||''))}</div></div>`;
+  }).join('');
+}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function render(payload,mode){
+  lastPayload=payload;
+  const run=payload?.run;
+  const plan=run?.plan||payload?.plan||null;
+  const result=run?.result||null;
+  $('leadStat').textContent=leadName(plan);
+  $('supportStat').textContent=String(supportCount(plan));
+  const receipts=result?.audit?.providerReceipts||[];
+  $('callsStat').textContent=receipts.length?String(receipts.length):'—';
+  $('latencyStat').textContent=started?`${((performance.now()-started)/1000).toFixed(1)}s`:'—';
+  $('answer').textContent=result?.output|| (mode==='plan'?'Plan created. Open Route or Raw.':'No output returned.');
+  renderRoute(plan);
+  $('audit').textContent=JSON.stringify(result?.audit||{},null,2);
+  $('raw').textContent=JSON.stringify(payload,null,2);
+  const principal=payload?.principal||{};
+  $('executionKv').innerHTML=`
+    <div>Request</div><div>${escapeHtml(payload?.requestId||'—')}</div>
+    <div>Principal</div><div>${escapeHtml(principal.userId||'—')}</div>
+    <div>Tenant</div><div>${escapeHtml(principal.tenantId||'—')}</div>
+    <div>Mode</div><div>${escapeHtml(mode)}</div>`;
+}
+async function health(){
+  clearError();busy(true);configClient();
+  try{
+    const r=await client.health();
+    setStatus(true,`M8 ${r.version||''} online`);
+  }catch(e){setStatus(false,'Unavailable');fail(e);}
+  finally{busy(false);}
+}
+async function execute(mode){
+  const task=$('task').value.trim();
+  if(!task){fail(new Error('Enter a task first.'));return;}
+  clearError();busy(true);configClient();started=performance.now();
+  try{
+    const opts={requestedTools:requestedTools()};
+    const r=mode==='plan'?await client.plan(task,opts):await client.run(task,opts);
+    setStatus(true,'Connected');
+    render(r,mode);
+  }catch(e){fail(e);}
+  finally{busy(false);}
+}
+
+$('checkBtn').onclick=health;
+$('planBtn').onclick=()=>execute('plan');
+$('runBtn').onclick=()=>execute('run');
+$('clearBtn').onclick=()=>{$('task').value='';$('answer').textContent='Run M8 to see the answer here.';$('raw').textContent='{}';$('audit').textContent='{}';$('route').innerHTML='';clearError();};
+$('apiBase').onchange=()=>sessionStorage.setItem('m8_lab_api',$('apiBase').value);
+$('token').oninput=()=>sessionStorage.setItem('m8_lab_token',$('token').value);
+$('apiBase').value=sessionStorage.getItem('m8_lab_api')||'/api/m8';
+$('token').value=sessionStorage.getItem('m8_lab_token')||'';
+
+document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  tab.classList.add('active');
+  $(tab.dataset.tab+'View').classList.add('active');
+});
+
+health();
+</script>
+</body>
+</html>
