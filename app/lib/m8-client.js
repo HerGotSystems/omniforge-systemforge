@@ -26,6 +26,15 @@ export class M8Client {
     return this.#request('/meta',{method:'GET'});
   }
 
+  async approvals(){
+    return this.#request('/approvals',{method:'GET'});
+  }
+
+  async decideApproval(id,decision){
+    if(!['approve','deny'].includes(decision)) throw new Error('M8_APPROVAL_DECISION_INVALID');
+    return this.#request(`/approvals/${encodeURIComponent(id)}/${decision}`,{method:'POST'});
+  }
+
   async plan(task,{requestedTools=[]}={}){
     return this.#request('/plan',{
       method:'POST',
@@ -33,7 +42,7 @@ export class M8Client {
     });
   }
 
-  async run(task,{requestedTools=[],feedback=null,notes=null,persist=false,idempotencyKey=null}={}){
+  async run(task,{requestedTools=[],feedback=null,notes=null,persist=false,idempotencyKey=null,approvalIds=[]}={}){
     return this.#request('/run',{
       method:'POST',
       idempotencyKey:idempotencyKey||globalThis.crypto?.randomUUID?.()||`m8-${Date.now()}`,
@@ -42,7 +51,8 @@ export class M8Client {
         planOptions:{requestedTools},
         feedback,
         notes,
-        persist
+        persist,
+        approvalIds:[...new Set((approvalIds||[]).map(String).filter(Boolean))]
       }
     });
   }
