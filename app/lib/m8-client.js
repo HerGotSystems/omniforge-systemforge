@@ -18,6 +18,10 @@ export class M8Client {
     return this.#request('/health',{method:'GET'});
   }
 
+  async access(){
+    return this.#request('/access',{method:'GET'});
+  }
+
   async plan(task,{requestedTools=[]}={}){
     return this.#request('/plan',{
       method:'POST',
