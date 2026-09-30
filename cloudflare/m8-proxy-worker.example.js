@@ -13,6 +13,7 @@ function m8Request(request,env){
   headers.delete('x-m8-tenant-id');
   headers.delete('x-m8-roles');
   headers.delete('x-m8-tools');
+  headers.delete('x-m8-approved-tools');
   headers.delete('x-m8-service-secret');
 
   headers.set('x-m8-service-secret',env.M8_SERVICE_SECRET);
