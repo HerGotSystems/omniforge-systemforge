@@ -60,7 +60,7 @@ export default {
 
       const target=new URL(url.pathname+url.search,'https://m8.internal');
       const headers=new Headers(request.headers);
-      for(const key of ['x-m8-user-id','x-m8-tenant-id','x-m8-roles','x-m8-tools','x-m8-service-secret']){
+      for(const key of ['x-m8-user-id','x-m8-tenant-id','x-m8-roles','x-m8-tools','x-m8-approved-tools','x-m8-service-secret']){
         headers.delete(key);
       }
       headers.set('x-m8-service-secret',env.M8_SERVICE_SECRET);

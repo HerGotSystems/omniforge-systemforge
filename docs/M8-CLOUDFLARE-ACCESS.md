@@ -56,3 +56,10 @@ Replace static `M8_ROLES` / `M8_ALLOWED_TOOLS` environment settings with a serve
 - workspace-admin
 
 Tool permissions should come from durable account data, not browser fields.
+
+
+## Approval header
+
+The browser-facing proxy must delete any incoming `x-m8-approved-tools` header.
+
+Only a future server-side approval store may set this header after validating a specific approval record. Browser JSON or browser headers are never approval authority.
