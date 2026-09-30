@@ -22,6 +22,10 @@ export class M8Client {
     return this.#request('/access',{method:'GET'});
   }
 
+  async meta(){
+    return this.#request('/meta',{method:'GET'});
+  }
+
   async plan(task,{requestedTools=[]}={}){
     return this.#request('/plan',{
       method:'POST',
