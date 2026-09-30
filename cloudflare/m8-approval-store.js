@@ -117,6 +117,7 @@ export async function resolveApprovedTools(db,{
 
   const approvedTools=[];
   const approvalIds=[];
+  const resolved=[];
 
   for(const id of unique){
     const row=await db.prepare(`
@@ -132,11 +133,13 @@ export async function resolveApprovedTools(db,{
 
     approvedTools.push(row.tool_id);
     approvalIds.push(row.id);
+    resolved.push({id:row.id,toolId:row.tool_id});
   }
 
   return {
     approvedTools:[...new Set(approvedTools)],
-    approvalIds
+    approvalIds,
+    resolved
   };
 }
 
