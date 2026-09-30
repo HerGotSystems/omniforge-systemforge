@@ -18,6 +18,6 @@
   "vars": {
     "M8_TENANT_ID": "omniforge-owner",
     "M8_ROLES": "owner,tester",
-    "M8_ALLOWED_TOOLS": "web,drive_read,gmail_read,gmail_draft,github_read,github_write,calendar_read"
+    "M8_ALLOWED_TOOLS": ""
   }
 }
