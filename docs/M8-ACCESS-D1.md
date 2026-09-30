@@ -58,6 +58,12 @@ For the first deployment, create:
 
 Keep allowed_tools_json as [] until real tool adapters and approval UI are deployed.
 
-## Missing piece
+## Post-run accounting
 
-The D1 proxy example checks usage before a run. Recording actual post-run usage should be added once the hosted response exposes stable provider/token/cost accounting to the proxy or M8 writes it transactionally through its own D1 binding.
+The D1 proxy example clones completed `/run` responses, extracts M8 provider receipts, and records runs, provider calls, input/output tokens and estimated cost micro-units into daily usage. It also writes compact run-audit metadata.
+
+Accounting runs in `ctx.waitUntil()` so it does not delay the user response. Failures are logged.
+
+## Concurrency boundary
+
+This is sufficient for owner and small private-beta use, but it is not yet a strict reservation ledger. Two simultaneous requests can both pass a monthly pre-check before either writes usage. Before a larger public hosted tier, add reservation/settlement semantics (for example with a transactional coordinator/Durable Object) so hard spend caps remain strict under concurrency.
