@@ -83,9 +83,9 @@ export default {
               outputTokens:usage.outputTokens,
               costMicros:usage.costMicros
             });
-          }catch{
-            // Usage accounting failures must be observable in Worker logs,
-            // but should not corrupt an otherwise completed user response.
+          }catch(error){
+            console.error('M8_USAGE_ACCOUNTING_FAILED',error);
+            // Do not corrupt an otherwise completed user response.
           }
         })());
       }
