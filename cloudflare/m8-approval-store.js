@@ -113,7 +113,7 @@ export async function resolveApprovedTools(db,{
   if(!db?.prepare) throw new Error('M8_APPROVAL_DB_REQUIRED');
   if(!workspaceId||!userId) throw new Error('M8_APPROVAL_SCOPE_REQUIRED');
   const unique=[...new Set((ids||[]).map(String).filter(Boolean))];
-  if(!unique.length) return {approvedTools:[],approvalIds:[]};
+  if(!unique.length) return {approvedTools:[],approvalIds:[],resolved:[]};
 
   const approvedTools=[];
   const approvalIds=[];
