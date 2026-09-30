@@ -158,3 +158,51 @@ export async function recordM8Usage(db,{
     Math.max(0,Number(costMicros)||0)
   ).run();
 }
+
+
+export function usageFromM8Response(payload){
+  const receipts=payload?.run?.result?.audit?.providerReceipts||[];
+  let inputTokens=0,outputTokens=0,costMicros=0;
+  for(const receipt of receipts){
+    const usage=receipt?.usage||{};
+    inputTokens+=Number(usage.inputTokens||usage.input_tokens||usage.prompt_tokens||0)||0;
+    outputTokens+=Number(usage.outputTokens||usage.output_tokens||usage.completion_tokens||0)||0;
+    const costUsd=Number(receipt?.metadata?.costUsd??receipt?.metadata?.cost_usd??0);
+    if(Number.isFinite(costUsd)&&costUsd>0) costMicros+=Math.round(costUsd*1_000_000);
+  }
+  return {
+    runs:payload?.ok===true?1:0,
+    providerCalls:receipts.length,
+    inputTokens,
+    outputTokens,
+    costMicros
+  };
+}
+
+export async function recordM8RunAudit(db,{
+  runId,requestId=null,workspaceId,userId,status='completed',
+  providerCalls=0,inputTokens=0,outputTokens=0,costMicros=0
+}={}){
+  if(!db?.prepare) throw new Error('M8_ACCESS_DB_REQUIRED');
+  if(!runId||!workspaceId||!userId) throw new Error('M8_RUN_AUDIT_SCOPE_REQUIRED');
+  await db.prepare(`
+    INSERT INTO m8_run_audit(
+      run_id,request_id,workspace_id,user_id,status,
+      provider_calls,input_tokens,output_tokens,cost_micros,completed_at
+    ) VALUES(?,?,?,?,?,?,?,?,?,CASE WHEN ? IN ('completed','failed','denied') THEN CURRENT_TIMESTAMP ELSE NULL END)
+    ON CONFLICT(run_id) DO UPDATE SET
+      status=excluded.status,
+      provider_calls=excluded.provider_calls,
+      input_tokens=excluded.input_tokens,
+      output_tokens=excluded.output_tokens,
+      cost_micros=excluded.cost_micros,
+      completed_at=excluded.completed_at
+  `).bind(
+    runId,requestId,workspaceId,userId,status,
+    Math.max(0,Number(providerCalls)||0),
+    Math.max(0,Number(inputTokens)||0),
+    Math.max(0,Number(outputTokens)||0),
+    Math.max(0,Number(costMicros)||0),
+    status
+  ).run();
+}
