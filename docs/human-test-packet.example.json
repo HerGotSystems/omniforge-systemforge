@@ -1,0 +1,33 @@
+{
+  "schema": "human-test-packet/v1",
+  "source": {
+    "system": "omniforge",
+    "source_id": "example-mobile-first-contact"
+  },
+  "project": {
+    "name": "Example App",
+    "url": "https://example.com",
+    "description": "Example only"
+  },
+  "test": {
+    "title": "First-time mobile test",
+    "mode": "mobile",
+    "instructions": "Use the app as a new visitor. Do not read external documentation.",
+    "minutes_reward": 10,
+    "max_claims": 3,
+    "permissions": [
+      "public_navigation"
+    ],
+    "tasks": [
+      {
+        "prompt": "In your own words, what do you think this app is for?"
+      },
+      {
+        "prompt": "Try to complete the main action without help."
+      },
+      {
+        "prompt": "Describe the first place where you hesitated or became confused."
+      }
+    ]
+  }
+}
