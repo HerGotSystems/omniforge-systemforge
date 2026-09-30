@@ -229,7 +229,10 @@ export default {
         }
       })());
 
-      return json(payload,response.status,Object.fromEntries(response.headers));
+      const forwardedHeaders={};
+      const requestId=response.headers.get('x-request-id');
+      if(requestId) forwardedHeaders['x-request-id']=requestId;
+      return json(payload,response.status,forwardedHeaders);
     }catch(error){
       const code=String(error?.message||error).split(':')[0];
       const status=
