@@ -33,12 +33,28 @@ export default {
       const requestedWorkspace=String(request.headers.get('x-m8-workspace')||'').trim()||null;
       const access=await resolveM8Access(env.DB,email,{workspaceId:requestedWorkspace});
       const principal=principalFromM8Access(access);
+      const usage=await getMonthlyM8Usage(env.DB,{workspaceId:access.workspaceId,userId:access.userId});
+
+      if(request.method==='GET'&&url.pathname.endsWith('/access')){
+        return new Response(JSON.stringify({
+          ok:true,
+          access:{
+            userId:access.userId,
+            email:access.email,
+            workspaceId:access.workspaceId,
+            workspaceSlug:access.workspaceSlug,
+            workspaceName:access.workspaceName,
+            plan:access.plan,
+            role:access.role,
+            memoryMode:access.memoryMode,
+            allowedTools:access.allowedTools,
+            limits:access.limits,
+            usage
+          }
+        }),{status:200,headers:{'content-type':'application/json'}});
+      }
 
       if(request.method==='POST'&&url.pathname.endsWith('/run')){
-        const usage=await getMonthlyM8Usage(env.DB,{
-          workspaceId:access.workspaceId,
-          userId:access.userId
-        });
         assertM8UsageAllowed(access,usage);
       }
 
