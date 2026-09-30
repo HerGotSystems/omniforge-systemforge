@@ -122,9 +122,17 @@ input[type=text],input[type=password]{width:100%;background:#0f0e0c;border:1px s
     </div>
 
     <div class="card">
-      <div class="card-h"><strong>Not connected yet</strong></div>
-      <div class="card-b note">
-        Memory controls, usage credits, billing, file uploads and side-effect approval dialogs will appear here after the access/storage layers exist. This page intentionally does not fake those capabilities.
+      <div class="card-h"><strong>Account & usage</strong><span id="planBadge" class="badge">not loaded</span></div>
+      <div class="card-b">
+        <div id="accessKv" class="kv">
+          <div>Workspace</div><div>—</div>
+          <div>Role</div><div>—</div>
+          <div>Memory</div><div>—</div>
+          <div>Runs</div><div>—</div>
+          <div>Calls</div><div>—</div>
+          <div>Cost</div><div>—</div>
+        </div>
+        <p class="note" style="margin-bottom:0;margin-top:12px">Billing, file uploads, memory editing and side-effect approval dialogs are still intentionally absent until their backend layers exist.</p>
       </div>
     </div>
   </aside>
@@ -164,6 +172,37 @@ function clearError(){ $('error').style.display='none'; $('error').textContent='
 function setStatus(ok,text){
   $('statusDot').className='dot '+(ok?'good':'bad');
   $('statusText').textContent=text;
+}
+function limitText(value,limit){
+  return limit>0?`${value} / ${limit}`:`${value} / unlimited`;
+}
+function renderAccess(payload){
+  const a=payload?.access;
+  if(!a){
+    $('planBadge').textContent='not configured';
+    $('accessKv').innerHTML='<div>Access</div><div>Metadata endpoint unavailable</div>';
+    document.querySelectorAll('#tools input').forEach(x=>{x.disabled=false;});
+    return;
+  }
+  $('planBadge').textContent=a.plan||'—';
+  const u=a.usage||{}, l=a.limits||{};
+  const cost=(Number(u.costMicros||0)/1_000_000).toFixed(4);
+  const costLimit=Number(l.monthlyCostMicros||0)>0
+    ? (Number(l.monthlyCostMicros)/1_000_000).toFixed(2)
+    : 'unlimited';
+  $('accessKv').innerHTML=`
+    <div>Workspace</div><div>${escapeHtml(a.workspaceName||a.workspaceSlug||a.workspaceId||'—')}</div>
+    <div>Role</div><div>${escapeHtml(a.role||'—')}</div>
+    <div>Memory</div><div>${escapeHtml(a.memoryMode||'—')}</div>
+    <div>Runs</div><div>${escapeHtml(limitText(Number(u.runs||0),Number(l.monthlyRuns||0)))}</div>
+    <div>Calls</div><div>${escapeHtml(limitText(Number(u.providerCalls||0),Number(l.monthlyProviderCalls||0)))}</div>
+    <div>Cost</div><div>${escapeHtml(cost)} / ${escapeHtml(costLimit)}</div>`;
+  const allowed=new Set(a.allowedTools||[]);
+  document.querySelectorAll('#tools input').forEach(x=>{
+    x.disabled=!allowed.has(x.value);
+    if(x.disabled) x.checked=false;
+    x.closest('.tool').style.opacity=x.disabled?'.45':'1';
+  });
 }
 function leadName(plan){
   return plan?.route?.lead?.name||plan?.route?.lead?.character?.name||plan?.route?.lead?.id||'—';
@@ -211,6 +250,8 @@ async function health(){
   try{
     const r=await client.health();
     setStatus(true,`M8 ${r.version||''} online`);
+    try{ renderAccess(await client.access()); }
+    catch{ renderAccess(null); }
   }catch(e){setStatus(false,'Unavailable');fail(e);}
   finally{busy(false);}
 }
