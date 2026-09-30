@@ -40,7 +40,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#0d0c0a;border:1px sol
 .side{display:flex;flex-direction:column;gap:16px}
 input[type=text],input[type=password]{width:100%;background:#0f0e0c;border:1px solid var(--line);border-radius:9px;padding:9px 10px;color:var(--text);outline:none}
 .tools{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tool{border:1px solid var(--line);border-radius:8px;padding:8px;font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:flex-start}.tool-copy{display:flex;flex-direction:column;gap:2px}.tool-name{color:var(--text)}.tool-meta{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.tool.approval{border-color:rgba(251,191,36,.25)}.tool.high{border-color:rgba(251,113,133,.28)}
-.note{font-size:12px;line-height:1.5;color:var(--muted)}
+.note{font-size:12px;line-height:1.5;color:var(--muted)}.approval-list{display:grid;gap:8px}.approval-item{border:1px solid var(--line);border-radius:9px;padding:10px;background:#100f0c}.approval-item.pending{border-color:rgba(251,191,36,.3)}.approval-item.approved{border-color:rgba(74,222,128,.3)}.approval-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.approval-preview{font-size:11px;color:var(--muted);white-space:pre-wrap;word-break:break-word;margin-top:7px}.approval-actions{display:flex;gap:6px;margin-top:8px}.btn.small{padding:5px 8px;font-size:11px}.btn.danger{border-color:rgba(251,113,133,.35);color:#fecdd3}
 .kv{display:grid;grid-template-columns:105px 1fr;gap:6px;font-size:12px}.kv div:nth-child(odd){color:var(--muted)}
 .error{padding:10px;border:1px solid rgba(251,113,133,.35);background:rgba(251,113,133,.08);color:#fecdd3;border-radius:8px;margin-top:10px;display:none}
 @media(max-width:950px){.layout{grid-template-columns:1fr}.side{grid-row:1}.grid{grid-template-columns:repeat(2,1fr)}}
@@ -122,6 +122,14 @@ input[type=text],input[type=password]{width:100%;background:#0f0e0c;border:1px s
     </div>
 
     <div class="card">
+      <div class="card-h"><strong>Approvals</strong><span id="approvalBadge" class="badge">0 pending</span></div>
+      <div class="card-b">
+        <div id="approvalList" class="approval-list"><div class="note">No pending approvals.</div></div>
+        <p class="note" style="margin-bottom:0;margin-top:12px">Approving a record does not execute it. The next matching rerun may use it once; the server verifies the exact task/input digest before forwarding approval to M8.</p>
+      </div>
+    </div>
+
+    <div class="card">
       <div class="card-h"><strong>Account & usage</strong><span id="planBadge" class="badge">not loaded</span></div>
       <div class="card-b">
         <div id="accessKv" class="kv">
@@ -143,6 +151,7 @@ import { M8Client } from './lib/m8-client.js';
 
 const $=id=>document.getElementById(id);
 const client=new M8Client();
+let approvedApprovalIds=[];
 
 function renderTools(payload){
   const tools=payload?.tools||[];
@@ -219,6 +228,61 @@ function renderAccess(payload){
     <div>Cost</div><div>${escapeHtml(cost)} / ${escapeHtml(costLimit)}</div>`;
   // Tool allowance is rendered from M8 /meta so UI policy stays engine-derived.
 }
+function renderApprovals(payload){
+  const approvals=payload?.approvals||[];
+  approvedApprovalIds=approvals.filter(x=>x.status==='approved').map(x=>x.id);
+  const pendingCount=approvals.filter(x=>x.status==='pending').length;
+  $('approvalBadge').textContent=`${pendingCount} pending`;
+  if(!approvals.length){
+    $('approvalList').innerHTML='<div class="note">No pending approvals.</div>';
+    return;
+  }
+  $('approvalList').innerHTML='';
+  for(const item of approvals){
+    const wrap=document.createElement('div');
+    wrap.className=`approval-item ${item.status}`;
+    const head=document.createElement('div');
+    head.className='approval-head';
+    const title=document.createElement('strong');
+    title.textContent=item.toolId;
+    const state=document.createElement('span');
+    state.className='badge';
+    state.textContent=item.status;
+    head.append(title,state);
+    const preview=document.createElement('div');
+    preview.className='approval-preview';
+    preview.textContent=JSON.stringify(item.preview||{},null,2);
+    wrap.append(head,preview);
+    if(item.status==='pending'){
+      const actions=document.createElement('div');
+      actions.className='approval-actions';
+      const approve=document.createElement('button');
+      approve.className='btn small';
+      approve.textContent='Approve once';
+      approve.onclick=async()=>{
+        approve.disabled=true;
+        try{await client.decideApproval(item.id,'approve');await refreshApprovals();}
+        catch(e){fail(e);}
+      };
+      const deny=document.createElement('button');
+      deny.className='btn small danger';
+      deny.textContent='Deny';
+      deny.onclick=async()=>{
+        deny.disabled=true;
+        try{await client.decideApproval(item.id,'deny');await refreshApprovals();}
+        catch(e){fail(e);}
+      };
+      actions.append(approve,deny);
+      wrap.append(actions);
+    }
+    $('approvalList').appendChild(wrap);
+  }
+}
+async function refreshApprovals(){
+  try{renderApprovals(await client.approvals());}
+  catch{renderApprovals(null);}
+}
+
 function leadName(plan){
   return plan?.route?.lead?.name||plan?.route?.lead?.character?.name||plan?.route?.lead?.id||'—';
 }
@@ -265,9 +329,12 @@ async function health(){
   try{
     const r=await client.health();
     setStatus(true,`M8 ${r.version||''} online`);
-    const [metaResult,accessResult]=await Promise.allSettled([client.meta(),client.access()]);
+    const [metaResult,accessResult,approvalResult]=await Promise.allSettled([
+      client.meta(),client.access(),client.approvals()
+    ]);
     renderTools(metaResult.status==='fulfilled'?metaResult.value:null);
     renderAccess(accessResult.status==='fulfilled'?accessResult.value:null);
+    renderApprovals(approvalResult.status==='fulfilled'?approvalResult.value:null);
   }catch(e){setStatus(false,'Unavailable');fail(e);}
   finally{busy(false);}
 }
@@ -276,10 +343,11 @@ async function execute(mode){
   if(!task){fail(new Error('Enter a task first.'));return;}
   clearError();busy(true);configClient();started=performance.now();
   try{
-    const opts={requestedTools:requestedTools()};
+    const opts={requestedTools:requestedTools(),approvalIds:approvedApprovalIds};
     const r=mode==='plan'?await client.plan(task,opts):await client.run(task,opts);
     setStatus(true,'Connected');
     render(r,mode);
+    if(mode==='run') await refreshApprovals();
   }catch(e){fail(e);}
   finally{busy(false);}
 }
