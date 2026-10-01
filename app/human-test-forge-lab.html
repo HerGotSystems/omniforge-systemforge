@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Human Test Forge Lab — Omniforge</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#0c0f13;color:#eef3f8}
+main{max-width:1000px;margin:auto;padding:32px 18px 70px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+label{display:block;margin:12px 0 4px;color:#aeb9c6}input,select,textarea,button{width:100%;box-sizing:border-box;padding:10px;border-radius:8px;border:1px solid #34404d;background:#151b22;color:#eef3f8}
+textarea{min-height:90px}button{cursor:pointer;margin-top:14px}.panel{border:1px solid #29333e;border-radius:14px;padding:18px;background:#11161c}.ok{color:#a5f3bd}.bad{color:#ffb3b3}pre{white-space:pre-wrap;word-break:break-word}
+</style>
+</head>
+<body><main>
+<h1>Human Test Forge Lab</h1>
+<p>Build and validate a portable <code>human-test-packet/v1</code> without publishing anything.</p>
+<div class="grid">
+<section class="panel">
+<label>Project name</label><input id="projectName" value="Example App">
+<label>Project URL</label><input id="projectUrl" value="https://example.com">
+<label>Test title</label><input id="title" value="First-time mobile test">
+<label>Mode</label><select id="mode"><option>mobile</option><option>first_contact</option><option>task</option><option>ux</option><option>accessibility</option><option>browser</option><option>device</option><option>release</option><option>blind</option><option>break_it</option></select>
+<label>Instructions</label><textarea id="instructions">Use the app as a new visitor. Do not read external documentation.</textarea>
+<label>Tasks — one per line</label><textarea id="tasks">Explain what you think this app does.
+Try to complete the main action without help.
+Describe where you first hesitated.</textarea>
+<label>Reward minutes</label><input id="minutes" type="number" min="1" max="240" value="10">
+<label>Tester slots</label><input id="claims" type="number" min="1" max="100" value="3">
+<button id="build">Build packet</button>
+<button id="download">Download JSON</button>
+</section>
+<section class="panel">
+<h2>Result</h2><div id="status"></div><pre id="output"></pre>
+</section>
+</div>
+<script type="module">
+import { buildHumanTestPacket, reservedHumanTestMinutes, downloadHumanTestPacket } from './lib/human-test-packet.js';
+let current=null;
+const q=id=>document.getElementById(id);
+function build(){
+  try{
+    current=buildHumanTestPacket({
+      source:{system:'omniforge',source_id:'lab-manual'},
+      project:{name:q('projectName').value,url:q('projectUrl').value},
+      test:{
+        title:q('title').value,mode:q('mode').value,instructions:q('instructions').value,
+        minutes_reward:Number(q('minutes').value),max_claims:Number(q('claims').value),
+        permissions:['public_navigation'],
+        tasks:q('tasks').value.split(/\n+/).map(s=>s.trim()).filter(Boolean)
+      }
+    });
+    q('status').className='ok';
+    q('status').textContent='Valid · reserves '+reservedHumanTestMinutes(current)+' Test Minutes';
+    q('output').textContent=JSON.stringify(current,null,2);
+  }catch(e){
+    current=null;q('status').className='bad';q('status').textContent=e.message;q('output').textContent='';
+  }
+}
+q('build').addEventListener('click',build);
+q('download').addEventListener('click',()=>{if(!current)build();if(current)downloadHumanTestPacket(current);});
+build();
+</script>
+</main></body></html>
